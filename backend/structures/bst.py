@@ -72,17 +72,57 @@ class BST:
         if self.root is None:
             self.root = node
             print("Value ", data, " has been inserted as tree root.")
+            return True
         else:
-            self._insert(node, self.root)
+            return self._insert(node, self.root)
 
     # Método privado de insertar
     def _insert(self, node, currentRoot):
         # Se valida igualdad
         if currentRoot.getValue() == node.getValue():
             print("Already existing node with this value ", node.getValue())
+            return None
         else:
+            if node.getValue()[0] == currentRoot.getValue()[0]:
+                if node.getValue()[1] == currentRoot.getValue()[1]:
+                    if node.getValue()[2] < currentRoot.getValue()[2]:
+                        leftChild = currentRoot.getLeftChild()
+                        if leftChild is None:
+                            currentRoot.setLeftChild(node)
+                            node.setParent(currentRoot)
+                            print(
+                                node.getValue(), " has been inserted as left child of ", currentRoot.getValue())
+                        else:
+                            self._insert(node, leftChild)
+                    else:
+                        rightChild = currentRoot.getRightChild()
+                        if rightChild is None:
+                            currentRoot.setRightChild(node)
+                            node.setParent(currentRoot)
+                            print(
+                                node.getValue(), " has been inserted as right child of ", currentRoot.getValue())
+                        else:
+                            self._insert(node, rightChild)
+                elif node.getValue()[1] < currentRoot.getValue()[1]:
+                    leftChild = currentRoot.getLeftChild()
+                    if leftChild is None:
+                        currentRoot.setLeftChild(node)
+                        node.setParent(currentRoot)
+                        print(
+                            node.getValue(), " has been inserted as left child of ", currentRoot.getValue())
+                    else:
+                        self._insert(node, leftChild)
+                else:
+                    rightChild = currentRoot.getRightChild()
+                    if rightChild is None:
+                        currentRoot.setRightChild(node)
+                        node.setParent(currentRoot)
+                        print(node.getValue(), " has been inserted as right child of ", currentRoot.getValue())
+                    else:
+                        self._insert(node, rightChild)
+
             # Si es menor se va por la izquierda
-            if node.getValue() < currentRoot.getValue():
+            elif node.getValue()[0] < currentRoot.getValue()[0]:
                 leftChild = currentRoot.getLeftChild()
                 if leftChild is None:
                     currentRoot.setLeftChild(node)
@@ -112,21 +152,20 @@ class BST:
 
     # Método privado de buscar
     def _search(self, data, currentRoot):
-        if data == currentRoot.getValue():
-            return currentRoot
-        if data < currentRoot.getValue():
-            left = currentRoot.getLeftChild()
-            if left is None:
-                return None
+        if currentRoot is not None:
+            if data == currentRoot.getValue()[2]: 
+                return currentRoot
             else:
-                return self._search(data, left)
-        else:
-            right = currentRoot.getRightChild()
-            if right is None:
-                return None
-            else:
-                return self._search(data, right)
-
+                left = self._search(data,currentRoot.getLeftChild())
+                if left is None:
+                    right = self._search(data,currentRoot.getRightChild())
+                    if right is None: 
+                        return None
+                    else:
+                        return right
+                else:
+                    return left
+      
     # Método público para recorrer en preorden
     def preorder(self):
         if self.root is None:
@@ -269,3 +308,57 @@ class BST:
     # Método privado para actualizar el valor entre dos nodos (Para intercambiar el valor entre una raíz y su predecesor.)
     def _updateNodeValue(self, oldNode, newNode):
         oldNode.setValue(newNode.getValue())
+
+    def dibujar(self):
+
+        if self.root is None:
+
+            print("El árbol está vacío")
+
+        else:
+
+            print("\nÁrbol BST:")
+            print("-----------")
+
+            self._dibujar(
+                self.root,
+                "",
+                "R"
+            )
+
+    # método para dibujar conceptualmente el árbol binario
+
+    def _dibujar(self, raizActual, espacio, posicion):
+
+        if raizActual is not None:
+
+            self._dibujar(
+                raizActual.getRightChild(),
+                espacio + "     ",
+                "D"
+            )
+
+            print(
+                espacio +
+                posicion + "── " +
+                str(raizActual.getValue())
+            )
+
+            self._dibujar(
+                raizActual.getLeftChild(),
+                espacio + "     ",
+                "I"
+            )
+
+
+
+tree = BST()
+list = [(3, 5.2, 10),(2, 5.8, 20),(3, 6.1, 30),(3, 5.2, 5),(3, 5.2, 25), (1,1,1)]
+for i in list:
+    tree.insert(i)
+
+tree.dibujar()
+if tree.search(3):
+    print(tree.search(3).getValue())
+else:
+    print("No existe")
