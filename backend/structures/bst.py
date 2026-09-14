@@ -66,6 +66,16 @@ class BST:
     def __init__(self):
         self.root = None
 
+    # Método para comprobar la existencia del nodo
+    def comprobatorNode(self, data):
+        if self.search(data.getValue()[2]) is None:
+            self.insert(data)
+        else:
+            node = self.search(data.getValue()[2])
+            node[0] = data[0]
+            node[1] = data[1]
+            print("This event already existing in the tree, the data has been updated")
+            
     # Método público de insertar
     def insert(self, data):
         node = Node(data)
@@ -131,7 +141,8 @@ class BST:
                         node.getValue(), " has been inserted as left child of ", currentRoot.getValue())
                 else:
                     self._insert(node, leftChild)
-                    # Si es mayor se va por la derecha
+
+            # Si es mayor se va por la derecha
             else:
                 rightChild = currentRoot.getRightChild()
                 if rightChild is None:
@@ -309,7 +320,7 @@ class BST:
     def _updateNodeValue(self, oldNode, newNode):
         oldNode.setValue(newNode.getValue())
 
-    def dibujar(self):
+    def drawTree(self):
 
         if self.root is None:
 
@@ -320,35 +331,36 @@ class BST:
             print("\nÁrbol BST:")
             print("-----------")
 
-            self._dibujar(
+            self._drawTree(
                 self.root,
                 "",
                 "R"
             )
 
-    # método para dibujar conceptualmente el árbol binario
+    # Método para dibujar conceptualmente el árbol binario
 
-    def _dibujar(self, raizActual, espacio, posicion):
+    def _drawTree(self, currentRoot, space, position):
 
-        if raizActual is not None:
+        if currentRoot is not None:
 
-            self._dibujar(
-                raizActual.getRightChild(),
-                espacio + "     ",
+            self._drawTree(
+                currentRoot.getRightChild(),
+                space + "     ",
                 "D"
             )
 
             print(
-                espacio +
-                posicion + "── " +
-                str(raizActual.getValue())
+                space +
+                position + "── " +
+                str(currentRoot.getValue())
             )
 
-            self._dibujar(
-                raizActual.getLeftChild(),
-                espacio + "     ",
+            self._drawTree(
+                currentRoot.getLeftChild(),
+                space + "     ",
                 "I"
             )
+
 
 
 
@@ -357,7 +369,7 @@ list = [(3, 5.2, 10),(2, 5.8, 20),(3, 6.1, 30),(3, 5.2, 5),(3, 5.2, 25), (1,1,1)
 for i in list:
     tree.insert(i)
 
-tree.dibujar()
+tree.drawTree()
 if tree.search(3):
     print(tree.search(3).getValue())
 else:
