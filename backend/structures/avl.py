@@ -4,103 +4,103 @@ class AVL:
   def __init__(self):
     self.root = None
     
-    # Método para insertar evento
-    def insertEvent(self, data, time):
-        if self.comprobatorNode(data):
-            self.updateNodeValues(data)
-        else:
-            self.insert(data)
-            self.insertTime(time, self.search(data[2]))
-    
-    # Método para comprobar la existencia del nodo
-    def comprobatorNode(self, data):
-        if self.search(data.getValue()[2]) is None:
-            return False
-        else:
-            return True
-    
-    # Método para actualizar valores del nodo
-    def updateNodeValues(self, data):
-        node = self.search(data.getValue()[2])
-        node.setValue()[0] = data[0]
-        node.setValue()[1] = data[1]
-        print("This event already existing in the tree, the data has been updated")
-    
-    def insertTime(self, time, node):
-        node.setNodeCreationTime(time)
+  # Método para insertar evento
+  def insertEvent(self, data, time):
+      if self.comprobatorNode(data):
+          self.updateNodeValues(data)
+      else:
+          self.insert(data)
+          self.insertTime(time, self.search(data[2]))
+  
+  # Método para comprobar la existencia del nodo
+  def comprobatorNode(self, data):
+      if self.search(data.getValue()[2]) is None:
+          return False
+      else:
+          return True
+  
+  # Método para actualizar valores del nodo
+  def updateNodeValues(self, data):
+      node = self.search(data.getValue()[2])
+      node.setValue()[0] = data[0]
+      node.setValue()[1] = data[1]
+      print("This event already existing in the tree, the data has been updated")
+  
+  def insertTime(self, time, node):
+      node.setNodeCreationTime(time)
 
-    # Método público de insertar
-    def insert(self, data):
-        node = Node(data)
-        if self.root is None:
-            self.root = node
-            print("Value ", data, " has been inserted as tree root.")
-            return True
-        else:
-            return self._insert(node, self.root)
-  
-      # Método privado de insertar
-    def _insert(self, node, currentRoot):
-        # Se valida igualdad
-        if currentRoot.getValue() == node.getValue():
-            print("Already existing node with this value ", node.getValue())
-            return None
-        else:
-            if node.getValue()[0] == currentRoot.getValue()[0]:
-                if node.getValue()[1] == currentRoot.getValue()[1]:
-                    if node.getValue()[2] < currentRoot.getValue()[2]:
-                        leftChild = currentRoot.getLeftChild()
-                        if leftChild is None:
-                            currentRoot.setLeftChild(node)
-                            node.setParent(currentRoot)
-                            print(node.getValue(), " has been inserted as left child of ", currentRoot.getValue())
-                        else:
-                            self._insert(node, leftChild)
-                    else:
-                        rightChild = currentRoot.getRightChild()
-                        if rightChild is None:
-                            currentRoot.setRightChild(node)
-                            node.setParent(currentRoot)
-                            print(node.getValue(), " has been inserted as right child of ", currentRoot.getValue())
-                        else:
-                            self._insert(node, rightChild)
-                elif node.getValue()[1] < currentRoot.getValue()[1]:
-                    leftChild = currentRoot.getLeftChild()
-                    if leftChild is None:
-                        currentRoot.setLeftChild(node)
-                        node.setParent(currentRoot)
-                        print(node.getValue(), " has been inserted as left child of ", currentRoot.getValue())
-                    else:
-                        self._insert(node, leftChild)
-                else:
-                    rightChild = currentRoot.getRightChild()
-                    if rightChild is None:
-                        currentRoot.setRightChild(node)
-                        node.setParent(currentRoot)
-                        print(node.getValue(), " has been inserted as right child of ", currentRoot.getValue())
-                    else:
-                        self._insert(node, rightChild)
-  
-            # Si es menor se va por la izquierda
-            elif node.getValue()[0] < currentRoot.getValue()[0]:
-                leftChild = currentRoot.getLeftChild()
-                if leftChild is None:
-                    currentRoot.setLeftChild(node)
-                    node.setParent(currentRoot)
-                    print(node.getValue(), " has been inserted as left child of ", currentRoot.getValue())
-                else:
-                    self._insert(node, leftChild)
-  
-            # Si es mayor se va por la derecha
-            else:
-                rightChild = currentRoot.getRightChild()
-                if rightChild is None:
-                    currentRoot.setRightChild(node)
-                    node.setParent(currentRoot)
-                    print(
-                        node.getValue(), " has been inserted as right child of ", currentRoot.getValue())
-                else:
-                    self._insert(node, rightChild)
+  # Método público de insertar
+  def insert(self, data):
+      node = Node(data)
+      if self.root is None:
+          self.root = node
+          print("Value ", data, " has been inserted as tree root.")
+          return True
+      else:
+          return self._insert(node, self.root)
+
+    # Método privado de insertar
+  def _insert(self, node, currentRoot):
+      # Se valida igualdad
+      if currentRoot.getValue() == node.getValue():
+          print("Already existing node with this value ", node.getValue())
+          return None
+      else:
+          if node.getValue()[0] == currentRoot.getValue()[0]:
+              if node.getValue()[1] == currentRoot.getValue()[1]:
+                  if node.getValue()[2] < currentRoot.getValue()[2]:
+                      leftChild = currentRoot.getLeftChild()
+                      if leftChild is None:
+                          currentRoot.setLeftChild(node)
+                          node.setParent(currentRoot)
+                          print(node.getValue(), " has been inserted as left child of ", currentRoot.getValue())
+                      else:
+                          self._insert(node, leftChild)
+                  else:
+                      rightChild = currentRoot.getRightChild()
+                      if rightChild is None:
+                          currentRoot.setRightChild(node)
+                          node.setParent(currentRoot)
+                          print(node.getValue(), " has been inserted as right child of ", currentRoot.getValue())
+                      else:
+                          self._insert(node, rightChild)
+              elif node.getValue()[1] < currentRoot.getValue()[1]:
+                  leftChild = currentRoot.getLeftChild()
+                  if leftChild is None:
+                      currentRoot.setLeftChild(node)
+                      node.setParent(currentRoot)
+                      print(node.getValue(), " has been inserted as left child of ", currentRoot.getValue())
+                  else:
+                      self._insert(node, leftChild)
+              else:
+                  rightChild = currentRoot.getRightChild()
+                  if rightChild is None:
+                      currentRoot.setRightChild(node)
+                      node.setParent(currentRoot)
+                      print(node.getValue(), " has been inserted as right child of ", currentRoot.getValue())
+                  else:
+                      self._insert(node, rightChild)
+
+          # Si es menor se va por la izquierda
+          elif node.getValue()[0] < currentRoot.getValue()[0]:
+              leftChild = currentRoot.getLeftChild()
+              if leftChild is None:
+                  currentRoot.setLeftChild(node)
+                  node.setParent(currentRoot)
+                  print(node.getValue(), " has been inserted as left child of ", currentRoot.getValue())
+              else:
+                  self._insert(node, leftChild)
+
+          # Si es mayor se va por la derecha
+          else:
+              rightChild = currentRoot.getRightChild()
+              if rightChild is None:
+                  currentRoot.setRightChild(node)
+                  node.setParent(currentRoot)
+                  print(
+                      node.getValue(), " has been inserted as right child of ", currentRoot.getValue())
+              else:
+                  self._insert(node, rightChild)
 
   # Buscar un elemento por su key
   def search(self, data):
@@ -376,16 +376,16 @@ class AVL:
       case _:
         return None
     
-    # Método publico para archivar un subarbol
-    def archiveSubTree(self, actualTime, time):
-        if self.root is None:
-            print("The tree is empty")
-        else:
-            self._archiveSubtree(self.root, actualTime, time)
-    
-    # Método privado para eliminar un arbol
-    def _archiveSubTree(self, node, actualTime, time):
-        n = 0
+  # Método publico para archivar un subarbol
+  def archiveSubTree(self, actualTime, time):
+      if self.root is None:
+          print("The tree is empty")
+      else:
+          self._archiveSubtree(self.root, actualTime, time)
+  
+  # Método privado para eliminar un arbol
+  def _archiveSubTree(self, node, actualTime, time):
+      n = 0
   
   # Método para dibujar el arbol
   def draw_tree(self):
