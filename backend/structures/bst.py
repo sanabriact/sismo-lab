@@ -1,8 +1,27 @@
 from node import Node
 
+
 class BST:
     def __init__(self):
         self.root = None
+
+    def _tryInsertLeftChild(self, currentRoot, node):
+        leftChild = currentRoot.getLeftChild()
+        if leftChild is None:
+            currentRoot.setLeftChild(node)
+            node.setParent(currentRoot)
+            return True, leftChild
+        else:
+            return False, leftChild
+
+    def _tryInsertRightChild(self, currentRoot, node):
+        rightChild = currentRoot.getRightChild()
+        if rightChild is None:
+            currentRoot.setRightChild(node)
+            node.setParent(currentRoot)
+            return True, rightChild
+        else:
+            return False, rightChild
 
     # Método público de insertar
     def insert(self, data):
@@ -18,58 +37,18 @@ class BST:
         # Se valida igualdad
         if currentRoot.getValue() == node.getValue():
             print("Already existing node with this value ", node.getValue())
-            return None
-        else:
-            if node.getValue()[0] == currentRoot.getValue()[0]:
-                if node.getValue()[1] == currentRoot.getValue()[1]:
-                    if node.getValue()[2] < currentRoot.getValue()[2]:
-                        leftChild = currentRoot.getLeftChild()
-                        if leftChild is None:
-                            currentRoot.setLeftChild(node)
-                            node.setParent(currentRoot)
-                        else:
-                            self._insert(node, leftChild)
-                    else:
-                        rightChild = currentRoot.getRightChild()
-                        if rightChild is None:
-                            currentRoot.setRightChild(node)
-                            node.setParent(currentRoot)
-                        else:
-                            self._insert(node, rightChild)
-                elif node.getValue()[1] < currentRoot.getValue()[1]:
-                    leftChild = currentRoot.getLeftChild()
-                    if leftChild is None:
-                        currentRoot.setLeftChild(node)
-                        node.setParent(currentRoot)
-                    else:
-                        self._insert(node, leftChild)
-                else:
-                    rightChild = currentRoot.getRightChild()
-                    if rightChild is None:
-                        currentRoot.setRightChild(node)
-                        node.setParent(currentRoot)
-                    else:
-                        self._insert(node, rightChild)
+            return False
+        if node.getValue() < currentRoot.getValue():
+            inserted, child = self._tryInsertLeftChild(currentRoot, node)
+        if node.getValue() > currentRoot.getValue():
+            inserted, child = self._tryInsertRightChild(currentRoot, node)
 
-            # Si es menor se va por la izquierda
-            elif node.getValue()[0] < currentRoot.getValue()[0]:
-                leftChild = currentRoot.getLeftChild()
-                if leftChild is None:
-                    currentRoot.setLeftChild(node)
-                    node.setParent(currentRoot)
-                else:
-                    self._insert(node, leftChild)
-
-            # Si es mayor se va por la derecha
-            else:
-                rightChild = currentRoot.getRightChild()
-                if rightChild is None:
-                    currentRoot.setRightChild(node)
-                    node.setParent(currentRoot)
-                else:
-                    self._insert(node, rightChild)
+        if inserted:
+            return True
+        return self._insert(node, child)
 
     # Buscar un elemento por su key
+
     def search(self, data):
         if self.root is None:
             print("The tree is empty.")
@@ -80,19 +59,19 @@ class BST:
     # Método privado de buscar
     def _search(self, data, currentRoot):
         if currentRoot is not None:
-            if data == currentRoot.getValue()[2]: 
+            if data == currentRoot.getValue()[2]:
                 return currentRoot
             else:
-                left = self._search(data,currentRoot.getLeftChild())
+                left = self._search(data, currentRoot.getLeftChild())
                 if left is None:
-                    right = self._search(data,currentRoot.getRightChild())
-                    if right is None: 
+                    right = self._search(data, currentRoot.getRightChild())
+                    if right is None:
                         return None
                     else:
                         return right
                 else:
                     return left
-      
+
     # Método público para recorrer en preorden
     def preorder(self):
         if self.root is None:
@@ -235,51 +214,40 @@ class BST:
     # Método privado para actualizar el valor entre dos nodos (Para intercambiar el valor entre una raíz y su predecesor.)
     def _updateNodeValue(self, oldNode, newNode):
         oldNode.setValue(newNode.getValue())
-    
-    # Método para dibujar el arbol 
-    def draw_tree(self):
-    
-        def traverse(node, prefix="", is_last=True):
-            if node is None:
-                return
-        
-            print(prefix + ("└── " if is_last else "├── ") + str(node.getValue()))
-        
-            leftChild = node.getLeftChild()
-            rightChild = node.getRightChild()
-        
-            children = []
-        
-            if leftChild is not None:
-                children.append(leftChild)
-        
-            if rightChild is not None:
-                children.append(rightChild)
-        
-            for i, child in enumerate(children):
-                last = i == len(children) - 1
-        
-                new_prefix = prefix + ("    " if is_last else "│   ")
-        
-                traverse(child, new_prefix, last)
-        
-            if self.root is not None:
-                print(self.root.getValue())
-        
-            leftChild = self.root.getLeftChild()
-            rightChild = self.root.getRightChild()
-        
-            children = []
-        
-            if leftChild is not None:
-                children.append(leftChild)
-        
-            if rightChild is not None:
-                children.append(rightChild)
-        
-            for i, child in enumerate(children):
-                traverse(
-                child,
-                "",
-                i == len(children) - 1
-                )
+
+    # Método para dibujar el arbol
+        # Método público para dibujar el árbol en consola
+        # Método público para dibujar el árbol en consola
+    def draw(self):
+        if self.root is None:
+            print("(El árbol está vacío)")
+            return
+
+        lines = []
+        self._draw(self.root.getRightChild(), "", False, lines)
+        lines.append(self._label(self.root))
+        self._draw(self.root.getLeftChild(), "", True, lines)
+        print("\n".join(lines))
+
+    # Método privado de dibujar
+    def _draw(self, node, prefix, isLeft, lines):
+        if node is None:
+            return
+
+        self._draw(node.getRightChild(),
+                   prefix + ("│   " if isLeft else "    "),
+                   False, lines)
+
+        lines.append(prefix + ("└── " if isLeft else "┌── ")
+                     + self._label(node))
+
+        self._draw(node.getLeftChild(),
+                   prefix + ("    " if isLeft else "│   "),
+                   True, lines)
+
+    # Texto que se muestra para cada nodo
+    def _label(self, node):
+        value = node.getValue()
+        if isinstance(value, (tuple, list)):
+            return "(" + ", ".join(str(v) for v in value) + ")"
+        return str(value)
