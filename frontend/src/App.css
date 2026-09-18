@@ -3,7 +3,7 @@
   flex-direction: column;
   place-content: top;
   place-items: center;  
-  border-bottom: 2px black solid;
+  /* border-bottom: 2px black solid; */
   margin: 10px 0px;
   min-width: 1088px;
 }
@@ -13,13 +13,17 @@
   font-size: 37px;
 }
 
-#sidebar-title-test{
+#sidebar-subtitle-test{
   font-weight: 700;
 }
 #full-sidebar-test {
   max-width: 170px;
   border-right: 2px black solid;
   font-size: large;
+}
+
+#sidebar-title {
+  text-align: center;
 }
 
 h3 {
