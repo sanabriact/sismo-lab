@@ -5,6 +5,7 @@ class BST:
     def __init__(self):
         self.root = None
 
+    # Método para intentar insertar hijo izquierdo
     def _tryInsertLeftChild(self, currentRoot, node):
         leftChild = currentRoot.getLeftChild()
         if leftChild is None:
@@ -13,7 +14,7 @@ class BST:
             return True, leftChild
         else:
             return False, leftChild
-
+    # Método para intentar insertar hijo derecho
     def _tryInsertRightChild(self, currentRoot, node):
         rightChild = currentRoot.getRightChild()
         if rightChild is None:

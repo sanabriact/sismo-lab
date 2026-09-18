@@ -78,3 +78,7 @@ class Node:
     # Retorna true si el nodo es hijo derecho
     def isRightChild(self):
         return self.hasParent() and self.parent.hasRightChild() and self.value == self.parent.rightChild.value
+    
+    # Método para comprobar si el nodo es archivable
+    def isArchivable(self, time):
+        return self.value[0] == 1 and self.time > time 
