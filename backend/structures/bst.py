@@ -14,6 +14,7 @@ class BST:
             return True, leftChild
         else:
             return False, leftChild
+        
     # Método para intentar insertar hijo derecho
     def _tryInsertRightChild(self, currentRoot, node):
         rightChild = currentRoot.getRightChild()

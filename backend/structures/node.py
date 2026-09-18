@@ -81,4 +81,21 @@ class Node:
     
     # Método para comprobar si el nodo es archivable
     def isArchivable(self, time):
-        return self.value[0] == 1 and self.time > time 
+        return self.value[0] == 1 and self.nodeCreationTime > time 
+    
+    # Método para calcular la profundidad del nodo
+    def getDepth(self, counter):
+        if self.getParent() is not None:
+            counter += 1
+            return self.getParent().getDepth(counter)
+        else:
+            return counter
+        
+    # Método para contar nodos
+    def countNodes(self, counter):
+        counter += 1
+        if self.hasLeftChild():
+            counter = self.getLeftChild().countNodes(counter)
+        if self.hasRightChild():
+            counter = self.getRightChild().countNodes(counter)
+        return counter

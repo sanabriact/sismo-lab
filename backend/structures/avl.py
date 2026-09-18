@@ -357,18 +357,51 @@ class AVL:
                 return None
 
     # Método publico para archivar un subarbol
-    def archiveSubTree(self, actualTime, time):
+    def archiveSubTree(self, time):
         if self.root is None:
             print("The tree is empty")
         else:
-            self._archiveSubtree(self.root, actualTime, time)
+            listToArchivate = []
+            archivateRoot = self._archiveSubTree(self.root, time, listToArchivate)
+            if archivateRoot:
+                a = 0
+            else:
+                rootToArchivate = self.findArchiveSubTree(listToArchivate, 1, listToArchivate[0])
 
     # Método privado para archivar un arbol
-    def _archiveSubTree(self, node, time):
+    def _archiveSubTree(self, node, time, listToArchivate):
+        if node is not None:
+            leftEligible = self._archiveSubTree(node.getLeftChild(), time, listToArchivate)
+            rightEligible= self._archiveSubTree(node.getRightChild(), time, listToArchivate)
+            Eligible = node.isArchivable(time) and leftEligible and rightEligible
+            if not Eligible:
+                if leftEligible and node.getLeftChild() is not None:
+                    listToArchivate.append(node.getLeftChild())
+                if rightEligible and node.getRightChild() is not None:
+                    listToArchivate.append(node.getRightChild())
+                return False
+        return True
+    
+    def findArchiveSubTree(self, listToArchivate, index, best):
+        if index == len(listToArchivate):
+            return best
+        node = listToArchivate[index]
+        nodeSize = node.countNodes(0)
+        bestSize = best.countNodes(0)
+        if nodeSize > bestSize:
+            best = node
+        elif nodeSize == bestSize:
+            nodeDepth = node.getDepth(0)
+            bestDepth = best.getDepth(0)
+            if nodeDepth > bestDepth:
+                best = node
+            elif nodeDepth == bestDepth:
+                if node.getValue()[2] > best.getValue()[2]:
+                    best = node
         
+        return self.findArchiveSubTree(listToArchivate, index+1, best)
+    
     # Método para dibujar el arbol
-        # Método público para dibujar el árbol en consola
-        # Método público para dibujar el árbol en consola
     def draw(self):
         if self.root is None:
             print("(El árbol está vacío)")
