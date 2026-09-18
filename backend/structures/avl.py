@@ -30,6 +30,7 @@ class AVL:
     def insertTime(self, time, node):
         node.setNodeCreationTime(time)
 
+  # Método para intentar insertar hijo izquierdo
     def _tryInsertLeftChild(self, currentRoot, node):
         leftChild = currentRoot.getLeftChild()
         if leftChild is None:
@@ -41,6 +42,7 @@ class AVL:
         else:
             return False, leftChild
 
+    # Método para intentar insertar hijo derecho
     def _tryInsertRightChild(self, currentRoot, node):
         rightChild = currentRoot.getRightChild()
         if rightChild is None:
@@ -172,6 +174,7 @@ class AVL:
 
     # Método privado de eliminación de nodo
     def _delete(self, node):
+        fatherNode = node.getPadre()
         # Se pregunta si el nodo es hoja (No tiene hijos)
         if node.isLeaf():
             nodeParent = node.getParent()
@@ -225,6 +228,7 @@ class AVL:
                         node.setRightChild(None)
 
                 node.setParent(None)
+        self._checkBalance(fatherNode, 0)
 
     # Método privado para obtener el predecesor del subárbol de un nodo.
     # Se pregunta si el nodo que entra a la función tiene hijo derecho.
@@ -359,10 +363,9 @@ class AVL:
         else:
             self._archiveSubtree(self.root, actualTime, time)
 
-    # Método privado para eliminar un arbol
-    def _archiveSubTree(self, node, actualTime, time):
-        n = 0
-
+    # Método privado para archivar un arbol
+    def _archiveSubTree(self, node, time):
+        
     # Método para dibujar el arbol
         # Método público para dibujar el árbol en consola
         # Método público para dibujar el árbol en consola
