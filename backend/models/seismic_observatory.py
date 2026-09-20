@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 from backend.structures.avl import AVL
-from backend.structures.avl import BST
+from backend.structures.bst import BST
 from backend.structures.queue import Queue
 from backend.structures.stack import Stack
 from history import History
