@@ -37,12 +37,12 @@ class BST:
     # Método privado de insertar
     def _insert(self, node, currentRoot):
         # Se valida igualdad
-        if currentRoot.getValue() == node.getValue():
+        if currentRoot.getValue().getKey() == node.getValue().getKey():
             print("Already existing node with this value ", node.getValue())
             return False
-        if node.getValue() < currentRoot.getValue():
+        if node.getValue().getKey() < currentRoot.getValue().getKey():
             inserted, child = self._tryInsertLeftChild(currentRoot, node)
-        if node.getValue() > currentRoot.getValue():
+        if node.getValue().getKey() > currentRoot.getValue().getKey():
             inserted, child = self._tryInsertRightChild(currentRoot, node)
 
         if inserted:

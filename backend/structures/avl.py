@@ -66,12 +66,12 @@ class AVL:
         # Método privado de insertar
     def _insert(self, node, currentRoot):
         # Se valida igualdad
-        if currentRoot.getValue() == node.getValue():
+        if currentRoot.getValue().getKey() == node.getValue().getKey():
             print("Already existing node with this value ", node.getValue())
             return False
-        if node.getValue() < currentRoot.getValue():
+        if node.getValue().getKey() < currentRoot.getValue().getKey():
             inserted, child = self._tryInsertLeftChild(currentRoot, node)
-        if node.getValue() > currentRoot.getValue():
+        if node.getValue().getKey() > currentRoot.getValue().getKey():
             inserted, child = self._tryInsertRightChild(currentRoot, node)
 
         if inserted:
@@ -90,7 +90,7 @@ class AVL:
     # Método privado de buscar
     def _search(self, data, currentRoot):
         if currentRoot is not None:
-            if data == currentRoot.getValue()[2]:
+            if data == currentRoot.getValue().getKey()[2]:
                 return currentRoot
             else:
                 left = self._search(data, currentRoot.getLeftChild())
@@ -174,7 +174,7 @@ class AVL:
 
     # Método privado de eliminación de nodo
     def _delete(self, node):
-        fatherNode = node.getPadre()
+        fatherNode = node.getParent()
         # Se pregunta si el nodo es hoja (No tiene hijos)
         if node.isLeaf():
             nodeParent = node.getParent()

@@ -35,4 +35,45 @@ class SeismicObservatory:
 
         # ===================== versiones y modo de ejecución =====================
         self.saved_versions = []          
-        self.execution_mode = "normal"    
+        self.execution_mode = "normal"  
+
+    def getAVLTree(self):
+        return self.avl_tree
+    def getBSTTree(self):
+        return self.bst_tree
+    def getStations(self):
+        return self.stations
+    def getZones(self):
+        return self.zones
+    def getHistory(self):
+        return self.history 
+    def getReportQueue(self):
+        return self.report_queue
+    def getActionStack(self):
+        return self.action_stack
+    def getClock(self):
+        return self.clock
+    def getW(self):
+        return self.w
+    def setW(self, w):
+        self.w = w
+    def getR(self):
+        return self.r
+    def setR(self, r):
+        self.r = r
+    def getL(self):
+        return self.l
+    def setL(self, l):
+        self.l = l
+    def getT(self):
+        return self.t
+    def setT(self, t):
+        self.t = t
+    def getAssociationManager(self):
+        return self.association_manager
+    def getMetrics(self):
+        return self.metrics
+    def getSavedVersions(self):
+        return self.saved_versions
+    def getExecutionMode(self):
+        return self.execution_mode
