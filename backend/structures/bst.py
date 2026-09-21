@@ -249,7 +249,7 @@ class BST:
 
     # Texto que se muestra para cada nodo
     def _label(self, node):
-        value = node.getValue()
+        value = node.getValue().getKey()
         if isinstance(value, (tuple, list)):
             return "(" + ", ".join(str(v) for v in value) + ")"
         return str(value)

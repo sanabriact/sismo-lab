@@ -4,8 +4,9 @@ from backend.structures.node import Node
 class AVL:
     def __init__(self):
         self.root = None
+        self.index = {} #Buscador de nodos por id, para acceder a ellos de manera más rápida
 
-    # Método para insertar evento
+    """ # Método para insertar evento
     def insertEvent(self, data, time):
         if self.comprobatorNode(data):
             self.updateNodeValues(data)
@@ -28,16 +29,16 @@ class AVL:
         print("This event already existing in the tree, the data has been updated")
 
     def insertTime(self, time, node):
-        node.setNodeCreationTime(time)
+        node.setNodeCreationTime(time)"""
 
-  # Método para intentar insertar hijo izquierdo
+    # Método para intentar insertar hijo izquierdo
     def _tryInsertLeftChild(self, currentRoot, node):
         leftChild = currentRoot.getLeftChild()
         if leftChild is None:
             currentRoot.setLeftChild(node)
             node.setParent(currentRoot)
-            print(node.getValue(), " has been inserted as left child of ",
-                  currentRoot.getValue())
+            self.index[node.getValue().getKey()[2]] = node
+            print(node.getValue(), " has been inserted as left child of ", currentRoot.getValue())
             return True, leftChild
         else:
             return False, leftChild
@@ -48,6 +49,7 @@ class AVL:
         if rightChild is None:
             currentRoot.setRightChild(node)
             node.setParent(currentRoot)
+            self.index[node.getValue().getKey()[2]] = node
             print(node.getValue(), " has been inserted as right child of ",currentRoot.getValue())
             return True, rightChild
         else:
@@ -102,6 +104,21 @@ class AVL:
                         return right
                 else:
                     return left
+
+    #Buscar elemento por Id
+    def searchById(self, id):
+        if self.root is None:
+            print("The tree is empty.")
+            return None
+        else:
+            return self._searchById(id)
+
+    def _searchById(self, id):
+        if id in self.index:
+            return self.index[id]
+        else:
+            return None
+
 
     # Método público para recorrer en preorden
     def preorder(self):
@@ -168,9 +185,9 @@ class AVL:
 
             if targetNode is None:
                 print("Cannot eliminate. Data doesn´t exists.")
-                return None
+                return False
             else:
-                self._delete(targetNode)
+                return self._delete(targetNode)
 
     # Método privado de eliminación de nodo
     def _delete(self, node):
@@ -185,6 +202,7 @@ class AVL:
                 nodeParent.setRightChild(None)
 
             node.setParent(None)
+            
         else:
             # Si el nodo no es hoja, se validan los 2 casos restantes.
             # Primero se pregunta si tiene hijo izquierdo y derecho.
@@ -203,6 +221,7 @@ class AVL:
                     predecessor.setLeftChild(None)
 
                 predecessor.setParent(None)
+                
 
             # Si el nodo no tiene dos hijos, se verifica si tiene hijo izquierdo o hijo derecho.
             # Para cada uno de los casos, se verifica nuevamente si este hijo posee hijo izquierdo o derecho.
@@ -228,7 +247,9 @@ class AVL:
                         node.setRightChild(None)
 
                 node.setParent(None)
+                
         self._checkBalance(fatherNode, 0)
+        return True
 
     # Método privado para obtener el predecesor del subárbol de un nodo.
     # Se pregunta si el nodo que entra a la función tiene hijo derecho.
@@ -431,7 +452,7 @@ class AVL:
 
     # Texto que se muestra para cada nodo
     def _label(self, node):
-        value = node.getValue()
+        value = node.getValue().getKey()
         if isinstance(value, (tuple, list)):
             return "(" + ", ".join(str(v) for v in value) + ")"
         return str(value)

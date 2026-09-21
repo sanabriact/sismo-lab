@@ -5,10 +5,10 @@ class Event:
     def __init__(self, id, magnitude, depth, epicenter_x, epicenter_y, datetime: datetime, revision, station, zones = None):
         self._validate_data(id, magnitude, depth, epicenter_x, epicenter_y, datetime)
         self.depth = round(depth, 1)  # float
-        priority = self.calculatePriority(magnitude)
         self.epicenter_x = round(epicenter_x, 1)  # float
         self.epicenter_y = round(epicenter_y)  # float
         self.populated_zone = self.calculatePopulatedZone(zones or [])  # bool
+        priority = self.calculatePriority(magnitude)
         self.datetime = datetime  # datetime
         self.revision = revision  # int
         self.reporting_stations = {station}  # station

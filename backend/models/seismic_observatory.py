@@ -3,10 +3,11 @@ from backend.structures.avl import AVL
 from backend.structures.bst import BST
 from backend.structures.queue import Queue
 from backend.structures.stack import Stack
-from history import History
-from clock import SimulationClock
-from association_manager import AssociationManager
-from metrics import Metrics
+from backend.models.history import History
+from backend.models.clock import SimulationClock
+from backend.models.association_manager import AssociationManager
+from backend.models.metrics import Metrics
+from backend.models.event import Event
 
 class SeismicObservatory:
     def __init__(self):
@@ -77,3 +78,32 @@ class SeismicObservatory:
         return self.saved_versions
     def getExecutionMode(self):
         return self.execution_mode
+
+    def createEvent(self, id, magnitude, depth, epicenter_x, epicenter_y, datetime: datetime, revision, station):
+        if self.avl_tree.searchById(id) is not None:
+            return False
+        #Validar que no este en historico
+        if id in self.history.getArchived():
+            return False
+        if id in self.history.getDeletedIds():
+            return False
+        event = Event(id, magnitude, depth, epicenter_x, epicenter_y, datetime, revision, station, self.zones)
+        self.avl_tree.insert(event)
+        return True
+
+    def searchEventById(self, id):
+        node = self.avl_tree.searchById(id)
+        if node is not None:
+            return node.getValue()
+        return None
+
+    def deleteEventById(self, id):
+        node = self.avl_tree.searchById(id)
+        if node is not None: 
+            return self.avl_tree.delete(id)
+        return False
+
+    #def markAsReviewed()
+    
+    #def archiveSubTree() lo hace el viejo
+
