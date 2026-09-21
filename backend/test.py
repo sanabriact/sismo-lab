@@ -1,6 +1,6 @@
-from node import Node
-from bst import BST
-from avl import AVL
+from backend.structures.avl import AVL
+from backend.structures.bst import BST
+
 
 tree = AVL()  
 bst = BST()      

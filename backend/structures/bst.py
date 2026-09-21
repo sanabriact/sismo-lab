@@ -1,4 +1,4 @@
-from node import Node
+from backend.structures.node import Node
 
 
 class BST:

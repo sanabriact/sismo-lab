@@ -2,20 +2,20 @@ from datetime import datetime
 
 class Event:
 
-    def __init__(self, id, magnitude, depth, epicenter_x, epicenter_y, datetime: datetime, current_revision, reporting_station):
+    def __init__(self, id, magnitude, depth, epicenter_x, epicenter_y, datetime: datetime, revision, station, zones = None):
         self._validate_data(id, magnitude, depth, epicenter_x, epicenter_y, datetime)
-        priority = self.calculatePriority()
-        self.key = (priority, round(magnitude, 1), id)  # tupla
         self.depth = round(depth, 1)  # float
+        priority = self.calculatePriority(magnitude)
         self.epicenter_x = round(epicenter_x, 1)  # float
         self.epicenter_y = round(epicenter_y)  # float
+        self.populated_zone = self.calculatePopulatedZone(zones or [])  # bool
         self.datetime = datetime  # datetime
-        self.current_revision = current_revision  # int
-        self.reporting_stations = {reporting_station}  # station
+        self.revision = revision  # int
+        self.reporting_stations = {station}  # station
         self.attention_status = "pending"  # str
         self.event_status = "active"  # str
-        self.populated_zone = False  # bool
         self.expensive_access = False  # bool
+        self.key = (priority, round(magnitude, 1), id)  # tupla
 
     def getKey(self):
         return self.key
@@ -73,8 +73,7 @@ class Event:
         self.expensive_access = expensive
 
     #Calculate Priority
-    def calculatePriority(self):
-        magnitude = self.key[1]
+    def calculatePriority(self, magnitude):
         priority = None
         if magnitude >=6 or (magnitude >= 4.5 and self.depth <= 30 and self.populated_zone == True):
             priority = 3
@@ -84,6 +83,27 @@ class Event:
             priority = 1
         return priority
 
+    def calculatePopulatedZone(self, zones):
+        belongs_to_any_zone = False
+        belongs_to_populated_zone = False
+        for zone in zones:
+            if zone.contains(self.epicenter_x, self.epicenter_y):
+                belongs_to_any_zone = True
+                if zone.getIsPopulated():
+                    belongs_to_populated_zone = True
+                    break 
+        return belongs_to_populated_zone if belongs_to_any_zone else False
+
+    
+    def updateEventData(self, report, zones = None):
+        self._validate_data(report.getEventId(), report.getMagnitude(), report.getDepth(), report.getEpicenterX(), report.getEpicenterY(), report.getDatetime())
+        self.revision+=1
+        self.depth = round(report.getDepth(), 1)
+        self.epicenter_x = round(report.getEpicenterX(), 1)
+        self.epicenter_y = round(report.getEpicenterY(), 1)
+        self.datetime = report.getDatetime()
+        self.populated_zone = self.calculatePopulatedZone(zones or [])
+        self.key = (self.calculatePriority(report.getMagnitude()), round(report.getMagnitude(), 1), self.key[2])
 
 
     def _validate_data(self,id, magnitude, depth, epicenter_x, epicenter_y, date):

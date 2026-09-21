@@ -33,7 +33,11 @@ class Zone:
     def setIsPopulated(self, is_populated):
         self.is_populated = is_populated
 
-    
+    def contains(self,x,y):
+        return (self.x_min <= x <= self.x_max) and (self.y_min <= y <= self.y_max)
+
+    def isInBorder(self,x,y):
+        return (x == self.x_min or x == self.x_max) and (y == self.y_min or y == self.y_max)
 
     def _validateData(self, x_min, x_max, y_min, y_max):
         if not (0.0 <= x_min <= 1000.0) or not (0.0 <= x_max <= 1000.0):
