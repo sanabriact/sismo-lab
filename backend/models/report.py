@@ -8,12 +8,52 @@ class Report:
 
         self.event_id = event_id
         self.revision = revision
-        self.issuingStation = station
+        self.station = station
         self.magnitude = round(magnitude, 1)
         self.depth = round(depth, 1)
-        self.epicenterX = round(epicenter_x, 1)
-        self.epicenterY = round(epicenter_y, 1)
+        self.epicenter_x = round(epicenter_x, 1)
+        self.epicenter_y = round(epicenter_y, 1)
         self.datetime = datetime_
+
+    def getEventId(self):
+        return self.event_id
+    def setEventId(self, id):
+        self.event_id = id
+
+    def getRevision(self):
+        return self.revision
+    def setRevision(self, number):
+        self.revision = number
+
+    def getStation(self):
+        return self.station
+    def setStation(self, station):
+        self.station = station
+
+    def getMagnitude(self):
+        return self.magnitude
+    def setMagnitude(self, magnitude):
+        self.magnitude = magnitude
+
+    def getDepth(self):
+        return self.depth
+    def setDepth(self, depth):
+        self.depth = depth
+
+    def getEpicenterX(self):
+        return self.epicenter_x
+    def setEpicenterX(self, x):
+        self.epicenter_x = x
+
+    def getEpicenterY(self):
+        return self.epicenter_y
+    def serEpicenterY(self, y):
+        self.epicenter_y = y
+
+    def getDatetime(self):
+        return self.datetime
+    def setDatetime(self, date):
+        self.datetime = date
 
     def _validateData(self, event_id, revision, magnitude, depth,epicenter_x, epicenter_y, datetime, station):
 

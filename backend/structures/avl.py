@@ -1,11 +1,12 @@
-from node import Node
+from backend.structures.node import Node
 
 
 class AVL:
     def __init__(self):
         self.root = None
+        self.index = {} #Buscador de nodos por id, para acceder a ellos de manera más rápida
 
-    # Método para insertar evento
+    """ # Método para insertar evento
     def insertEvent(self, data, time):
         if self.comprobatorNode(data):
             self.updateNodeValues(data)
@@ -28,16 +29,16 @@ class AVL:
         print("This event already existing in the tree, the data has been updated")
 
     def insertTime(self, time, node):
-        node.setNodeCreationTime(time)
+        node.setNodeCreationTime(time)"""
 
-  # Método para intentar insertar hijo izquierdo
+    # Método para intentar insertar hijo izquierdo
     def _tryInsertLeftChild(self, currentRoot, node):
         leftChild = currentRoot.getLeftChild()
         if leftChild is None:
             currentRoot.setLeftChild(node)
             node.setParent(currentRoot)
-            print(node.getValue(), " has been inserted as left child of ",
-                  currentRoot.getValue())
+            self.index[node.getValue().getKey()[2]] = node
+            print(node.getValue(), " has been inserted as left child of ", currentRoot.getValue())
             return True, leftChild
         else:
             return False, leftChild
@@ -48,6 +49,7 @@ class AVL:
         if rightChild is None:
             currentRoot.setRightChild(node)
             node.setParent(currentRoot)
+            self.index[node.getValue().getKey()[2]] = node
             print(node.getValue(), " has been inserted as right child of ",currentRoot.getValue())
             return True, rightChild
         else:
@@ -66,12 +68,12 @@ class AVL:
         # Método privado de insertar
     def _insert(self, node, currentRoot):
         # Se valida igualdad
-        if currentRoot.getValue() == node.getValue():
+        if currentRoot.getValue().getKey() == node.getValue().getKey():
             print("Already existing node with this value ", node.getValue())
             return False
-        if node.getValue() < currentRoot.getValue():
+        if node.getValue().getKey() < currentRoot.getValue().getKey():
             inserted, child = self._tryInsertLeftChild(currentRoot, node)
-        if node.getValue() > currentRoot.getValue():
+        if node.getValue().getKey() > currentRoot.getValue().getKey():
             inserted, child = self._tryInsertRightChild(currentRoot, node)
 
         if inserted:
@@ -90,7 +92,7 @@ class AVL:
     # Método privado de buscar
     def _search(self, data, currentRoot):
         if currentRoot is not None:
-            if data == currentRoot.getValue()[2]:
+            if data == currentRoot.getValue().getKey()[2]:
                 return currentRoot
             else:
                 left = self._search(data, currentRoot.getLeftChild())
@@ -102,6 +104,21 @@ class AVL:
                         return right
                 else:
                     return left
+
+    #Buscar elemento por Id
+    def searchById(self, id):
+        if self.root is None:
+            print("The tree is empty.")
+            return None
+        else:
+            return self._searchById(id)
+
+    def _searchById(self, id):
+        if id in self.index:
+            return self.index[id]
+        else:
+            return None
+
 
     # Método público para recorrer en preorden
     def preorder(self):
@@ -168,13 +185,13 @@ class AVL:
 
             if targetNode is None:
                 print("Cannot eliminate. Data doesn´t exists.")
-                return None
+                return False
             else:
-                self._delete(targetNode)
+                return self._delete(targetNode)
 
     # Método privado de eliminación de nodo
     def _delete(self, node):
-        fatherNode = node.getPadre()
+        fatherNode = node.getParent()
         # Se pregunta si el nodo es hoja (No tiene hijos)
         if node.isLeaf():
             nodeParent = node.getParent()
@@ -185,6 +202,7 @@ class AVL:
                 nodeParent.setRightChild(None)
 
             node.setParent(None)
+            
         else:
             # Si el nodo no es hoja, se validan los 2 casos restantes.
             # Primero se pregunta si tiene hijo izquierdo y derecho.
@@ -203,6 +221,7 @@ class AVL:
                     predecessor.setLeftChild(None)
 
                 predecessor.setParent(None)
+                
 
             # Si el nodo no tiene dos hijos, se verifica si tiene hijo izquierdo o hijo derecho.
             # Para cada uno de los casos, se verifica nuevamente si este hijo posee hijo izquierdo o derecho.
@@ -228,7 +247,9 @@ class AVL:
                         node.setRightChild(None)
 
                 node.setParent(None)
+                
         self._checkBalance(fatherNode, 0)
+        return True
 
     # Método privado para obtener el predecesor del subárbol de un nodo.
     # Se pregunta si el nodo que entra a la función tiene hijo derecho.
@@ -364,12 +385,12 @@ class AVL:
             listToArchivate = []
             archivateRoot = self._archiveSubTree(self.root, time, listToArchivate)
             if archivateRoot:
-                a = 0
+                self.root = None
+                return archivateRoot
             else:
                 rootToArchivate = self.findArchiveSubTree(listToArchivate, 1, listToArchivate[0])
-                archivateTree = []
-                self.removeSubTree(rootToArchivate, archivateTree)
-                return archivateTree
+                self.removeSubTree(rootToArchivate)
+                return rootToArchivate
 
     # Método privado para archivar un arbol
     def _archiveSubTree(self, node, time, listToArchivate):
@@ -404,10 +425,16 @@ class AVL:
                     best = node
         
         return self.findArchiveSubTree(listToArchivate, index+1, best)
-    
+        
     # Método para remover el arbol a archivar
-    def removeSubTree(self, currentRoot, archivateTree):
-        if 
+    def removeSubTree(self, currentRoot):
+        parent = currentRoot.getPadre()
+        if currentRoot.isLeftChild():
+            parent.setLeftChild(None)
+        else:
+            parent.setRigthChild(None)
+        currentRoot.setPadre(None)
+                    
     # Método para dibujar el arbol
     def draw(self):
         if self.root is None:
@@ -438,7 +465,7 @@ class AVL:
 
     # Texto que se muestra para cada nodo
     def _label(self, node):
-        value = node.getValue()
+        value = node.getValue().getKey()
         if isinstance(value, (tuple, list)):
             return "(" + ", ".join(str(v) for v in value) + ")"
         return str(value)
