@@ -1,11 +1,6 @@
 import { ChevronDown } from "lucide-react";
 import { useState } from "react";
-import type { DropdownMenuItems } from "../../models/types/DropdownMenuItems";
-
-interface DropdownMenuProps {
-    title: string;
-    items: DropdownMenuItems[]
-}
+import type { DropdownMenuProps } from "../../models/interfaces/sidebar/DropdownMenuProps";
 
 const DropdownMenu = ({ title, items} : DropdownMenuProps) => {
     const [isOpen, setIsOpen ] = useState(false);
@@ -26,7 +21,6 @@ const DropdownMenu = ({ title, items} : DropdownMenuProps) => {
                     {items.map((item) => (
                         <li>
                             <a 
-                                href={item.href} 
                                 className="block p-2 rounded-lg hover:bg-white/10"
                             >{item.label}</a>
                         </li>
