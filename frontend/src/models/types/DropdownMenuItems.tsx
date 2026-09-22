@@ -1,4 +1,4 @@
 export type DropdownMenuItems = {
     label: string;
-    href: string;
+    path: string;
 }
