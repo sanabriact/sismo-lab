@@ -202,6 +202,7 @@ class AVL:
                 nodeParent.setRightChild(None)
 
             node.setParent(None)
+            del self.index[node.getValue().getKey()[2]]
             
         else:
             # Si el nodo no es hoja, se validan los 2 casos restantes.
@@ -221,7 +222,7 @@ class AVL:
                     predecessor.setLeftChild(None)
 
                 predecessor.setParent(None)
-                
+                del self.index[node.getValue().getKey()[2]]
 
             # Si el nodo no tiene dos hijos, se verifica si tiene hijo izquierdo o hijo derecho.
             # Para cada uno de los casos, se verifica nuevamente si este hijo posee hijo izquierdo o derecho.
@@ -247,7 +248,7 @@ class AVL:
                         node.setRightChild(None)
 
                 node.setParent(None)
-                
+                del self.index[node.getValue().getKey()[2]]
         self._checkBalance(fatherNode, 0)
         return True
 

@@ -23,7 +23,7 @@ print(observatory.searchEventById(100))
 print(observatory.deleteEventById(2))
 observatory.getAVLTree().draw()
 
-report = Report(3,2,"ST-001", 3.2,23,105,105,datetime(2025, 6, 1, 12, 0, 0))
+report = Report(1,2,"ST-001", 3.2,23,105,105,datetime(2025, 6, 1, 12, 0, 0))
 observatory.editEvent(report)
 observatory.getAVLTree().draw()
 

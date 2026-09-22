@@ -111,11 +111,13 @@ class SeismicObservatory:
         #Al crearse un reporte, sus datos ya están validados
         event = self.searchEventById(report.getEventId())
         if event is not None:
-            if self.deleteEventById(event.getKey()[2]):
-                event.updateEventData(report)
+            oldKey = event.getKey()
+            event.updateEventData(report)
+            if event.getKey() != oldKey:
+                self.deleteEventById(report.getEventId())
                 self.avl_tree.insert(event)
                 #RECALCULAR ASOCIACIONES Y METRICAS
-                
+
                 return True
         return False
 
