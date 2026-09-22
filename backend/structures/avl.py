@@ -367,6 +367,9 @@ class AVL:
                 a = 0
             else:
                 rootToArchivate = self.findArchiveSubTree(listToArchivate, 1, listToArchivate[0])
+                archivateTree = []
+                self.removeSubTree(rootToArchivate, archivateTree)
+                return archivateTree
 
     # Método privado para archivar un arbol
     def _archiveSubTree(self, node, time, listToArchivate):
@@ -382,6 +385,7 @@ class AVL:
                 return False
         return True
     
+    # Método para escoger la raiz del arbol a eliminar
     def findArchiveSubTree(self, listToArchivate, index, best):
         if index == len(listToArchivate):
             return best
@@ -401,6 +405,9 @@ class AVL:
         
         return self.findArchiveSubTree(listToArchivate, index+1, best)
     
+    # Método para remover el arbol a archivar
+    def removeSubTree(self, currentRoot, archivateTree):
+        if 
     # Método para dibujar el arbol
     def draw(self):
         if self.root is None:
