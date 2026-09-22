@@ -107,6 +107,19 @@ class SeismicObservatory:
             return self.avl_tree.delete(id)
         return False
 
+    def editEvent(self,report):
+        #Al crearse un reporte, sus datos ya están validados
+        event = self.searchEventById(report.getEventId())
+        if event is not None:
+            if self.deleteEventById(event.getKey()[2]):
+                event.updateEventData(report)
+                self.avl_tree.insert(event)
+                #RECALCULAR ASOCIACIONES Y METRICAS
+                
+                return True
+        return False
+
+
     #def markAsReviewed()
     
     #def archiveSubTree() lo hace el viejo

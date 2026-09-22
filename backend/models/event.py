@@ -13,7 +13,7 @@ class Event:
         self.revision = revision  # int
         self.reporting_stations = {station}  # station
         self.attention_status = "pending"  # str
-        self.event_status = "active"  # str
+        self.event_status = "active"  # str active, archived, deleted
         self.expensive_access = False  # bool
         self.key = (priority, round(magnitude, 1), id)  # tupla
 
@@ -104,6 +104,7 @@ class Event:
         self.datetime = report.getDatetime()
         self.populated_zone = self.calculatePopulatedZone(zones or [])
         self.key = (self.calculatePriority(report.getMagnitude()), round(report.getMagnitude(), 1), self.key[2])
+        self.attention_status = "pending"
 
 
     def _validate_data(self,id, magnitude, depth, epicenter_x, epicenter_y, date):

@@ -2,6 +2,7 @@ from backend.structures.avl import AVL
 from backend.structures.bst import BST
 from backend.models.event import Event
 from backend.models.seismic_observatory import SeismicObservatory
+from backend.models.report import Report
 
 from datetime import datetime
 
@@ -21,4 +22,9 @@ print("=========================================================================
 print(observatory.searchEventById(100))
 print(observatory.deleteEventById(2))
 observatory.getAVLTree().draw()
+
+report = Report(3,2,"ST-001", 3.2,23,105,105,datetime(2025, 6, 1, 12, 0, 0))
+observatory.editEvent(report)
+observatory.getAVLTree().draw()
+
 
