@@ -25,8 +25,6 @@ class SeismicObservatory:
         self.clock = SimulationClock(datetime.now(timezone.utc))
 
         # ===================== parámetros configurables =====================
-        self.w = 48.0     
-        self.r = 40.0     
         self.l = 3       
         self.t = 72.0     
 
@@ -44,8 +42,22 @@ class SeismicObservatory:
         return self.bst_tree
     def getStations(self):
         return self.stations
+    def addStation(self,station):
+        self.stations.append(station)
+    def deleteStation(self,station):
+        if station in self.stations:
+            self.stations.remove(station)
+            return True
+        return False
     def getZones(self):
         return self.zones
+    def addZone(self,zone):
+        self.zones.append(zone)
+    def deleteZone(self,zone):
+        if zone in self.zones:
+            self.zones.remove(zone)
+            return True
+        return False
     def getHistory(self):
         return self.history 
     def getReportQueue(self):
@@ -54,14 +66,6 @@ class SeismicObservatory:
         return self.action_stack
     def getClock(self):
         return self.clock
-    def getW(self):
-        return self.w
-    def setW(self, w):
-        self.w = w
-    def getR(self):
-        return self.r
-    def setR(self, r):
-        self.r = r
     def getL(self):
         return self.l
     def setL(self, l):
@@ -88,8 +92,8 @@ class SeismicObservatory:
         if id in self.history.getDeletedIds():
             return False
         event = Event(id, magnitude, depth, epicenter_x, epicenter_y, datetime, revision, station, self.zones)
-        self.avl_tree.insert(event)
-        return True
+        return self.avl_tree.insert(event)
+        
 
     def searchEventById(self, id):
         node = self.avl_tree.searchById(id)
@@ -106,4 +110,7 @@ class SeismicObservatory:
     #def markAsReviewed()
     
     #def archiveSubTree() lo hace el viejo
+
+    def enqueueReport(self, report):
+        self.report_queue.enqueue(report)
 
