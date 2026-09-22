@@ -1,8 +1,9 @@
 import { useState } from "react";
-import Logo from "../svg/logo";
+import Logo from "../../assets/sidebar/svg/logo";
 import EventActionsMenu from "./Events/EventActionsMenu";
 
 const Sidebar = () => {
+  /* UseState form for stress mode button. */
   const [stressMode, setStressMode] = useState(false);
 
   return (
@@ -22,10 +23,10 @@ const Sidebar = () => {
 
         <ul className="flex-1 p-4 space-y-2">
           <li>
-            <a href="/home" className="block p-2 rounded-lg hover:bg-white/10">Inicio</a>
+            <a className="block p-2 rounded-lg hover:bg-white/10">Inicio</a>
           </li>
           <li>
-            <EventActionsMenu />
+            <EventActionsMenu/>
           </li>
 
           <li>
@@ -53,18 +54,18 @@ const Sidebar = () => {
         </ul>
 
         {/* 
-          Botón de modo estrés
+          Stress mode button
         */}
 
         <div className="p-4 border-t border-white/20">
             {/* 
-              Label con el contenido que muestra "Modo estrés" y el botón tipo toggle.
+              Label with content that shows "Modo estrés" and toggle type button.
             */}
             <label className="w-full flex items-center justify-between gap-2 p-2 rounded-lg hover:bg-white/20 transition-colors cursor-pointer">
             <span>Modo estrés</span>
             
             {/* 
-              Div que contiene al botón.
+              Div that contains the button for activating stress mode.
             */}
             <div className="relative">
               <input

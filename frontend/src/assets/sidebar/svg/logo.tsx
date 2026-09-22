@@ -1,5 +1,5 @@
 /* 
-    Logo conseguido de: https://www.svgviewer.dev/s/232654/earthquake-and-home
+    Logo got from: https://www.svgviewer.dev/s/232654/earthquake-and-home
 */
 
 import type { SVGProps } from "react";

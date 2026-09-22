@@ -1,12 +1,10 @@
-import { lazy, type ComponentType, type LazyExoticComponent } from 'react';
+import { lazy } from 'react';
+import type { AppRoute } from '../models/interfaces/AppRoute/AppRoute';
 
-interface AppRoute {
-    path: string;
-    title: string;
-    component: LazyExoticComponent<ComponentType>;
-}
+/* Import routes components */
+const Home = lazy(() => import('../pages/home/Home'));
 
-const Home = lazy(() => import('../pages/Home/Home'));
+/* Adding components to each route */
 const coreRoutes: AppRoute[] = [
     {
         path: "/home",
