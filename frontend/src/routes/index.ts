@@ -1,5 +1,5 @@
 import { lazy } from 'react';
-import type { AppRoute } from '../models/interfaces/AppRoute/AppRoute';
+import type { AppRoute } from '../models/interfaces/appRoute/AppRoute';
 
 /* Import routes components */
 const Home = lazy(() => import('../pages/home/Home'));
@@ -17,36 +17,42 @@ const coreRoutes: AppRoute[] = [
         title: "Inicio",
         component: Home
     },
-    /* {
+    {
         path: "/events/visualize-trees",
         title: "Visualizar eventos",
-        component: VisualizeTrees
+        component: VisualizeTrees,
+        group: "events"
     },
     {
         path: "/events/check-events",
         title: "Marcar eventos",
-        component: CheckEvent
+        component: CheckEvent,
+        group: "events"
     },
     {
         path: "/events/consult-events",
         title: "Consultar eventos",
-        component: ConsultEvent
+        component: ConsultEvent,
+        group: "events"
     },
     {
         path: "/events/correct-events",
         title: "Corregir eventos",
-        component: CorrectEvent
+        component: CorrectEvent,
+        group: "events"
     },
     {
         path: "/events/create-events",
         title: "Crear eventos",
-        component: CreateEvent
+        component: CreateEvent,
+        group: "events"
     },
     {
         path: "/events/delete-events",
         title: "Eliminar eventos",
-        component: DeleteEvent
-    } */
+        component: DeleteEvent,
+        group: "events"
+    }
 ]
 
 const routes = [...coreRoutes]

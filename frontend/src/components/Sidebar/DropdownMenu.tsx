@@ -1,6 +1,7 @@
 import { ChevronDown } from "lucide-react";
 import { useState } from "react";
 import type { DropdownMenuProps } from "../../models/interfaces/sidebar/DropdownMenuProps";
+import { NavLink } from "react-router-dom";
 
 const DropdownMenu = ({ title, items} : DropdownMenuProps) => {
     const [isOpen, setIsOpen ] = useState(false);
@@ -19,10 +20,10 @@ const DropdownMenu = ({ title, items} : DropdownMenuProps) => {
             {isOpen && (
                 <ul className="mt-1 ml-4 space-y-1">
                     {items.map((item) => (
-                        <li>
-                            <a 
-                                className="block p-2 rounded-lg hover:bg-white/10"
-                            >{item.label}</a>
+                        <li key={item.path}>
+                            <NavLink to={item.path} className="block p-2 rounded-lg hover:bg-white/10">
+                            {item.label}
+                            </NavLink>
                         </li>
                     ))}
                 </ul>

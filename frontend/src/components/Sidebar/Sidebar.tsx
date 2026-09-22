@@ -1,13 +1,16 @@
 import { useState } from "react";
 import Logo from "../../assets/sidebar/svg/logo";
-import EventActionsMenu from "./Events/EventActionsMenu";
+
 import routes from "../../routes";
 import { NavLink } from "react-router-dom";
+import { sidebarGroups } from "../../routes/sidebarGroups";
+import RouteGroupMenu from "./Events/RouteGroupMenu";
 
 const Sidebar = () => {
   /* UseState form for stress mode button. */
   const [stressMode, setStressMode] = useState(false);
   const linkClass = `block p-2 rounded-lg hover:bg-white/10`;
+  const ungroupedRoutes = routes.filter((route) => !route.group)
 
   return (
     <aside
@@ -25,7 +28,7 @@ const Sidebar = () => {
         </div>
 
         <ul className="flex-1 p-4 space-y-2">
-          {routes.map(({ path, title }) => (
+          {ungroupedRoutes.map(({ path, title }) => (
             <li key={path}>
               <NavLink to={path} className={linkClass}>
                 {title}
@@ -33,9 +36,11 @@ const Sidebar = () => {
             </li>
           ))}
 
-          <li>
-            <EventActionsMenu />
-          </li>
+          {sidebarGroups.map(({ group, title }) => (
+            <li key={group}>
+              <RouteGroupMenu group={group} title={title} />
+            </li>
+          ))}
         </ul>
 
         {/* 

@@ -3,7 +3,7 @@ const ConsultEvent = () => {
         <section className="flex min-h-screen items-center justify-center">
             <div className="w-full max-w-4xl text-center">
                 <h1 className="text-4xl font-bold leading-tight text-gray-900 md:text-5xl">
-                    Consultar Eventos
+                    Consultar eventos
                 </h1>
             </div>
         </section>
