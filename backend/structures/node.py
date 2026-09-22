@@ -1,3 +1,5 @@
+from backend.persistence.json_utils import objectToDict
+
 class Node:
     def __init__(self, value):
         self.value = value
@@ -99,3 +101,13 @@ class Node:
         if self.hasRightChild():
             counter = self.getRightChild().countNodes(counter)
         return counter
+
+    def toDict(self):
+        return {
+            "value": objectToDict(self.value),
+            "height": self.height,
+            "leftChild": objectToDict(self.leftChild),
+            "rightChild": objectToDict(self.rightChild),
+            "nodeCreationTime": self.nodeCreationTime
+            
+        }
