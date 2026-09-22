@@ -3,6 +3,10 @@ import type { DropdownMenuItems } from "../../../models/types/DropdownMenuItems"
 
 const eventActions: DropdownMenuItems[] = [
     {
+        label: "Visualizar eventos",
+        href: "/visualize-trees"
+    },
+    {
         label: "Crear evento",
         href: "/create-event"
     },
@@ -26,7 +30,7 @@ const eventActions: DropdownMenuItems[] = [
 
 const EventActionsMenu = () => {
     return (
-        <DropdownMenu title="Acciones eventos" items={eventActions} />
+        <DropdownMenu title="Eventos" items={eventActions} />
     )
 }
 
