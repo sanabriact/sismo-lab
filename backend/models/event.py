@@ -118,3 +118,19 @@ class Event:
             raise ValueError("Epicentro debe estar entre 0 y 1000")
         if not isinstance(date, datetime):
             raise TypeError("La fecha debe ser de tipo datetime")
+
+    def toDict(self):
+        return {
+                "key": self.key,
+                "depth": self.depth,
+                "epicenter_x": self.epicenter_x,
+                "epicenter_y": self.epicenter_y,
+                "datetime": self.datetime.isoformat(),
+                "revision": self.revision,
+                "reporting_stations": list(self.reporting_stations),
+                "attention_status": self.attention_status,
+                "event_status": self.event_status,
+                "populated_zone": self.populated_zone,
+                "expensive_access": self.expensive_access
+
+            }

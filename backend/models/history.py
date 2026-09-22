@@ -18,3 +18,9 @@ class History:
         self.deleted_ids.add(id)
     def deleteId(self, id):
         self.deleted_ids.remove(id)
+
+    def toDict(self):
+        return {
+            "archived": {key: event.toDict() for key,event in self.archived.items()},
+            "deleted_ids":[event_id for event_id in self.deleted_ids]
+            }

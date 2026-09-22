@@ -1,4 +1,5 @@
 from backend.structures.node import Node
+from backend.persistence.json_utils import objectToDict
 
 
 class AVL:
@@ -462,3 +463,9 @@ class AVL:
         if isinstance(value, (tuple, list)):
             return "(" + ", ".join(str(v) for v in value) + ")"
         return str(value)
+
+    def toDict(self):
+        return {
+            "root": objectToDict(self.root),
+            #The index is not included in the dictionary representation because it can be reconstructed from the tree structure.
+        }

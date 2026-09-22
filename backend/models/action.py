@@ -1,4 +1,5 @@
 from datetime import datetime
+from backend.persistence.json_utils import objectToDict
 
 class Action:
     def __init__(self, acction_type, datetime:datetime, before_snapshot):
@@ -20,3 +21,10 @@ class Action:
         return self.before_snapshot
     def setBeforeSnapshot(self, snapshot):
         self.before_snapshot = snapshot
+
+    def toDict(self):
+        return {
+            "action_type": self.action_type,
+            "datetime": self.datetime.isoformat(),
+            "before_snapshot": objectToDict(self.before_snapshot)
+        }

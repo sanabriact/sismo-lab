@@ -8,6 +8,7 @@ from backend.models.clock import SimulationClock
 from backend.models.association_manager import AssociationManager
 from backend.models.metrics import Metrics
 from backend.models.event import Event
+from backend.persistence.json_utils import objectToDict
 
 class SeismicObservatory:
     def __init__(self):
@@ -129,3 +130,11 @@ class SeismicObservatory:
     def enqueueReport(self, report):
         self.report_queue.enqueue(report)
 
+    def toDict(self):
+        return {
+            "avl_tree": objectToDict(self.avl_tree),
+
+
+            "history": self.history.toDict()
+
+        }

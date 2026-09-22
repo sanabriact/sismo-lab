@@ -1,0 +1,129 @@
+{
+    "avl_tree": {
+        "root": {
+            "value": {
+                "key": [
+                    2,
+                    5.5,
+                    4
+                ],
+                "depth": 10.0,
+                "epicenter_x": 20.0,
+                "epicenter_y": 30,
+                "datetime": "2024-06-01T12:00:00",
+                "revision": 1,
+                "reporting_stations": [
+                    "ST-001"
+                ],
+                "attention_status": "pending",
+                "event_status": "active",
+                "populated_zone": false,
+                "expensive_access": false
+            },
+            "height": 2,
+            "leftChild": {
+                "value": {
+                    "key": [
+                        2,
+                        4.5,
+                        6
+                    ],
+                    "depth": 10.0,
+                    "epicenter_x": 20.0,
+                    "epicenter_y": 30,
+                    "datetime": "2024-06-01T12:00:00",
+                    "revision": 1,
+                    "reporting_stations": [
+                        "ST-001"
+                    ],
+                    "attention_status": "pending",
+                    "event_status": "active",
+                    "populated_zone": false,
+                    "expensive_access": false
+                },
+                "height": 1,
+                "leftChild": {
+                    "value": {
+                        "key": [
+                            1,
+                            3.2,
+                            3
+                        ],
+                        "depth": 23,
+                        "epicenter_x": 105,
+                        "epicenter_y": 105,
+                        "datetime": "2025-06-01T12:00:00",
+                        "revision": 2,
+                        "reporting_stations": [
+                            "ST-001"
+                        ],
+                        "attention_status": "pending",
+                        "event_status": "active",
+                        "populated_zone": false,
+                        "expensive_access": false
+                    },
+                    "height": 0,
+                    "leftChild": null,
+                    "rightChild": null,
+                    "nodeCreationTime": null
+                },
+                "rightChild": {
+                    "value": {
+                        "key": [
+                            2,
+                            5.0,
+                            5
+                        ],
+                        "depth": 10.0,
+                        "epicenter_x": 20.0,
+                        "epicenter_y": 30,
+                        "datetime": "2024-06-01T12:00:00",
+                        "revision": 1,
+                        "reporting_stations": [
+                            "ST-001"
+                        ],
+                        "attention_status": "pending",
+                        "event_status": "active",
+                        "populated_zone": false,
+                        "expensive_access": false
+                    },
+                    "height": 0,
+                    "leftChild": null,
+                    "rightChild": null,
+                    "nodeCreationTime": null
+                },
+                "nodeCreationTime": null
+            },
+            "rightChild": {
+                "value": {
+                    "key": [
+                        3,
+                        7.0,
+                        1
+                    ],
+                    "depth": 10.0,
+                    "epicenter_x": 20.0,
+                    "epicenter_y": 30,
+                    "datetime": "2024-06-01T12:00:00",
+                    "revision": 1,
+                    "reporting_stations": [
+                        "ST-001"
+                    ],
+                    "attention_status": "pending",
+                    "event_status": "active",
+                    "populated_zone": false,
+                    "expensive_access": false
+                },
+                "height": 0,
+                "leftChild": null,
+                "rightChild": null,
+                "nodeCreationTime": null
+            },
+            "nodeCreationTime": null
+        }
+    },
+    "history": {
+        "archived": {},
+        "deleted_ids": []
+    }
+}
