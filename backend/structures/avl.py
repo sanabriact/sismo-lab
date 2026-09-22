@@ -60,6 +60,7 @@ class AVL:
         node = Node(data)
         if self.root is None:
             self.root = node
+            self.index[node.getValue().getKey()[2]] = node
             print("Value ", data, " has been inserted as tree root.")
             return True
         else:
@@ -209,7 +210,11 @@ class AVL:
             # Primero se pregunta si tiene hijo izquierdo y derecho.
             if node.hasLeftChild() and node.hasRightChild():
                 predecessor = self._getPredecessor(node.getLeftChild())
+                original_id = node.getValue().getKey()[2]
+                predecessor_id = predecessor.getValue().getKey()[2]
                 self._updateNodeValue(node, predecessor)
+                del self.index[original_id]
+                self.index[predecessor_id] = node # node ahora tiene los datos del predecesor
 
                 # Se valida si el predecesor es hoja
                 if predecessor.isLeaf():
@@ -222,7 +227,7 @@ class AVL:
                     predecessor.setLeftChild(None)
 
                 predecessor.setParent(None)
-                del self.index[node.getValue().getKey()[2]]
+                
 
             # Si el nodo no tiene dos hijos, se verifica si tiene hijo izquierdo o hijo derecho.
             # Para cada uno de los casos, se verifica nuevamente si este hijo posee hijo izquierdo o derecho.
