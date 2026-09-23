@@ -64,11 +64,7 @@ class Node:
     # Se asigna un tiempo de creacion
     def setNodeCreationTime(self, time):
         self.nodeCreationTime = time
-
-    # Se calcula el tiempo desde creacion
-    def calculateTime(self, actualTime):
-        return actualTime - self.nodeCreationTime
-        
+    
     # Retorna true si es nodo hoja
     def isLeaf(self):
         return self.getLeftChild() is None and self.getRightChild() is None
@@ -101,6 +97,33 @@ class Node:
         if self.hasRightChild():
             counter = self.getRightChild().countNodes(counter)
         return counter
+    
+    """ 2026-09-07T10:00:00Z. """
+    # Método para calcular el tiempo actual de creacion de el nodo
+    def calculateTime(self, time):
+        nodeCreationTime = self.nodeCreationTime
+        minutes = 0
+        seconds = 0
+        year = 0
+        month = 0
+        day = 0
+        hour = 0
+               
+        for i in range(0, len(nodeCreationTime)+1):
+            if i <= 3:
+                year += nodeCreationTime[i]
+            elif i >= 5 and i <= 6:
+                month += nodeCreationTime[i]
+            elif i >= 8 and i <= 9:
+                day += nodeCreationTime[i]
+            elif i >= 11 and i <= 12:
+                hour += nodeCreationTime[i]
+            elif i >= 14 and i <= 15:
+                minutes = nodeCreationTime[i]
+            elif i >= 17 and i <= 18:
+                seconds = nodeCreationTime[i]
+        
+        return None
 
     def toDict(self):
         return {
