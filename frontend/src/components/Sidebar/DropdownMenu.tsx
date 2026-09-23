@@ -12,7 +12,11 @@ const DropdownMenu = ({ title, items} : DropdownMenuProps) => {
 
     return (
         <div>
-            <button onClick={() => setIsOpen(!isOpen)} className="w-full flex items-center justify-between p-2 rounded-lg hover: bg-white/10" aria-expanded={isOpen}>
+            <button 
+                onClick={() => setIsOpen(!isOpen)} 
+                className="w-full flex items-center justify-between p-2 rounded-lg hover:bg-white/10" 
+                aria-expanded={isOpen}
+            >
                 <span>{title}</span>
                 <ChevronDown size={20} className={isOpen? "rotate-180" : ""} />
             </button>
@@ -21,7 +25,10 @@ const DropdownMenu = ({ title, items} : DropdownMenuProps) => {
                 <ul className="mt-1 ml-4 space-y-1">
                     {items.map((item) => (
                         <li>
-                            <a href={item.href} className="block p-2 rounded-lg hover:bg-white/10">{item.label}</a>
+                            <a 
+                                href={item.href} 
+                                className="block p-2 rounded-lg hover:bg-white/10"
+                            >{item.label}</a>
                         </li>
                     ))}
                 </ul>
