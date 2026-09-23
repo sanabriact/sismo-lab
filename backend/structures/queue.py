@@ -1,3 +1,4 @@
+from backend.persistence.json_utils import objectToDict
 class Queue:
     def __init__(self):
         self.items = []
@@ -22,3 +23,8 @@ class Queue:
 
     def size(self):
         return len(self.items)
+
+    def toDict(self):
+        return {
+            "items":[objectToDict(item) for item in self.items]
+        }

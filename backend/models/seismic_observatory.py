@@ -37,6 +37,7 @@ class SeismicObservatory:
         self.saved_versions = []          
         self.execution_mode = "normal"  
 
+    
     def getAVLTree(self):
         return self.avl_tree
     def getBSTTree(self):
@@ -130,11 +131,21 @@ class SeismicObservatory:
     def enqueueReport(self, report):
         self.report_queue.enqueue(report)
 
+
     def toDict(self):
         return {
             "avl_tree": objectToDict(self.avl_tree),
-
-
-            "history": self.history.toDict()
-
+            "bst":objectToDict(self.bst_tree),
+            "stations":[objectToDict(station) for station in self.stations],
+            "zones":[objectToDict(zone) for zone in self.zones],
+            "history": objectToDict(self.history),
+            "report_queue": objectToDict(self.report_queue),
+            "action_stack": objectToDict(self.action_stack),
+            "clock":objectToDict(self.clock),
+            "l":self.l,
+            "t":self.t,
+            "association_manager":objectToDict(self.association_manager),
+            "metrics": objectToDict(self.metrics),
+            "saved_versions":[objectToDict(version) for version in self.saved_versions],
+            "execution_mode":self.execution_mode
         }
