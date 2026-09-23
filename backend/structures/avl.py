@@ -1,5 +1,5 @@
 from backend.structures.node import Node
-from backend.persistence.json_utils import objectToDict
+from backend.repositories.json_utils import objectToDict
 
 
 class AVL:

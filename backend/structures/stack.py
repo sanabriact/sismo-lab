@@ -1,4 +1,4 @@
-from backend.persistence.json_utils import objectToDict
+from backend.repositories.json_utils import objectToDict
 class Stack:
     def __init__(self):
         self.items = []
