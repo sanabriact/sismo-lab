@@ -8,7 +8,7 @@ from backend.models.clock import SimulationClock
 from backend.models.association_manager import AssociationManager
 from backend.models.metrics import Metrics
 from backend.models.event import Event
-from backend.persistence.json_utils import objectToDict
+from backend.repositories.json_utils import objectToDict
 
 class SeismicObservatory:
     def __init__(self):
