@@ -1,4 +1,4 @@
-from backend.persistence.json_utils import objectToDict
+from backend.repositories.json_utils import objectToDict
 
 class Node:
     def __init__(self, value):

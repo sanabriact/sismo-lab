@@ -8,6 +8,16 @@ class Zone:
         self.y_max = y_max
         self.is_populated = is_populated
 
+    def toDict(self):
+        return {
+            "id":self.id,
+            "x_min":self.x_min,
+            "x_max":self.x_max,
+            "y_min":self.y_min,
+            "y_max":self.y_max,
+            "is_populated":self.is_populated
+        }
+
     def getid(self):
         return self.id 
     def setid(self, id):

@@ -11,3 +11,9 @@ class Station:
         return self.name
     def setName(self,name):
         self.name = name
+
+    def toDict(self):
+        return {
+            "id":self.id,
+            "name":self.name
+        }

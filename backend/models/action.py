@@ -1,5 +1,5 @@
 from datetime import datetime
-from backend.persistence.json_utils import objectToDict
+from backend.repositories.json_utils import objectToDict
 
 class Action:
     def __init__(self, acction_type, datetime:datetime, before_snapshot):
