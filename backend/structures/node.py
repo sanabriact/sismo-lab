@@ -1,3 +1,5 @@
+from backend.persistence.json_utils import objectToDict
+
 class Node:
     def __init__(self, value):
         self.value = value
@@ -121,3 +123,14 @@ class Node:
             elif i >= 17 and i <= 18:
                 seconds = nodeCreationTime[i]
         
+        return None
+
+    def toDict(self):
+        return {
+            "value": objectToDict(self.value),
+            "height": self.height,
+            "leftChild": objectToDict(self.leftChild),
+            "rightChild": objectToDict(self.rightChild),
+            "nodeCreationTime": self.nodeCreationTime
+            
+        }

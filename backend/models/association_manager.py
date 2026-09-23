@@ -20,15 +20,28 @@ class AssociationManager:
     def getCandidate(self,key):
         return self.candidates[key]
     def addCandidate(self, key, candidate):
-        self.candidates[key] = candidate
+        if key not in self.candidates:
+            self.candidates[key] = []
+            self.candidates[key].append(candidate)
     def deleteCandidate(self,key):
         del self.candidates[key]
     
     def getSelectedReferences(self):
-        return self.candidates
+        return self.selected_references
     def getReference(self,key):
         return self.selected_references[key]
     def addReference(self, key, reference):
         self.selected_references[key] = reference
     def deleteCandidate(self,key):
         del self.selected_references[key]
+
+    def toDict(self):
+        return {
+            "W": self.W,
+            "R": self.R,
+            "candidates": {
+            key: [candidate.toDict() for candidate in candidates]
+            for key, candidates in self.candidates.items()
+        },
+            "selected_references": self.selected_references
+        }

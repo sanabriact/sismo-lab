@@ -1,4 +1,5 @@
 from backend.structures.node import Node
+from backend.persistence.json_utils import objectToDict
 
 
 class AVL:
@@ -60,6 +61,7 @@ class AVL:
         node = Node(data)
         if self.root is None:
             self.root = node
+            self.index[node.getValue().getKey()[2]] = node
             print("Value ", data, " has been inserted as tree root.")
             return True
         else:
@@ -202,13 +204,18 @@ class AVL:
                 nodeParent.setRightChild(None)
 
             node.setParent(None)
+            del self.index[node.getValue().getKey()[2]]
             
         else:
             # Si el nodo no es hoja, se validan los 2 casos restantes.
             # Primero se pregunta si tiene hijo izquierdo y derecho.
             if node.hasLeftChild() and node.hasRightChild():
                 predecessor = self._getPredecessor(node.getLeftChild())
+                original_id = node.getValue().getKey()[2]
+                predecessor_id = predecessor.getValue().getKey()[2]
                 self._updateNodeValue(node, predecessor)
+                del self.index[original_id]
+                self.index[predecessor_id] = node # node ahora tiene los datos del predecesor
 
                 # Se valida si el predecesor es hoja
                 if predecessor.isLeaf():
@@ -247,7 +254,7 @@ class AVL:
                         node.setRightChild(None)
 
                 node.setParent(None)
-                
+                del self.index[node.getValue().getKey()[2]]
         self._checkBalance(fatherNode, 0)
         return True
 
@@ -469,3 +476,9 @@ class AVL:
         if isinstance(value, (tuple, list)):
             return "(" + ", ".join(str(v) for v in value) + ")"
         return str(value)
+
+    def toDict(self):
+        return {
+            "root": objectToDict(self.root),
+            #The index is not included in the dictionary representation because it can be reconstructed from the tree structure.
+        }

@@ -1,10 +1,16 @@
 import { useState } from "react";
 import Logo from "../../assets/sidebar/svg/logo";
-import EventActionsMenu from "./Events/EventActionsMenu";
+
+import routes from "../../routes";
+import { NavLink } from "react-router-dom";
+import { sidebarGroups } from "../../routes/sidebarGroups";
+import RouteGroupMenu from "./Events/RouteGroupMenu";
 
 const Sidebar = () => {
   /* UseState form for stress mode button. */
   const [stressMode, setStressMode] = useState(false);
+  const linkClass = `block p-2 rounded-lg hover:bg-white/10`;
+  const ungroupedRoutes = routes.filter((route) => !route.group)
 
   return (
     <aside
@@ -17,40 +23,24 @@ const Sidebar = () => {
     >
       <nav className="h-full flex flex-col">
         <div className="p-4 flex gap-7 items-center border-b border-white/20">
-          <Logo />
+          <Logo/>
           <h2 className="text-xl font-bold">SismoLab</h2>
         </div>
 
         <ul className="flex-1 p-4 space-y-2">
-          <li>
-            <a className="block p-2 rounded-lg hover:bg-white/10">Inicio</a>
-          </li>
-          <li>
-            <EventActionsMenu/>
-          </li>
+          {ungroupedRoutes.map(({ path, title }) => (
+            <li key={path}>
+              <NavLink to={path} className={linkClass}>
+                {title}
+              </NavLink>
+            </li>
+          ))}
 
-          <li>
-            <a href="/check-structure" className="block p-2 rounded-lg hover:bg-white/10">Verificar estructura</a>
-          </li>
-
-          <li>
-            <a href="" className="block p-2 rounded-lg hover:bg-white/10">Elemento 4 de prueba</a>
-          </li>
-
-          <li>
-            <a href="" className="block p-2 rounded-lg hover:bg-white/10">Elemento 5 de prueba</a>
-          </li>
-
-          <li>
-            <a href="" className="block p-2 rounded-lg hover:bg-white/10">Elemento 6 de prueba</a>
-          </li>
-          <li>
-            <a href="" className="block p-2 rounded-lg hover:bg-white/10">Elemento 7 de prueba</a>
-          </li>
-          <li>
-            <a href="" className="block p-2 rounded-lg hover:bg-white/10">Elemento 8 de prueba</a>
-          </li>
-
+          {sidebarGroups.map(({ group, title }) => (
+            <li key={group}>
+              <RouteGroupMenu group={group} title={title} />
+            </li>
+          ))}
         </ul>
 
         {/* 

@@ -55,7 +55,7 @@ class Report:
     def setDatetime(self, date):
         self.datetime = date
 
-    def _validateData(self, event_id, revision, magnitude, depth,epicenter_x, epicenter_y, datetime, station):
+    def _validateData(self, event_id, revision, magnitude, depth,epicenter_x, epicenter_y, datetime_, station):
 
         if not isinstance(event_id, int) or not (1 <= event_id <= 999999):
             raise ValueError("event_id must be an integer between 1 and 999999")
@@ -72,7 +72,7 @@ class Report:
         if not (0.0 <= epicenter_x <= 1000.0) or not (0.0 <= epicenter_y <= 1000.0):
             raise ValueError("epicenter must be within the 0 to 1000 km plane")
 
-        if not isinstance(datetime, datetime):
+        if not isinstance(datetime_, datetime):
             raise TypeError("occurrenceDateTime must be a datetime object, not a string")
 
         if not station or not isinstance(station, str):

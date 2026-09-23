@@ -7,3 +7,7 @@ class SimulationClock:
         return self.current_time
     def setCurrentTime(self, time):
         self.current_time = time
+    def toDict(self):
+        return {
+            "current_time": self.current_time.isoformat()
+        }
