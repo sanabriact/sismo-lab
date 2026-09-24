@@ -1,5 +1,7 @@
 from datetime import datetime
 
+from backend.models.station import Station
+
 
 class Report:
     def __init__(self, event_id, revision, station,magnitude, depth, epicenter_x, epicenter_y, datetime_: datetime):
@@ -94,4 +96,13 @@ class Report:
     @classmethod
     def fromDict(cls, data):
         report = cls()
+        report.event_id = data["event_id"]
+        report.revision = data["revision"]
+        report.station = Station.fromDict(data["station"])
+        report.magnitude = data["magnitude"]
+        report.depth = data["depth"]
+        report.epicenter_x = data["epicenter_x"]
+        report.epicenter_y = data["epicenter_y"]
+        report.datetime = datetime.fromisoformat(data["datetime"])
+        return report
         

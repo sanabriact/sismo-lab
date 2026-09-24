@@ -67,3 +67,4 @@ class Zone:
         zone.y_min = data["y_min"]
         zone.y_max = data["y_max"]
         zone.is_populated = data["is_populated"]
+        return zone
