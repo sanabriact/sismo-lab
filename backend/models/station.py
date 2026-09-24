@@ -17,3 +17,10 @@ class Station:
             "id":self.id,
             "name":self.name
         }
+
+    @classmethod
+    def fromDict(cls, data):
+        station = cls()
+        station.id = data["id"]
+        station.name = data["name"]
+        return station 
