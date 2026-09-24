@@ -21,7 +21,7 @@
                 "expensive_access": false
             },
             "height": 2,
-            "leftChild": {
+            "left_child": {
                 "value": {
                     "key": [
                         2,
@@ -42,7 +42,7 @@
                     "expensive_access": false
                 },
                 "height": 1,
-                "leftChild": {
+                "left_child": {
                     "value": {
                         "key": [
                             1,
@@ -63,11 +63,11 @@
                         "expensive_access": false
                     },
                     "height": 0,
-                    "leftChild": null,
-                    "rightChild": null,
-                    "nodeCreationTime": null
+                    "left_child": null,
+                    "right_child": null,
+                    "node_creation_time": null
                 },
-                "rightChild": {
+                "right_child": {
                     "value": {
                         "key": [
                             2,
@@ -88,13 +88,13 @@
                         "expensive_access": false
                     },
                     "height": 0,
-                    "leftChild": null,
-                    "rightChild": null,
-                    "nodeCreationTime": null
+                    "left_child": null,
+                    "right_child": null,
+                    "node_creation_time": null
                 },
-                "nodeCreationTime": null
+                "node_creation_time": null
             },
-            "rightChild": {
+            "right_child": {
                 "value": {
                     "key": [
                         3,
@@ -115,14 +115,14 @@
                     "expensive_access": false
                 },
                 "height": 0,
-                "leftChild": null,
-                "rightChild": null,
-                "nodeCreationTime": null
+                "left_child": null,
+                "right_child": null,
+                "node_creation_time": null
             },
-            "nodeCreationTime": null
+            "node_creation_time": null
         }
     },
-    "bst": {
+    "bst_tree": {
         "root": null
     },
     "stations": [],
@@ -138,7 +138,7 @@
         "items": []
     },
     "clock": {
-        "current_time": "2026-09-23T18:05:26.249347+00:00"
+        "current_time": "2026-09-24T02:51:09.895548+00:00"
     },
     "l": 3,
     "t": 72.0,

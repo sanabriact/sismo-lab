@@ -9,8 +9,8 @@ obs_service = SeismicObservatoryService()
 def getSeismicObservatory():
     return jsonify(obs_service.getObservatory())
 
-@app.route("/api/seismic-observatory", methods=["POST"])
-def createSeismicObservatory()
+""" @app.route("/api/seismic-observatory", methods=["POST"])
+def createSeismicObservatory() """
 
 
 if __name__ == "__main__":
