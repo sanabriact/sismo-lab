@@ -6,14 +6,15 @@ class Report:
 
         self._validateData(event_id, revision, magnitude, depth,epicenter_x, epicenter_y, datetime_, station)
 
-        self.event_id = event_id
-        self.revision = revision
-        self.station = station
+        self.event_id = event_id #int
+        self.revision = revision #int
+        self.station = station #station
         self.magnitude = round(magnitude, 1)
         self.depth = round(depth, 1)
         self.epicenter_x = round(epicenter_x, 1)
         self.epicenter_y = round(epicenter_y, 1)
         self.datetime = datetime_
+
 
     def getEventId(self):
         return self.event_id
@@ -77,3 +78,20 @@ class Report:
 
         if not station or not isinstance(station, str):
             raise ValueError("issuingStation code must be provided")
+    
+    def toDict(self):
+        return{
+            "event_id":self.event_id,
+            "revision":self.revision,
+            "station": self.station.toDict(),
+            "magnitude":self.magnitude,
+            "depth":self.depth,
+            "epicenter_x":self.epicenter_x,
+            "epicenter_y":self.epicenter_y,
+            "datetime":self.datetime.isoformat()
+        }
+
+    @classmethod
+    def fromDict(cls, data):
+        report = cls()
+        

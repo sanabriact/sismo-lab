@@ -8,6 +8,7 @@ class Zone:
         self.y_max = y_max
         self.is_populated = is_populated
 
+
     def getid(self):
         return self.id 
     def setid(self, id):
@@ -46,3 +47,23 @@ class Zone:
             raise ValueError("y boundaries must be within 0 to 1000 km")
         if x_min >= x_max or y_min >= y_max:
             raise ValueError("Zone boundaries are invalid: min must be less than max")
+
+    def toDict(self):
+        return {
+            "id":self.id,
+            "x_min":self.x_min,
+            "x_max":self.x_max,
+            "y_min":self.y_min,
+            "y_max":self.y_max,
+            "is_populated":self.is_populated
+        }
+
+    @classmethod
+    def fromDict(cls, data):
+        zone = cls()
+        zone.id = data["id"]
+        zone.x_min = data["x_min"]
+        zone.x_max = data["x_max"]
+        zone.y_min = data["y_min"]
+        zone.y_max = data["y_max"]
+        zone.is_populated = data["is_populated"]

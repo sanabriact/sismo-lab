@@ -1,3 +1,4 @@
+from backend.models.event import Event
 class History:
     def __init__(self):
         self.archived = {} #dict int:event
@@ -19,8 +20,14 @@ class History:
     def deleteId(self, id):
         self.deleted_ids.remove(id)
 
-    def toDict(self):
+    def toDict(self,):
         return {
             "archived": {key: event.toDict() for key,event in self.archived.items()},
             "deleted_ids":[event_id for event_id in self.deleted_ids]
             }
+    @classmethod
+    def fromDict(cls, data):
+        history = cls()
+        history.archived = {int(key):Event.fromDict(event) for key,event in data["archived"].items()}
+        history.deleted_ids = set(data["deleted_ids"])
+        return history

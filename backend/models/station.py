@@ -11,3 +11,16 @@ class Station:
         return self.name
     def setName(self,name):
         self.name = name
+
+    def toDict(self):
+        return {
+            "id":self.id,
+            "name":self.name
+        }
+
+    @classmethod
+    def fromDict(cls, data):
+        station = cls()
+        station.id = data["id"]
+        station.name = data["name"]
+        return station 

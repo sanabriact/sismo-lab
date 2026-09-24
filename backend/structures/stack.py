@@ -1,3 +1,5 @@
+from backend.repositories.json_utils import objectToDict
+from backend.models.action import Action
 class Stack:
     def __init__(self):
         self.items = []
@@ -22,3 +24,14 @@ class Stack:
 
     def size(self):
         return len(self.items)
+
+    def toDict(self):
+        return {
+            "items":[objectToDict(item) for item in self.items]
+        }
+
+    @classmethod
+    def fromDict(cls, data):
+        stack = cls()
+        stack.items = [Action.fromDict(action) for action in data["items"]]
+        return stack

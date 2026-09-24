@@ -1,4 +1,5 @@
-from backend.persistence.json_utils import objectToDict
+from backend.repositories.json_utils import objectToDict
+from datetime import datetime
 
 class Node:
     def __init__(self, value):
@@ -129,8 +130,21 @@ class Node:
         return {
             "value": objectToDict(self.value),
             "height": self.height,
-            "leftChild": objectToDict(self.leftChild),
-            "rightChild": objectToDict(self.rightChild),
-            "nodeCreationTime": self.nodeCreationTime
+            "left_child": objectToDict(self.leftChild),
+            "right_child": objectToDict(self.rightChild),
+            "node_creation_time": self.nodeCreationTime
             
         }
+
+    @classmethod
+    def fromDict(cls, data, event_cls):
+        node = cls(event_cls.fromDict(data["value"]))
+        node.height = data["height"]
+        if data["left_child"] is not None:
+            node.leftChild = cls.fromDict(data["left_child"], event_cls)
+            node.leftChild.parent = node
+        if data["right_child"] is not None:
+            node.rightChild = cls.fromDict(data["right_child"], event_cls)
+            node.rightChild.parent = node
+        node.nodeCreationTime = datetime.fromisoformat(data["node_creation_time"])
+        return node

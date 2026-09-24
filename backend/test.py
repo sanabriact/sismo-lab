@@ -3,7 +3,7 @@ from backend.structures.bst import BST
 from backend.models.event import Event
 from backend.models.seismic_observatory import SeismicObservatory
 from backend.models.report import Report
-from backend.persistence.persistence_json import PersistenceJSON
+from backend.repositories.seismic_observatory_repository import SeismicObservatoryRepository
 
 from datetime import datetime
 
@@ -26,9 +26,9 @@ observatory.getAVLTree().draw()
 report = Report(3,2,"ST-001", 3.2,23,105,105,datetime(2025, 6, 1, 12, 0, 0))
 observatory.editEvent(report)
 observatory.getAVLTree().draw()
-persistence = PersistenceJSON()
+persistence = SeismicObservatoryRepository()
 
-persistence.save(observatory,"backend/data/seismic_observatory.json")
+persistence._write(observatory.toDict())
 
 
 

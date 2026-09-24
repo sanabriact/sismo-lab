@@ -1,78 +1,79 @@
 class Metrics:
     def __init__(self):
-        self.activeEvents = 0
-        self.historicalEvents = 0
-        self.eventsByPriority = {1: 0, 2: 0, 3: 0}   # priority -> count
-        self.pendingAttention = 0
-        self.highCostAccessEvents = 0
+        self.active_events = 0
+        self.historical_events = 0
+        self.events_by_priority = {1: 0, 2: 0, 3: 0}   # priority -> count
+        self.pending_attention = 0
+        self.high_cost_access_events = 0
 
-        self.acceptedCorrections = 0
-        self.discardedReports = 0
+        self.accepted_corrections = 0
+        self.discarded_reports = 0
         self.conflicts = 0
-        self.massArchives = 0
-        self.archivedEvents = 0
+        self.mass_archives = 0
+        self.archived_events = 0
 
-        self.llCases = 0
-        self.rrCases = 0
-        self.lrCases = 0
-        self.rlCases = 0
-        self.simpleLeftRotations = 0
-        self.simpleRightRotations = 0
+        self.ll_cases = 0
+        self.rr_cases = 0
+        self.lr_cases = 0
+        self.rl_cases = 0
+        self.simple_left_rotations = 0
+        self.simple_right_rotations = 0
+
 
     def getActiveEvents(self):
-        return self.activeEvents
+        return self.active_events
     def setActiveEvents(self, count):
-        self.activeEvents = count
+        self.active_events = count
     def incrementActiveEvents(self):
-        self.activeEvents += 1
+        self.active_events += 1
 
     def getHistoricalEvents(self):
-        return self.historicalEvents
+        return self.historical_events
     def setHistoricalEvents(self, count):
-        self.historicalEvents = count
+        self.historical_events = count
     def incrementHistoricalEvents(self):
-        self.historicalEvents += 1
+        self.historical_events += 1
 
     def getEventsByPriority(self):
-        return self.eventsByPriority
+        return self.events_by_priority
     def setEventsByPriority(self, priority, count):
-        if priority in self.eventsByPriority:
-            self.eventsByPriority[priority] = count
+        if priority in self.events_by_priority:
+            self.events_by_priority[priority] = count
         else:
             raise ValueError("Invalid priority level. Must be 1, 2, or 3.")
     def incrementEventsByPriority(self, priority):
-        if priority in self.eventsByPriority:
-            self.eventsByPriority[priority] += 1
+        if priority in self.events_by_priority:
+            self.events_by_priority[priority] += 1
         else:
             raise ValueError("Invalid priority level. Must be 1, 2, or 3.")
 
     def getPendingAttention(self):
-        return self.pendingAttention
+        return self.pending_attention
     def setPendingAttention(self, count):
-        self.pendingAttention = count
+        self.pending_attention = count
     def incrementPendingAttention(self):
-        self.pendingAttention += 1
+        self.pending_attention += 1
 
     def getHighCostAccessEvents(self):
-        return self.highCostAccessEvents    
+        return self.high_cost_access_events    
     def setHighCostAccessEvents(self, count):
-        self.highCostAccessEvents = count   
+        self.high_cost_access_events = count   
     def incrementHighCostAccessEvents(self):
-        self.highCostAccessEvents += 1
+        self.high_cost_access_events += 1
 
     def getAcceptedCorrections(self):
-        return self.acceptedCorrections
+        return self.accepted_corrections
     def setAcceptedCorrections(self, count):
-        self.acceptedCorrections = count
+        self.accepted_corrections = count
     def incrementAcceptedCorrections(self):
-        self.acceptedCorrections += 1
+        self.accepted_corrections += 1
 
     def getDiscardedReports(self):
-        return self.discardedReports    
+        return self.discarded_reports   
     def setDiscardedReports(self, count):
-        self.discardedReports = count   
+        self.discarded_reports = count   
     def incrementDiscardedReports(self):
-        self.discardedReports += 1
+        self.discarded_reports += 1
 
     def getConflicts(self):
         return self.conflicts   
@@ -82,57 +83,102 @@ class Metrics:
         self.conflicts += 1
 
     def getMassArchives(self):
-        return self.massArchives    
+        return self.mass_archives   
     def setMassArchives(self, count):
-        self.massArchives = count   
+        self.mass_archives = count   
     def incrementMassArchives(self):
-        self.massArchives += 1
+        self.mass_archives += 1
 
     def getArchivedEvents(self):
-        return self.archivedEvents
+        return self.archived_events
     def setArchivedEvents(self, count):
-        self.archivedEvents = count
+        self.archived_events = count
     def incrementArchivedEvents(self):
-        self.archivedEvents += 1
+        self.archived_events += 1
 
     def getLLCases(self):
-        return self.llCases
+        return self.ll_cases
     def setLLCases(self, count):
-        self.llCases = count
+        self.ll_cases = count
     def incrementLLCases(self):
-        self.llCases += 1
+        self.ll_cases += 1
 
     def getRRCases(self):
-        return self.rrCases 
+        return self.rr_cases 
     def setRRCases(self, count):
-        self.rrCases = count
+        self.rr_cases = count
     def incrementRRCases(self):
-            self.rrCases += 1
+        self.rr_cases += 1
 
     def getLRCases(self):
-        return self.lrCases 
+        return self.lr_cases
     def setLRCases(self, count):
-        self.lrCases = count
+        self.lr_cases = count
     def incrementLRCases(self):
-            self.lrCases += 1
+        self.lr_cases += 1
 
     def getRLCases(self):
-        return self.rlCases 
+        return self.rl_cases
     def setRLCases(self, count):
-        self.rlCases = count
+        self.rl_cases = count
     def incrementRLCases(self):
-            self.rlCases += 1
+        self.rl_cases += 1
 
     def getSimpleLeftRotations(self):
-        return self.simpleLeftRotations    
+        return self.simple_left_rotations   
     def setSimpleLeftRotations(self, count):
-        self.simpleLeftRotations = count 
+        self.simple_left_rotations = count 
     def incrementSimpleLeftRotations(self):
-        self.simpleLeftRotations += 1
+        self.simple_left_rotations += 1
 
     def getSimpleRightRotations(self):
-        return self.simpleRightRotations
+        return self.simple_right_rotations
     def setSimpleRightRotations(self, count):
-        self.simpleRightRotations = count
+        self.simple_right_rotations = count
     def incrementSimpleRightRotations(self):
-        self.simpleRightRotations += 1
+        self.simple_right_rotations += 1
+        
+    def toDict(self):
+        return {
+            "active_events": self.active_events,
+            "historical_events": self.historical_events,
+            "events_by_priority":self.events_by_priority,
+            "pending_attention":self.pending_attention,
+            "high_cost_access_events":self.high_cost_access_events,
+            "accepted_corrections":self.accepted_corrections,
+            "discarded_reports":self.discarded_reports,
+            "conflicts":self.conflicts,
+            "mass_archives":self.mass_archives,
+            "archived_events":self.archived_events,
+            "ll_cases":self.ll_cases,
+            "rr_cases":self.rr_cases,
+            "rl_cases":self.rl_cases,
+            "lr_cases":self.lr_cases,
+            "simple_left_rotations":self.simple_left_rotations,
+            "simple_right_rotations":self.simple_right_rotations
+        }
+
+    @classmethod
+    def fromDict(cls, data):
+        metrics = cls()
+        metrics.active_events = data["active_events"]
+        metrics.historical_events = data["historical_events"]
+        metrics.events_by_priority = {
+        int(key): value
+        for key, value in data["events_by_priority"].items()
+        }
+        metrics.pending_attention = data["pending_attention"]
+        metrics.high_cost_access_events = data["high_cost_access_events"]
+        metrics.accepted_corrections = data["accepted_corrections"]
+        metrics.discarded_reports = data["discarded_reports"]
+        metrics.conflicts = data["conflicts"]
+        metrics.mass_archives = data["mass_archives"]
+        metrics.archived_events = data["archived_events"]
+        metrics.ll_cases = data["ll_cases"]
+        metrics.rr_cases = data["rr_cases"]
+        metrics.rl_cases = data["rl_cases"]
+        metrics.lr_cases = data["lr_cases"]
+        metrics.simple_left_rotations = data["simple_left_rotations"]
+        metrics.simple_right_rotations = data["simple_right_rotations"]
+
+        return metrics

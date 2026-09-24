@@ -21,7 +21,7 @@
                 "expensive_access": false
             },
             "height": 2,
-            "leftChild": {
+            "left_child": {
                 "value": {
                     "key": [
                         2,
@@ -42,7 +42,7 @@
                     "expensive_access": false
                 },
                 "height": 1,
-                "leftChild": {
+                "left_child": {
                     "value": {
                         "key": [
                             1,
@@ -63,11 +63,11 @@
                         "expensive_access": false
                     },
                     "height": 0,
-                    "leftChild": null,
-                    "rightChild": null,
-                    "nodeCreationTime": null
+                    "left_child": null,
+                    "right_child": null,
+                    "node_creation_time": null
                 },
-                "rightChild": {
+                "right_child": {
                     "value": {
                         "key": [
                             2,
@@ -88,13 +88,13 @@
                         "expensive_access": false
                     },
                     "height": 0,
-                    "leftChild": null,
-                    "rightChild": null,
-                    "nodeCreationTime": null
+                    "left_child": null,
+                    "right_child": null,
+                    "node_creation_time": null
                 },
-                "nodeCreationTime": null
+                "node_creation_time": null
             },
-            "rightChild": {
+            "right_child": {
                 "value": {
                     "key": [
                         3,
@@ -115,15 +115,61 @@
                     "expensive_access": false
                 },
                 "height": 0,
-                "leftChild": null,
-                "rightChild": null,
-                "nodeCreationTime": null
+                "left_child": null,
+                "right_child": null,
+                "node_creation_time": null
             },
-            "nodeCreationTime": null
+            "node_creation_time": null
         }
     },
+    "bst_tree": {
+        "root": null
+    },
+    "stations": [],
+    "zones": [],
     "history": {
         "archived": {},
         "deleted_ids": []
-    }
+    },
+    "report_queue": {
+        "items": []
+    },
+    "action_stack": {
+        "items": []
+    },
+    "clock": {
+        "current_time": "2026-09-24T18:20:30.550680+00:00"
+    },
+    "l": 3,
+    "t": 72.0,
+    "association_manager": {
+        "W": 48.0,
+        "R": 40.0,
+        "candidates": {},
+        "selected_references": {}
+    },
+    "metrics": {
+        "active_events": 0,
+        "historical_events": 0,
+        "events_by_priority": {
+            "1": 0,
+            "2": 0,
+            "3": 0
+        },
+        "pending_attention": 0,
+        "high_cost_access_events": 0,
+        "accepted_corrections": 0,
+        "discarded_reports": 0,
+        "conflicts": 0,
+        "mass_archives": 0,
+        "archived_events": 0,
+        "ll_cases": 0,
+        "rr_cases": 0,
+        "rl_cases": 0,
+        "lr_cases": 0,
+        "simple_left_rotations": 0,
+        "simple_right_rotations": 0
+    },
+    "saved_versions": [],
+    "execution_mode": "normal"
 }

@@ -1,5 +1,5 @@
 from backend.structures.node import Node
-from backend.persistence.json_utils import objectToDict
+from backend.repositories.json_utils import objectToDict
 
 
 class AVL:
@@ -482,3 +482,17 @@ class AVL:
             "root": objectToDict(self.root),
             #The index is not included in the dictionary representation because it can be reconstructed from the tree structure.
         }
+
+    @classmethod
+    def fromDict(cls, data, event_cls):
+        tree = cls()
+        if data["root"] is not None:
+            tree.root = Node.fromDict(data["root"], event_cls)
+            tree._rebuildIndex(tree.root)  # reconstruye self.index recorriendo el árbol
+        return tree
+
+    def _rebuildIndex(self, node):
+        if node is not None:
+            self.index[node.getValue().getKey()[2]] = node
+            self._rebuildIndex(node.getLeftChild())
+            self._rebuildIndex(node.getRightChild())
