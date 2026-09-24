@@ -2,8 +2,8 @@ import type { SeismicEvent } from "./SeismicEvent";
 
 export interface Node {
     height: number;
-    leftChild: Node | null;
-    rightChild: Node | null;
+    left_child: Node | null;
+    right_child: Node | null;
     value: SeismicEvent;
     nodeCreationTime: string | null;
 }

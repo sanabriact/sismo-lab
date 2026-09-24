@@ -12,6 +12,8 @@
   "dependencies": {
     "@tailwindcss/vite": "^4.3.3",
     "axios": "^1.20.0",
+    "d3-hierarchy": "^3.1.2",
+    "d3-shape": "^3.2.0",
     "graphviz-react": "^1.2.5",
     "lucide": "^1.47.0",
     "lucide-react": "^1.47.0",
@@ -23,6 +25,8 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@types/d3-hierarchy": "^3.1.7",
+    "@types/d3-shape": "^3.2.0",
     "@types/node": "^24.13.3",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.7",
