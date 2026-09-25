@@ -27,13 +27,13 @@ const linesGenerator = linkVertical<HierarchyPointLink<VIZNode>, HierarchyPointN
 /* 
     Here we define the props that the component need to renderize at its full (data).
 */
-export function TreeView ({data}: TreeViewProps) {
+export function TreeView({ data, type }: TreeViewProps) {
     /* 
         Here is the base of all the component.
     */
     const layout = useMemo(() => {
         /* First checks if root exists. */
-        if(!data.root) return null;
+        if (!data.root) return null;
         /* 
             First, toVIZ is a function located in utils that helps us to transform the root node to a VIZNode type.
             Example: from atributes id, value, left_child, right_child => transforms into id, dto and children.
@@ -63,13 +63,14 @@ export function TreeView ({data}: TreeViewProps) {
         6. We calculate the height depending on the tree real hight (using the tree's levels) and the NODE_H value.
     
     */
-    const nodes = layout.descendants()/* .filter((n) => n.data.dto) */;
+    const nodes = layout.descendants().filter((n) => n.data.dto);
     const links = layout.links().filter((l) => l.target.data.dto);
     const xs = layout.descendants().map((n) => n.x);
     const minX = Math.min(...xs) - NODE_W / 2;
     const width = Math.max(...xs) - minX + NODE_W / 2;
     const height = (layout.height + 1) * NODE_H;
 
+    console.log(layout)
     return (
         /* 
             Here we start constructing the SVG (tree) 
@@ -92,7 +93,7 @@ export function TreeView ({data}: TreeViewProps) {
                 /* 
                     For each node, we generate various things:
                     1. dto constant 
-                    2. balance constant that calculate the balance factor of the node; it asks if the node has left or right child.
+                    2. balance factor of the node; it asks if the node has left or right child.
                         If its true, then get it's equivalent height. If not true, then it returns undefined.
                         Then, if the result is null or undefined, the height will be -1.
                     3. A <g> tag that represents the SVG group.
@@ -102,19 +103,24 @@ export function TreeView ({data}: TreeViewProps) {
                     6. Two <text> tags: 
                         The first one will show the value of the node (key = [priority, magnitude, id]) inside the circle. The ".join" will generate these values separated with commas. "textAnchor" and "dy" will put this value on the center inside the circle.
 
-                        The second one, will show the balance factor of each node, calculated with the constant "balance". 
+                        The second one, will show the balance factor of each node, calculated with its formula. 
                  */
                 const dto = n.data.dto!;
-                const balance = (dto.left_child?.height ?? -1) - (dto.right_child?.height ?? -1);
                 return (
                     <g key={n.data.id} transform={`translate(${n.x},${n.y})`}>
                         <circle r={R} fill="#fff" stroke="#333" />
                         <text textAnchor="middle" dy=".3em" fontSize={10}>
                             {dto.value.key.join(",")}
                         </text>
-                        <text textAnchor="middle" y={R + 14} fontSize={10} fill="#666">
-                            BF {balance}
-                        </text>
+                        {type === "avl" ? (
+                            <text textAnchor="middle" y={R + 14} fontSize={10} fill="#666">
+                                BF {(dto.left_child?.height ?? -1) - (dto.right_child?.height ?? -1)}
+                            </text>
+                        ) :
+                        (
+                            <></>
+                        )
+                    }
                     </g>
                 );
             })}
