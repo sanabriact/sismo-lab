@@ -1,7 +1,7 @@
 import type { Station } from "../station/Station";
-import type { AttentionStatus } from "../../types/Event/AttentionStatus";
-import type { EventKey } from "../../types/Event/EventKey";
-import type { EventStatus } from "../../types/Event/EventStatus";
+import type { AttentionStatus } from "../../types/event/AttentionStatus";
+import type { EventKey } from "../../types/event/EventKey";
+import type { EventStatus } from "../../types/event/EventStatus";
 
 export interface SeismicEvent {
     attention_status: AttentionStatus;
@@ -15,4 +15,6 @@ export interface SeismicEvent {
     populated_zone: boolean;
     reporting_stations: Station[];
     revision: number;
+    eliminated: boolean;
+    archived: boolean;
 }

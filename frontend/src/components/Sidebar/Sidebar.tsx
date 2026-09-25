@@ -4,7 +4,7 @@ import Logo from "../../assets/sidebar/svg/logo";
 import routes from "../../routes";
 import { NavLink } from "react-router-dom";
 import { sidebarGroups } from "../../routes/sidebarGroups";
-import RouteGroupMenu from "./Events/RouteGroupMenu";
+import RouteGroupMenu from "./events/RouteGroupMenu";
 
 const Sidebar = () => {
   /* 

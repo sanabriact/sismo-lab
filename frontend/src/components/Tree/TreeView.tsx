@@ -70,7 +70,6 @@ export function TreeView({ data, type }: TreeViewProps) {
     const width = Math.max(...xs) - minX + NODE_W / 2;
     const height = (layout.height + 1) * NODE_H;
 
-    console.log(layout)
     return (
         /* 
             Here we start constructing the SVG (tree) 

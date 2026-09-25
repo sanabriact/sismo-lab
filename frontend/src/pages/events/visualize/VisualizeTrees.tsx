@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { ObservatoryService } from "../../../services/seismicObservatory/seismicObservatoryService";
 import type { SeismicObservatory } from "../../../models/interfaces/observatory/SeismicObservatory";
-import { TreeView } from "../../../components/Tree/TreeView";
+import { TreeView } from "../../../components/tree/TreeView";
 
 const VisualizeTrees = () => {
     /* 
