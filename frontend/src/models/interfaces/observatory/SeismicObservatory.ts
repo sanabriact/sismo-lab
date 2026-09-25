@@ -1,4 +1,4 @@
-import type { AssociationManager } from "../../AssociationManager";
+import type { AssociationManager } from "../associationManager/AssociationManager";
 import type { Tree } from "../tree/Tree";
 
 export interface SeismicObservatory {

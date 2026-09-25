@@ -7,7 +7,12 @@ import { sidebarGroups } from "../../routes/sidebarGroups";
 import RouteGroupMenu from "./Events/RouteGroupMenu";
 
 const Sidebar = () => {
-  /* UseState form for stress mode button. */
+  /* 
+    We define various things here:
+    1. UseState form for stress mode button. 
+    2. A common Tailwind className for every button on the sidebar.
+    3. Routes that doesn't belong to a group.
+  */
   const [stressMode, setStressMode] = useState(false);
   const linkClass = `block p-2 rounded-lg hover:bg-white/10`;
   const ungroupedRoutes = routes.filter((route) => !route.group)
@@ -27,6 +32,10 @@ const Sidebar = () => {
           <h2 className="text-xl font-bold">SismoLab</h2>
         </div>
 
+        {/* 
+          Here we renderize each ungrouped route (ex. Home.tsx).
+          In general, we use NavLink for better routing use.
+        */}
         <ul className="flex-1 p-4 space-y-2">
           {ungroupedRoutes.map(({ path, title }) => (
             <li key={path}>
@@ -35,7 +44,11 @@ const Sidebar = () => {
               </NavLink>
             </li>
           ))}
-
+          
+          {/* 
+            Here we renderize each group of elements (Used when we want to make more dropdowns beside the "event" ones.),
+            calling the component RouteGroupMenu.
+          */}
           {sidebarGroups.map(({ group, title }) => (
             <li key={group}>
               <RouteGroupMenu group={group} title={title} />
