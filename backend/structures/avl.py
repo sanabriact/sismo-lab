@@ -64,7 +64,7 @@ class AVL:
             return False, rightChild
 
     # Public method of inserting
-    def insert(self, data):
+    def insert(self, data, balance=True):
         node = Node(data)
         if self.root is None:
             self.root = node
@@ -72,10 +72,10 @@ class AVL:
             print("Value ", data, " has been inserted as tree root.")
             return True
         else:
-            return self._insert(node, self.root)
+            return self._insert(node, self.root, balance)
 
     # Private method of inserting
-    def _insert(self, node, currentRoot):
+    def _insert(self, node, currentRoot, balance):
         # We validate equality
         if currentRoot.getValue().getKey() == node.getValue().getKey():
             print("Already existing node with this value ", node.getValue())
@@ -86,9 +86,10 @@ class AVL:
             inserted, child = self._tryInsertRightChild(currentRoot, node)
         #Check balance
         if inserted:
-            self._checkBalance(node.getParent(), 0)
+            if balance:
+                self._checkBalance(node.getParent(), 0)
             return True
-        return self._insert(node, child)
+        return self._insert(node, child, balance)
         
     # Public method for searching a node
     def search(self, data):
