@@ -144,7 +144,31 @@
                 "expensive_access": false
             },
             "height": 0,
-            "left_child": null,
+            "left_child": {
+                "value": {
+                    "key": [
+                        1,
+                        3.2,
+                        3
+                    ],
+                    "depth": 23,
+                    "epicenter_x": 105,
+                    "epicenter_y": 105,
+                    "datetime": "2025-06-01T12:00:00",
+                    "revision": 2,
+                    "reporting_stations": [
+                        "ST-001"
+                    ],
+                    "attention_status": "pending",
+                    "event_status": "active",
+                    "populated_zone": false,
+                    "expensive_access": false
+                },
+                "height": 0,
+                "left_child": null,
+                "right_child": null,
+                "node_creation_time": null
+            },
             "right_child": {
                 "value": {
                     "key": [
@@ -192,15 +216,15 @@
                     "right_child": {
                         "value": {
                             "key": [
-                                1,
-                                3.2,
-                                3
+                                3,
+                                6.5,
+                                2
                             ],
-                            "depth": 23,
-                            "epicenter_x": 105,
-                            "epicenter_y": 105,
-                            "datetime": "2025-06-01T12:00:00",
-                            "revision": 2,
+                            "depth": 10.0,
+                            "epicenter_x": 20.0,
+                            "epicenter_y": 30,
+                            "datetime": "2024-06-01T12:00:00",
+                            "revision": 1,
                             "reporting_stations": [
                                 "ST-001"
                             ],
@@ -215,8 +239,8 @@
                             "value": {
                                 "key": [
                                     3,
-                                    6.5,
-                                    2
+                                    7.0,
+                                    1
                                 ],
                                 "depth": 10.0,
                                 "epicenter_x": 20.0,
@@ -233,31 +257,7 @@
                             },
                             "height": 0,
                             "left_child": null,
-                            "right_child": {
-                                "value": {
-                                    "key": [
-                                        3,
-                                        7.0,
-                                        1
-                                    ],
-                                    "depth": 10.0,
-                                    "epicenter_x": 20.0,
-                                    "epicenter_y": 30,
-                                    "datetime": "2024-06-01T12:00:00",
-                                    "revision": 1,
-                                    "reporting_stations": [
-                                        "ST-001"
-                                    ],
-                                    "attention_status": "pending",
-                                    "event_status": "active",
-                                    "populated_zone": false,
-                                    "expensive_access": false
-                                },
-                                "height": 0,
-                                "left_child": null,
-                                "right_child": null,
-                                "node_creation_time": null
-                            },
+                            "right_child": null,
                             "node_creation_time": null
                         },
                         "node_creation_time": null
@@ -282,7 +282,7 @@
         "items": []
     },
     "clock": {
-        "current_time": "2026-09-25T17:02:11.685513+00:00"
+        "current_time": "2026-09-27T06:42:12.615289+00:00"
     },
     "l": 3,
     "t": 72.0,

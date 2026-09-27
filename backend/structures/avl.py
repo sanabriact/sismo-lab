@@ -1,11 +1,16 @@
 from backend.structures.node import Node
 from backend.repositories.json_utils import objectToDict
 
-
 class AVL:
     def __init__(self):
         self.root = None
         self.index = {} #Buscador de nodos por id, para acceder a ellos de manera más rápida
+        self._dirty_ids = set()
+        self._removed_ids = set()
+    
+    def _touch(self, node):
+        if node is not None:
+            self._dirty_ids.add(node.getValue().getKey()[2])
 
     """ # Método para insertar evento
     def insertEvent(self, data, time):
@@ -39,6 +44,8 @@ class AVL:
             currentRoot.setLeftChild(node)
             node.setParent(currentRoot)
             self.index[node.getValue().getKey()[2]] = node
+            self._touch(node)
+            self._touch(currentRoot)
             print(node.getValue(), " has been inserted as left child of ", currentRoot.getValue())
             return True, leftChild
         else:
@@ -67,7 +74,7 @@ class AVL:
         else:
             return self._insert(node, self.root)
 
-        # Método privado de insertar
+    # Método privado de insertar
     def _insert(self, node, currentRoot):
         # Se valida igualdad
         if currentRoot.getValue().getKey() == node.getValue().getKey():
@@ -193,16 +200,16 @@ class AVL:
 
     # Método privado de eliminación de nodo
     def _delete(self, node):
-        fatherNode = node.getParent()
+        nodeParent = node.getParent()
         # Se pregunta si el nodo es hoja (No tiene hijos)
         if node.isLeaf():
-            nodeParent = node.getParent()
-
             if node.isLeftChild():
                 nodeParent.setLeftChild(None)
             else:
                 nodeParent.setRightChild(None)
-
+            
+            self._removed_ids.add(node.getValue().getKey()[2])
+            self._touch(nodeParent)
             node.setParent(None)
             del self.index[node.getValue().getKey()[2]]
             
@@ -214,6 +221,8 @@ class AVL:
                 original_id = node.getValue().getKey()[2]
                 predecessor_id = predecessor.getValue().getKey()[2]
                 self._updateNodeValue(node, predecessor)
+                self._removed_ids.add(predecessor.getValue().getKey()[2])
+                self._touch(node)
                 del self.index[original_id]
                 self.index[predecessor_id] = node # node ahora tiene los datos del predecesor
 
@@ -255,7 +264,7 @@ class AVL:
 
                 node.setParent(None)
                 del self.index[node.getValue().getKey()[2]]
-        self._checkBalance(fatherNode, 0)
+        self._checkBalance(nodeParent, 0)
         return True
 
     # Método privado para obtener el predecesor del subárbol de un nodo.
@@ -288,6 +297,7 @@ class AVL:
         rightHeight = self._height(node.getRightChild())
         maxHeight = max(leftHeight, rightHeight)
         node.setHeight(1 + maxHeight)
+        self._touch(node)
 
     # Giro simple a la derecha
     def _simpleRightTurn(self, top):
@@ -307,6 +317,7 @@ class AVL:
                 grandparent.setLeftChild(middle)
             else:
                 grandparent.setRightChild(middle)
+            self._touch(grandparent)
         else:
             self.root = middle
         self._updateHeight(top)
@@ -483,3 +494,26 @@ class AVL:
             self.index[node.getValue().getKey()[2]] = node
             self._rebuildIndex(node.getLeftChild())
             self._rebuildIndex(node.getRightChild())
+    
+    def _build_patch(self, operation):
+        upserted = []
+        for node_id in self._dirty_ids:
+            node = self.index.get(node_id)
+            if node is not None:
+                upserted.append({
+                    "id": node_id,
+                    "key": list(node.getValue().getKey()),
+                    "height": node.getHeight(),
+                    "leftChildId": node.getLeftChild().getValue().getKey()[2] if node.hasLeftChild() else None,
+                    "rightChildId": node.getRightChild().getValue().getKey()[2] if node.hasRightChild() else None,
+                    "parentId": node.getParent().getValue().getKey()[2] if node.hasParent() else None,
+                })
+        patch = {
+            "operation": operation,
+            "upserted": upserted,
+            "removedIds": list(self._removed_ids),
+            "rootId": self.root.getValue().getKey()[2] if self.root is not None else None,
+        }
+        self._dirty_ids.clear()
+        self._removed_ids.clear()
+        return patch

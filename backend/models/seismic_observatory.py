@@ -141,11 +141,13 @@ class SeismicObservatory:
         if event is not None:
             oldKey = event.getKey()
             event.updateEventData(report)
+            
             if event.getKey() != oldKey:
                 self.deleteEventById(report.getEventId())
                 self.avl_tree.insert(event)
+                self.bst_tree._updateKey(event, oldKey)
                 #RECALCULAR ASOCIACIONES Y METRICAS
-
+                
                 return True
         return False
 
