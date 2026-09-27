@@ -108,21 +108,21 @@ class Metrics:
     def setRRCases(self, count):
         self.rr_cases = count
     def incrementRRCases(self):
-            self.rr_cases += 1
+        self.rr_cases += 1
 
     def getLRCases(self):
         return self.lr_cases
     def setLRCases(self, count):
         self.lr_cases = count
     def incrementLRCases(self):
-            self.lr_cases += 1
+        self.lr_cases += 1
 
     def getRLCases(self):
         return self.rl_cases
     def setRLCases(self, count):
         self.rl_cases = count
     def incrementRLCases(self):
-            self.rl_cases += 1
+        self.rl_cases += 1
 
     def getSimpleLeftRotations(self):
         return self.simple_left_rotations   
@@ -157,3 +157,28 @@ class Metrics:
             "simple_left_rotations":self.simple_left_rotations,
             "simple_right_rotations":self.simple_right_rotations
         }
+
+    @classmethod
+    def fromDict(cls, data):
+        metrics = cls()
+        metrics.active_events = data["active_events"]
+        metrics.historical_events = data["historical_events"]
+        metrics.events_by_priority = {
+        int(key): value
+        for key, value in data["events_by_priority"].items()
+        }
+        metrics.pending_attention = data["pending_attention"]
+        metrics.high_cost_access_events = data["high_cost_access_events"]
+        metrics.accepted_corrections = data["accepted_corrections"]
+        metrics.discarded_reports = data["discarded_reports"]
+        metrics.conflicts = data["conflicts"]
+        metrics.mass_archives = data["mass_archives"]
+        metrics.archived_events = data["archived_events"]
+        metrics.ll_cases = data["ll_cases"]
+        metrics.rr_cases = data["rr_cases"]
+        metrics.rl_cases = data["rl_cases"]
+        metrics.lr_cases = data["lr_cases"]
+        metrics.simple_left_rotations = data["simple_left_rotations"]
+        metrics.simple_right_rotations = data["simple_right_rotations"]
+
+        return metrics

@@ -11,3 +11,7 @@ class SimulationClock:
         return {
             "current_time": self.current_time.isoformat()
         }
+    @classmethod
+    def fromDict(cls, data):
+        clock = cls(datetime.fromisoformat(data["current_time"]))
+        return clock

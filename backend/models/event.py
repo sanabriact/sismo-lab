@@ -134,3 +134,19 @@ class Event:
                 "expensive_access": self.expensive_access
 
             }
+
+    @classmethod
+    def fromDict(cls, data):
+        event = cls.__new__(cls)
+        event.key = tuple(data["key"])
+        event.depth = data["depth"]
+        event.epicenter_x = data["epicenter_x"]
+        event.epicenter_y = data["epicenter_y"]
+        event.datetime = datetime.fromisoformat(data["datetime"])
+        event.revision = data["revision"]
+        event.reporting_stations = set(data["reporting_stations"])
+        event.attention_status = data["attention_status"]
+        event.event_status = data["event_status"]
+        event.populated_zone = data["populated_zone"]
+        event.expensive_access = data["expensive_access"]
+        return event
