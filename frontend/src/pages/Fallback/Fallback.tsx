@@ -1,5 +1,9 @@
 import { useNavigate } from "react-router-dom";
 
+/* 
+    Page for when the user wants to enter to a page that doesn't exists.
+    useNavigate help us to redirect to home when the user clicks on "Volver al inicio".
+*/
 const Fallback = () => {
     const navigate = useNavigate();
     return (

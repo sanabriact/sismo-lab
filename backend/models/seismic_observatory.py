@@ -112,7 +112,7 @@ class SeismicObservatory:
         self.execution_mode = mode
 
     def createEvent(self, id, magnitude, depth, epicenter_x, epicenter_y, datetime: datetime, revision, station):
-        if self.avl_tree.searchById(id) is not None:
+        if self.avl_tree.searchById(id) is not None and self.bst_tree.searchById(id) is not None:
             return False
         #Validar que no este en historico
         if id in self.history.getArchived():
@@ -120,7 +120,7 @@ class SeismicObservatory:
         if id in self.history.getDeletedIds():
             return False
         event = Event(id, magnitude, depth, epicenter_x, epicenter_y, datetime, revision, station, self.zones)
-        return self.avl_tree.insert(event)
+        return self.avl_tree.insert(event), self.bst_tree.insert(event)
         
 
     def searchEventById(self, id):
@@ -142,11 +142,13 @@ class SeismicObservatory:
         if event is not None:
             oldKey = event.getKey()
             event.updateEventData(report)
+            
             if event.getKey() != oldKey:
                 self.deleteEventById(report.getEventId())
                 self.avl_tree.insert(event)
+                self.bst_tree._updateKey(event, oldKey)
                 #RECALCULAR ASOCIACIONES Y METRICAS
-
+                
                 return True
         return False
 

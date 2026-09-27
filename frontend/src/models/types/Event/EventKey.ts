@@ -1,0 +1,1 @@
+export type EventKey = [priority: number, magnitude: number, id: number];

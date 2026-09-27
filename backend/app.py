@@ -2,9 +2,14 @@ from datetime import datetime
 
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+from flask_socketio import SocketIO
 from backend.services.seismic_observatory_service import SeismicObservatoryService
+from backend.services.realtime_service import init_realtime
+
 app = Flask(__name__)
 CORS(app)
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
+init_realtime(socketio)
 obs_service = SeismicObservatoryService()
 
 
@@ -59,6 +64,9 @@ def createEvent():
         return jsonify(response), 400
     return jsonify(response), 201
 
+@socketio.on("connect")
+def handle_connect():
+    print("Cliente conectado por WebSocket")
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    socketio.run(app, debug = True)
