@@ -1,4 +1,4 @@
-import type { TreePatch } from "../../models/interfaces/tree/TreePatch";
+import type { TreePatch } from "../../models/interfaces/realTime/TreePatch";
 import type { TreeState } from "../../models/interfaces/tree/TreeState";
 
 export function applyPatch(state: TreeState, patch: TreePatch): TreeState {
