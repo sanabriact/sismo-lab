@@ -7,10 +7,12 @@ class SeismicObservatoryService:
         self.repository = SeismicObservatoryRepository()
 
     def getObservatory(self):
-        observatory = self.repository.load()
-        if observatory is None:
-            observatory = SeismicObservatory()
-        return observatory
+        return self.repository.getAll()
+        """  observatory = self.repository.load()
+            if observatory is None:
+                observatory = SeismicObservatory()
+            return observatory """
+ 
 
     def load_scenario(self, data):
         if not isinstance(data, dict):

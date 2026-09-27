@@ -9,7 +9,7 @@
                 ],
                 "depth": 10.0,
                 "epicenter_x": 20.0,
-                "epicenter_y": 30.0,
+                "epicenter_y": 30,
                 "datetime": "2024-06-01T12:00:00",
                 "revision": 1,
                 "reporting_stations": [
@@ -30,7 +30,7 @@
                     ],
                     "depth": 10.0,
                     "epicenter_x": 20.0,
-                    "epicenter_y": 30.0,
+                    "epicenter_y": 30,
                     "datetime": "2024-06-01T12:00:00",
                     "revision": 1,
                     "reporting_stations": [
@@ -76,7 +76,7 @@
                         ],
                         "depth": 10.0,
                         "epicenter_x": 20.0,
-                        "epicenter_y": 30.0,
+                        "epicenter_y": 30,
                         "datetime": "2024-06-01T12:00:00",
                         "revision": 1,
                         "reporting_stations": [
@@ -103,7 +103,7 @@
                     ],
                     "depth": 10.0,
                     "epicenter_x": 20.0,
-                    "epicenter_y": 30.0,
+                    "epicenter_y": 30,
                     "datetime": "2024-06-01T12:00:00",
                     "revision": 1,
                     "reporting_stations": [
@@ -132,7 +132,7 @@
                 ],
                 "depth": 10.0,
                 "epicenter_x": 20.0,
-                "epicenter_y": 30.0,
+                "epicenter_y": 30,
                 "datetime": "2024-06-01T12:00:00",
                 "revision": 1,
                 "reporting_stations": [
@@ -178,7 +178,7 @@
                     ],
                     "depth": 10.0,
                     "epicenter_x": 20.0,
-                    "epicenter_y": 30.0,
+                    "epicenter_y": 30,
                     "datetime": "2024-06-01T12:00:00",
                     "revision": 1,
                     "reporting_stations": [
@@ -200,7 +200,7 @@
                         ],
                         "depth": 10.0,
                         "epicenter_x": 20.0,
-                        "epicenter_y": 30.0,
+                        "epicenter_y": 30,
                         "datetime": "2024-06-01T12:00:00",
                         "revision": 1,
                         "reporting_stations": [
@@ -222,7 +222,7 @@
                             ],
                             "depth": 10.0,
                             "epicenter_x": 20.0,
-                            "epicenter_y": 30.0,
+                            "epicenter_y": 30,
                             "datetime": "2024-06-01T12:00:00",
                             "revision": 1,
                             "reporting_stations": [
@@ -244,7 +244,7 @@
                                 ],
                                 "depth": 10.0,
                                 "epicenter_x": 20.0,
-                                "epicenter_y": 30.0,
+                                "epicenter_y": 30,
                                 "datetime": "2024-06-01T12:00:00",
                                 "revision": 1,
                                 "reporting_stations": [
@@ -273,10 +273,7 @@
     "zones": [],
     "history": {
         "archived": {},
-        "deleted_ids": [
-            2,
-            3
-        ]
+        "deleted_ids": []
     },
     "report_queue": {
         "items": []
@@ -285,7 +282,7 @@
         "items": []
     },
     "clock": {
-        "current_time": "2026-09-27T20:24:35.012726+00:00"
+        "current_time": "2026-09-27T17:04:32.490317+00:00"
     },
     "l": 3,
     "t": 72.0,
