@@ -6,13 +6,13 @@ class Event:
         self._validate_data(id, magnitude, depth, epicenter_x, epicenter_y, datetime)
         self.depth = round(depth, 1)  # float
         self.epicenter_x = round(epicenter_x, 1)  # float
-        self.epicenter_y = round(epicenter_y)  # float
+        self.epicenter_y = round(epicenter_y,1)  # float
         self.populated_zone = self.calculatePopulatedZone(zones or [])  # bool
         priority = self.calculatePriority(magnitude)
         self.datetime = datetime  # datetime
         self.revision = revision  # int
         self.reporting_stations = {station}  # station
-        self.attention_status = "pending"  # str
+        self.attention_status = "pending"  # str pending or revised
         self.event_status = "active"  # str active, archived, deleted
         self.expensive_access = False  # bool
         self.key = (priority, round(magnitude, 1), id)  # tupla
@@ -114,7 +114,7 @@ class Event:
             raise ValueError("Id debe estar entre 1 y 999999")
         if not (0 <= depth <= 700):
             raise ValueError("Profundidad debe estar entre 0 y 700")
-        if not (0 <= epicenter_x <= 1000) and not (0 <= epicenter_y <= 1000):
+        if not (0 <= epicenter_x <= 1000) or not (0 <= epicenter_y <= 1000):
             raise ValueError("Epicentro debe estar entre 0 y 1000")
         if not isinstance(date, datetime):
             raise TypeError("La fecha debe ser de tipo datetime")

@@ -132,6 +132,7 @@ class SeismicObservatory:
     def deleteEventById(self, id):
         node = self.avl_tree.searchById(id)
         if node is not None: 
+            self.history.addDeletedId(id)
             return self.avl_tree.delete(id)
         return False
 
@@ -150,7 +151,10 @@ class SeismicObservatory:
         return False
 
 
-    #def markAsReviewed()
+    def markAsRevised(self, id):
+        event = self.searchEventById(id)
+        if event is not None:
+            event.setAttentionStatus("revised")
     
     #def archiveSubTree() lo hace el viejo
 
@@ -191,8 +195,8 @@ class SeismicObservatory:
     @classmethod
     def fromDict(cls,data):
         observatory = cls()
-        observatory.avl_tree = AVL.fromDict(data["avl_tree"])
-        observatory.bst_tree = BST.fromDict(data["bst_tree"])
+        observatory.avl_tree = AVL.fromDict(data["avl_tree"], Event)
+        observatory.bst_tree = BST.fromDict(data["bst_tree"], Event)
         observatory.stations = [Station.fromDict(station) for station in data["stations"]]
         observatory.zones = [Zone.fromDict(zone) for zone in data["zones"]]
         observatory.history = History.fromDict(data["history"])
