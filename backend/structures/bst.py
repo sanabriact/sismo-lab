@@ -50,17 +50,9 @@ class BST:
 
     # Method for updating the tree when a report changes an event key.
     def _updateKey(self, event, oldKey):
-        eventId = oldKey[2]
-        targetNode = self._searchById(eventId, self.root)
-
-        if targetNode is None:
-            return False
-
-        self._delete(targetNode)
+        self.delete(oldKey)
         self.insert(event)
-
-        return True
-            
+     
     # Search and element by its key
     def search(self, data):
         if self.root is None:
@@ -70,35 +62,18 @@ class BST:
 
     # Private method of searching
     def _search(self, data, currentRoot):
-        if currentRoot is not None:
-            if data == currentRoot.getValue()[2]:
-                return currentRoot
-            else:
-                left = self._search(data, currentRoot.getLeftChild())
-                if left is None:
-                    right = self._search(data, currentRoot.getRightChild())
-                    if right is None:
-                        return None
-                    else:
-                        return right
-                else:
-                    return left
-    
-    #Method for searching a event by its id (We have to think about future optimization of methods)
-    def _searchById(self, eventId, currentRoot):
         if currentRoot is None:
             return None
+        else:
+            if data == currentRoot.getValue().getKey()[2]:
+                return currentRoot
 
-        if currentRoot.getValue().getKey()[2] == eventId:
-            return currentRoot
+            left = self._search(data, currentRoot.getLeftChild())
+            if left is not None:
+                return left
 
-        left = self._searchById(eventId, currentRoot.getLeftChild())
-
-        if left is not None:
-            return left
-
-        return self._searchById(eventId, currentRoot.getRightChild())
-
+        return self._search(data, currentRoot.getRightChild())
+    
     # Public method for preorder transversal
     def preorder(self):
         if self.root is None:
