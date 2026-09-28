@@ -1,0 +1,1 @@
+export type EventStatus = "active" | "archived" | "deleted";

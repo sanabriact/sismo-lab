@@ -1,3 +1,4 @@
+from backend.services.seismic_observatory_service import SeismicObservatoryService
 from backend.structures.avl import AVL
 from backend.structures.bst import BST
 from backend.models.event import Event
@@ -8,6 +9,7 @@ from backend.repositories.seismic_observatory_repository import SeismicObservato
 from datetime import datetime
 
 observatory = SeismicObservatory()
+obs_service = SeismicObservatoryService()
 
 list = []
 n = 7
@@ -26,9 +28,15 @@ observatory.getAVLTree().draw()
 report = Report(3,2,"ST-001", 3.2,23,105,105,datetime(2025, 6, 1, 12, 0, 0))
 observatory.editEvent(report)
 observatory.getAVLTree().draw()
-persistence = SeismicObservatoryRepository()
 
-persistence._write(observatory.toDict())
+obs_service.createEvent(46,9.9,10.0,20.0,30.0,datetime(2024, 6, 3, 12, 0, 0),1,"ST-003")
+
+observatory.getAVLTree().draw()
+
+
+
+
+
 
 
 

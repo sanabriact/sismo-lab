@@ -1,6 +1,7 @@
 from backend.repositories.json_utils import objectToDict
 from datetime import datetime
 
+
 class Node:
     def __init__(self, value):
         self.value = value
@@ -57,7 +58,7 @@ class Node:
     # Retorna la altura del nodo
     def getHeight(self):
         return self.height
-    
+
     # Se asigna la altura del nodo
     def setHeight(self, newHeight):
         self.height = newHeight
@@ -65,7 +66,7 @@ class Node:
     # Se asigna un tiempo de creacion
     def setNodeCreationTime(self, time):
         self.nodeCreationTime = time
-    
+
     # Retorna true si es nodo hoja
     def isLeaf(self):
         return self.getLeftChild() is None and self.getRightChild() is None
@@ -77,11 +78,11 @@ class Node:
     # Retorna true si el nodo es hijo derecho
     def isRightChild(self):
         return self.hasParent() and self.parent.hasRightChild() and self.value == self.parent.rightChild.value
-    
+
     # Método para comprobar si el nodo es archivable
     def isArchivable(self, time):
-        return self.value[0] == 1 and self.nodeCreationTime > time 
-    
+        return self.value[0] == 1 and self.nodeCreationTime > time
+
     # Método para calcular la profundidad del nodo
     def getDepth(self, counter):
         if self.getParent() is not None:
@@ -89,7 +90,7 @@ class Node:
             return self.getParent().getDepth(counter)
         else:
             return counter
-        
+
     # Método para contar nodos
     def countNodes(self, counter):
         counter += 1
@@ -98,53 +99,57 @@ class Node:
         if self.hasRightChild():
             counter = self.getRightChild().countNodes(counter)
         return counter
-    
+
     """ 2026-09-07T10:00:00Z. """
     # Método para calcular el tiempo actual de creacion de el nodo
-    def calculateTime(self, time):
-        nodeCreationTime = self.nodeCreationTime
-        minutes = 0
-        seconds = 0
-        year = 0
-        month = 0
-        day = 0
-        hour = 0
-               
-        for i in range(0, len(nodeCreationTime)+1):
-            if i <= 3:
-                year += nodeCreationTime[i]
-            elif i >= 5 and i <= 6:
-                month += nodeCreationTime[i]
-            elif i >= 8 and i <= 9:
-                day += nodeCreationTime[i]
-            elif i >= 11 and i <= 12:
-                hour += nodeCreationTime[i]
-            elif i >= 14 and i <= 15:
-                minutes = nodeCreationTime[i]
-            elif i >= 17 and i <= 18:
-                seconds = nodeCreationTime[i]
-        
-        return None
+
+    def calculateTime(self, actualTime):
+        if self.nodeCreationTime is None:
+            return None
+        return actualTime - self.nodeCreationTime
 
     def toDict(self):
+
         return {
             "value": objectToDict(self.value),
             "height": self.height,
             "left_child": objectToDict(self.leftChild),
             "right_child": objectToDict(self.rightChild),
-            "node_creation_time": self.nodeCreationTime
-            
+            "node_creation_time": (
+                self.nodeCreationTime.isoformat()
+                if self.nodeCreationTime is not None
+                else None)
+
         }
 
     @classmethod
     def fromDict(cls, data, event_cls):
-        node = cls(event_cls.fromDict(data["value"]))
+
+        node = cls(
+            event_cls.fromDict(data["value"])
+        )
+
         node.height = data["height"]
+
         if data["left_child"] is not None:
-            node.leftChild = cls.fromDict(data["left_child"], event_cls)
+            node.leftChild = cls.fromDict(
+                data["left_child"],
+                event_cls
+            )
             node.leftChild.parent = node
+
         if data["right_child"] is not None:
-            node.rightChild = cls.fromDict(data["right_child"], event_cls)
+            node.rightChild = cls.fromDict(
+                data["right_child"],
+                event_cls
+            )
             node.rightChild.parent = node
-        node.nodeCreationTime = datetime.fromisoformat(data["node_creation_time"])
+
+        if data["node_creation_time"] is not None:
+            node.nodeCreationTime = datetime.fromisoformat(
+                data["node_creation_time"]
+            )
+        else:
+            node.nodeCreationTime = None
+
         return node

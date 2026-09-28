@@ -98,25 +98,73 @@
                 "value": {
                     "key": [
                         3,
-                        7.0,
-                        1
+                        9.9,
+                        45
                     ],
                     "depth": 10.0,
                     "epicenter_x": 20.0,
                     "epicenter_y": 30.0,
-                    "datetime": "2024-06-01T12:00:00",
+                    "datetime": "2024-06-03T12:00:00",
                     "revision": 1,
                     "reporting_stations": [
-                        "ST-001"
+                        "ST-002"
                     ],
                     "attention_status": "pending",
                     "event_status": "active",
                     "populated_zone": false,
                     "expensive_access": false
                 },
-                "height": 0,
-                "left_child": null,
-                "right_child": null,
+                "height": 1,
+                "left_child": {
+                    "value": {
+                        "key": [
+                            3,
+                            7.0,
+                            1
+                        ],
+                        "depth": 10.0,
+                        "epicenter_x": 20.0,
+                        "epicenter_y": 30.0,
+                        "datetime": "2024-06-01T12:00:00",
+                        "revision": 1,
+                        "reporting_stations": [
+                            "ST-001"
+                        ],
+                        "attention_status": "pending",
+                        "event_status": "active",
+                        "populated_zone": false,
+                        "expensive_access": false
+                    },
+                    "height": 0,
+                    "left_child": null,
+                    "right_child": null,
+                    "node_creation_time": null
+                },
+                "right_child": {
+                    "value": {
+                        "key": [
+                            3,
+                            9.9,
+                            46
+                        ],
+                        "depth": 10.0,
+                        "epicenter_x": 20.0,
+                        "epicenter_y": 30.0,
+                        "datetime": "2024-06-03T12:00:00",
+                        "revision": 1,
+                        "reporting_stations": [
+                            "ST-003"
+                        ],
+                        "attention_status": "pending",
+                        "event_status": "active",
+                        "populated_zone": false,
+                        "expensive_access": false
+                    },
+                    "height": 0,
+                    "left_child": null,
+                    "right_child": null,
+                    "node_creation_time": null
+                },
                 "node_creation_time": null
             },
             "node_creation_time": null
@@ -138,7 +186,7 @@
         "items": []
     },
     "clock": {
-        "current_time": "2026-09-24T18:42:06.759385+00:00"
+        "current_time": "2026-09-24T17:14:04.233879+00:00"
     },
     "l": 3,
     "t": 72.0,
