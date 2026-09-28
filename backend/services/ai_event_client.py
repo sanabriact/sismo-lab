@@ -1,78 +1,93 @@
 import json
-import math
 import os
-from datetime import datetime, timezone
+from pathlib import Path
+from dotenv import load_dotenv
+from groq import Groq
 
-from openai import OpenAI
-
+env_path = Path(__file__).resolve().parent.parent / ".env"
+load_dotenv(env_path)
+EVENT_SCHEMA = {
+    "type": "object",
+    "additionalProperties": False,
+    "properties": {
+        "magnitude": {
+            "type": "number",
+        },
+        "depth": {
+            "type": "number",
+        },
+        "epicenter_x": {
+            "type": "number",
+        },
+        "epicenter_y": {
+            "type": "number",
+        },
+        "datetime": {
+            "type": "string",
+        },
+    },
+    "required": [
+        "magnitude",
+        "depth",
+        "epicenter_x",
+        "epicenter_y",
+        "datetime",
+    ],
+}
 
 class AIEventClient:
     def __init__(self):
-        """ self.client = OpenAI(api_key=os.environ["OPENAI_API_KEY"]) """
-        self.model = os.getenv("OPENAI_MODEL", "gpt-5-mini")
+        api_key = os.getenv("GROQ_API_KEY")
+        model = os.getenv("GROQ_MODEL")
+        self.client = Groq(api_key=api_key)
+        self.model = model
 
-    def generate_event_data(self, station, scenario_clock, zones):
-        current_time = scenario_clock.current_time.astimezone(timezone.utc)
+    def generate(self, station, clock):
+        current_time = clock.current_time.isoformat()
 
         prompt = f"""
-            You simulate a seismic station in a fictional academic scenario.
+                    Generate one fictional seismic event for this station.
 
-            Station:
-            - id: {station.id}
-            - name: {station.name}
+                    Station ID: {station.id}
+                    Station name: {station.name}
 
-            Simulation clock:
-            - current UTC time: {current_time.isoformat()}
+                    Simulation clock in UTC: {current_time}
 
-            Return ONLY valid JSON with these fields:
-            {{
-                "magnitude": number,
-                "depth": number,
-                "epicenter_x": number,
-                "epicenter_y": number,
-                "datetime": "ISO-8601 UTC"
-            }}
+                    Return JSON only.
 
-            Rules:
-            - magnitude: -2.0 to 10.0, at most one decimal.
-            - depth: 0.0 to 700.0, at most one decimal.
-            - epicenter_x and epicenter_y: 0.0 to 1000.0, at most one decimal.
-            - datetime cannot be later than the simulation clock.
-            - This is fictional simulation data.
-            """
+                    Rules:
+                    - magnitude must be between -2.0 and 10.0.
+                    - depth must be between 0.0 and 700.0.
+                    - epicenter_x and epicenter_y must be between 0.0 and 1000.0.
+                    - datetime must be UTC ISO-8601.
+                    - datetime cannot be later than the simulation clock.
+                    - Use at most one decimal for all numeric values.
+                """
 
-        response = self.client.responses.create(
+        response = self.client.chat.completions.create(
             model=self.model,
-            input=prompt,
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You generate valid JSON only."
+                },
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ],
+            response_format={
+                "type": "json_schema",
+                "json_schema": {
+                    "name": "seismic_event",
+                    "strict": True,
+                    "schema": EVENT_SCHEMA
+                }
+            }
         )
+        
+        content = response.choices[0].message.content
+        if not content:
+            raise ValueError("La IA no devolvió contenido")
 
-        return json.loads(response.output_text)
-    
-def validate_ai_response(data, clock):
-    magnitude = round(float(data["magnitude"]), 1)
-    depth = round(float(data["depth"]), 1)
-    x = round(float(data["epicenter_x"]), 1)
-    y = round(float(data["epicenter_y"]), 1)
-
-    date = datetime.fromisoformat(data["datetime"].replace("Z", "+00:00"))
-    date = date.astimezone(timezone.utc)
-
-    if not -2 <= magnitude <= 10:
-        raise ValueError("Magnitud inválida")
-
-    if not 0 <= depth <= 700:
-        raise ValueError("Profundidad inválida")
-
-    if not 0 <= x <= 1000 or not 0 <= y <= 1000:
-        raise ValueError("Epicentro inválido")
-
-    if date > clock.current_time:
-        raise ValueError("La fecha supera el reloj del escenario")
-
-    return {
-        "magnitude": magnitude,
-        "depth": depth,
-        "epicenter_x": x,
-        "epicenter_y": y,
-        "datetime": date,
-    }
+        return json.loads(content)

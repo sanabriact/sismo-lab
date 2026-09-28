@@ -36,7 +36,9 @@ class EventEngine:
     def run(self):
         while True:
             candidate = self.events.get()
-
+            if candidate["scenario_id"] != self.scenario_id:
+                continue
+            
             while self.paused:
                 self.socketio.sleep(0.2)
 
@@ -99,8 +101,8 @@ class EventEngine:
             with self.lock:
                 self.observatory.begin_visual_operation()
 
-                avl = self.observatory.getAVLTree()
-                avl.recover_balance()
+                avl_tree = self.observatory.getAVLTree()
+                avl_tree.recover_balance()
 
                 self.observatory.setExecutionMode("normal")
                 self.repository.save(self.observatory)

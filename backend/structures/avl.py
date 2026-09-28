@@ -7,10 +7,52 @@ class AVL:
         self.index = {} # Search nodes by id; more efficient.
         self._dirty_ids = set()
         self._removed_ids = set()
+        self._visual_steps = []
     
     def _touch(self, node):
         if node is not None:
             self._dirty_ids.add(node.getValue().getKey()[2])
+            
+    def begin_visual_operation(self):
+        self._dirty_ids.clear()
+        self._removed_ids.clear()
+        self._visual_steps = []
+
+
+    def finish_visual_operation(self):
+        steps = self._visual_steps
+        self._visual_steps = []
+        return steps
+
+
+    def _record_insert(self):
+        patch = self._build_patch("insert")
+
+        self._visual_steps.append({
+            "kind": "insert",
+            "avlPatch": patch,
+        })
+
+
+    def _record_rotation(self, rotation_type, pivot):
+        new_root = pivot.getParent()
+        patch = self._build_patch("rotation")
+
+        affected_ids = []
+
+        for node in patch["upserted"]:
+            affected_ids.append(node["id"])
+
+        self._visual_steps.append({
+            "kind": "rotation",
+            "rotation": {
+                "type": rotation_type,
+                "pivotId": pivot.getValue().getKey()[2],
+                "newRootId": new_root.getValue().getKey()[2],
+                "affectedIds": affected_ids,
+            },
+            "avlPatch": patch,
+        })
 
     """ # Método para insertar evento
     def insertEvent(self, data, time):
@@ -58,6 +100,8 @@ class AVL:
             currentRoot.setRightChild(node)
             node.setParent(currentRoot)
             self.index[node.getValue().getKey()[2]] = node
+            self._touch(node)
+            self._touch(currentRoot)    
             print(node.getValue(), " has been inserted as right child of ",currentRoot.getValue())
             return True, rightChild
         else:
@@ -69,7 +113,9 @@ class AVL:
         if self.root is None:
             self.root = node
             self.index[node.getValue().getKey()[2]] = node
-            print("Value ", data, " has been inserted as tree root.")
+            self._touch(node)
+            self._record_insert()
+            
             return True
         else:
             return self._insert(node, self.root, balance)
@@ -86,6 +132,8 @@ class AVL:
             inserted, child = self._tryInsertRightChild(currentRoot, node)
         #Check balance
         if inserted:
+            self._update_heights_to_root(node.getParent())
+            self._record_insert()
             if balance:
                 self._checkBalance(node.getParent(), 0)
             return True
@@ -297,6 +345,11 @@ class AVL:
         maxHeight = max(leftHeight, rightHeight)
         node.setHeight(1 + maxHeight)
         self._touch(node)
+    
+    def _update_heights_to_root(self, node):
+        while node is not None:
+            self._updateHeight(node)
+            node = node.getParent()
 
     # Simple right turn balancing
     def _simpleRightTurn(self, top):
@@ -306,6 +359,7 @@ class AVL:
         aux = middle.getRightChild()
         if aux is not None:
             aux.setParent(top)
+            self._touch(aux)
         middle.setRightChild(top)
         top.setLeftChild(aux)
         middle.setParent(top.getParent())
@@ -321,6 +375,8 @@ class AVL:
             self.root = middle
         self._updateHeight(top)
         self._updateHeight(middle)
+        self._touch(top)
+        self._touch(middle)
 
     # Simple left turn for balancing
     def _simpleLeftTurn(self, top):
@@ -330,6 +386,7 @@ class AVL:
         aux = middle.getLeftChild()
         if aux is not None:
             aux.setParent(top)
+            self._touch(aux)
         middle.setLeftChild(top)
         top.setRightChild(aux)
         middle.setParent(top.getParent())
@@ -344,6 +401,8 @@ class AVL:
             self.root = middle
         self._updateHeight(top)
         self._updateHeight(middle)
+        self._touch(top)
+        self._touch(middle)
 
     # Private method for checking balance
     def _checkBalance(self, node, childBalanceFactor):
@@ -377,22 +436,93 @@ class AVL:
 
     # Private method for rebalancing
     def _rebalance(self, superior, superiorBalanceFactor, childBalanceFactor):
-        balanceCase = self._getCaseOfBalance(
-            superiorBalanceFactor, childBalanceFactor)
+        balanceCase = self._getCaseOfBalance(superiorBalanceFactor, childBalanceFactor)
 
         match(balanceCase):
             case "LL":
                 self._simpleRightTurn(superior)
+                self._record_rotation("LL", superior)
             case "RR":
                 self._simpleLeftTurn(superior)
+                self._record_rotation("RR", superior)
             case "LR":
                 self._simpleLeftTurn(superior.getLeftChild())
                 self._simpleRightTurn(superior)
+                self._record_rotation("LR", superior)
             case "RL":
                 self._simpleRightTurn(superior.getRightChild())
                 self._simpleLeftTurn(superior)
+                self._record_rotation("RL", superior)
             case _:
                 return None
+    
+    def recover_balance(self):
+        while True:
+            self._refresh_heights(self.root)
+
+            if not self._recover_one_node(self.root):
+                return
+
+
+    def _refresh_heights(self, node):
+        if node is None:
+            return -1
+
+        left_height = self._refresh_heights(node.getLeftChild())
+        right_height = self._refresh_heights(node.getRightChild())
+
+        new_height = max(left_height, right_height) + 1
+
+        if node.getHeight() != new_height:
+            node.setHeight(new_height)
+            self._touch(node)
+
+        return new_height
+
+
+    def _recover_one_node(self, node):
+        if node is None:
+            return False
+
+        # Primero corrige los subárboles inferiores.
+        if self._recover_one_node(node.getLeftChild()):
+            return True
+
+        if self._recover_one_node(node.getRightChild()):
+            return True
+
+        left_height = self._height(node.getLeftChild())
+        right_height = self._height(node.getRightChild())
+        balance_factor = left_height - right_height
+
+        # Caso izquierdo: LL o LR.
+        if balance_factor > 1:
+            left_node = node.getLeftChild()
+
+            if self._height(left_node.getLeftChild()) >= self._height(left_node.getRightChild()):
+                self._simpleRightTurn(node)
+                self._record_rotation("LL", node)
+            else:
+                self._simpleLeftTurn(left_node)
+                self._simpleRightTurn(node)
+                self._record_rotation("LR", node)
+
+            return True
+
+        # Caso derecho: RR o RL.
+        if balance_factor < -1:
+            right_node = node.getRightChild()
+
+            if self._height(right_node.getRightChild()) >= self._height(right_node.getLeftChild()):
+                self._simpleLeftTurn(node)
+                self._record_rotation("RR", node)
+            else:
+                self._simpleRightTurn(right_node)
+                self._simpleLeftTurn(node)
+                self._record_rotation("RL", node)
+
+            return True
+        return False
 
     # Public method for archiving a sub-tree
     def archiveSubTree(self, actualTime, time):
