@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from flask_socketio import SocketIO
@@ -18,6 +20,7 @@ ai_client = AIEventClient()
 
 generator_manager = ScenarioGeneratorManager( ai_client=ai_client, engine=event_engine)
 
+
 @app.route("/api/seismic-observatory", methods=["GET"])
 def getSeismicObservatory():
     observatory = event_engine.get_observatory()
@@ -26,8 +29,52 @@ def getSeismicObservatory():
     
     return jsonify(observatory.toDict())
 
-""" @app.route("/api/seismic-observatory", methods=["POST"])
-def createSeismicObservatory() """
+
+@app.route("/api/events", methods=["POST"])
+def createEvent():
+    #data is the object that arrives here from the frontend
+    data = request.json
+    #VALIDATING FIELDS
+    required_fields = [
+        "id",
+        "magnitude",
+        "depth",
+        "epicenter_x",
+        "epicenter_y",
+        "datetime",
+        "revision",
+        "station"
+    ]
+
+    for field in required_fields:
+        if field not in data:
+            return jsonify({
+                "success": False,
+                "reason": f"Missing field: {field}"
+            }), 400
+
+    try:
+        event_datetime = datetime.fromisoformat(data["datetime"])
+    except ValueError:
+        return jsonify({
+            "success": False,
+            "reason": "Invalid datetime format"
+        }), 400
+    #CREATING EVENT     
+    response = obs_service.createEvent(
+        data["id"],
+        data["magnitude"],
+        data["depth"],
+        data["epicenter_x"],
+        data["epicenter_y"],
+        event_datetime,
+        data["revision"],
+        data["station"]
+    )
+
+    if not response["success"]:
+        return jsonify(response), 400
+    return jsonify(response), 201
 
 @app.route("/api/scenario", methods=["POST"])
 def load_scenario():

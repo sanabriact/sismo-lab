@@ -149,6 +149,7 @@ class SeismicObservatory:
     def deleteEventById(self, id):
         node = self.avl_tree.searchById(id)
         if node is not None: 
+            self.history.addDeletedId(id)
             return self.avl_tree.delete(id)
         return False
 
@@ -169,7 +170,10 @@ class SeismicObservatory:
         return False
 
 
-    #def markAsReviewed()
+    def markAsRevised(self, id):
+        event = self.searchEventById(id)
+        if event is not None:
+            event.setAttentionStatus("revised")
     
     #def archiveSubTree() lo hace el viejo
 
