@@ -150,7 +150,7 @@ class SeismicObservatory:
         node = self.avl_tree.searchById(id)
         if node is not None: 
             self.history.addDeletedId(id)
-            return self.avl_tree.delete(id)
+            return self.avl_tree.delete(id), self.bst_tree.delete(id)
         return False
 
     def editEvent(self,report):
