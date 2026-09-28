@@ -86,7 +86,7 @@ class BST:
         node = Node(data)
         if self.root is None:
             self.root = node
-            """self.index[node.getValue().getKey()[2]] """
+            self.index[node.getValue().getKey()[2]] = node
             self._touch(node)
             return True
         else:
@@ -131,6 +131,22 @@ class BST:
                 return left
 
         return self._search(data, currentRoot.getRightChild())
+
+    # Search an element by its id
+    def searchById(self, id):
+        if self.root is None:
+            print("The tree is empty.")
+            return None
+        else:
+            return self._searchById(id)
+
+    # Private method of searching an element by id
+    def _searchById(self, id):
+        if id in self.index:
+            return self.index[id]
+        else:
+            return None
+    
     
     # Public method for preorder transversal
     def preorder(self):
@@ -193,7 +209,7 @@ class BST:
             return None
         else:
             # We check that the node exists in the tree
-            targetNode = self.search(data[2])
+            targetNode = self.searchById(data)
             if targetNode is None:
                 return None
             else:

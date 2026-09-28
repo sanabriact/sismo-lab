@@ -136,6 +136,7 @@ class AVL:
             self._record_insert()
             if balance:
                 self._checkBalance(node.getParent(), 0)
+            self.index[node.getValue().getKey()[2]] = node
             return True
         return self._insert(node, child, balance)
         
