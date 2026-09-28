@@ -161,7 +161,9 @@ class SeismicObservatory:
         if event is not None:
             event.setAttentionStatus("revised")
     
-    #def archiveSubTree() lo hace el viejo
+    # Méthod to archivate a sub tree 
+    def archivateSubTree(self, actualTime):
+        rootToArchivate = self.avl_tree.archiveSubTree(actualTime)
 
     def enqueueReport(self, report):
         self.report_queue.enqueue(report)

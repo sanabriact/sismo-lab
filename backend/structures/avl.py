@@ -395,12 +395,12 @@ class AVL:
                 return None
 
     # Public method for archiving a sub-tree
-    def archiveSubTree(self, time):
+    def archiveSubTree(self, actualTime, time):
         if self.root is None:
             print("The tree is empty")
         else:
             listToArchivate = []
-            archivateRoot = self._archiveSubTree(self.root, time, listToArchivate)
+            archivateRoot = self._archiveSubTree(self.root, actualTime, time ,listToArchivate)
             if archivateRoot:
                 self.root = None
                 return archivateRoot
@@ -410,11 +410,11 @@ class AVL:
                 return rootToArchivate
 
     # Private method for archivating a sub-tree
-    def _archiveSubTree(self, node, time, listToArchivate):
+    def _archiveSubTree(self, node, actualTime, time, listToArchivate):
         if node is not None:
-            leftEligible = self._archiveSubTree(node.getLeftChild(), time, listToArchivate)
-            rightEligible= self._archiveSubTree(node.getRightChild(), time, listToArchivate)
-            Eligible = node.isArchivable(time) and leftEligible and rightEligible
+            leftEligible = self._archiveSubTree(node.getLeftChild(), actualTime, time, listToArchivate)
+            rightEligible= self._archiveSubTree(node.getRightChild(), actualTime, time, listToArchivate)
+            Eligible = node.isArchivable(actualTime, time) and leftEligible and rightEligible
             if not Eligible:
                 if leftEligible and node.getLeftChild() is not None:
                     listToArchivate.append(node.getLeftChild())
@@ -443,7 +443,7 @@ class AVL:
         
         return self.findArchiveSubTree(listToArchivate, index+1, best)
     
-    # Método para dibujar el arbol
+    # Public method for drawing a tree
     def draw(self):
         if self.root is None:
             print("(El árbol está vacío)")

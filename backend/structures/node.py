@@ -66,6 +66,10 @@ class Node:
     def setNodeCreationTime(self, time):
         self.nodeCreationTime = time
     
+     # Se calcula el tiempo desde creacion
+    def calculateTime(self, actualTime):
+        return actualTime - self.nodeCreationTime
+    
     # Retorna true si es nodo hoja
     def isLeaf(self):
         return self.getLeftChild() is None and self.getRightChild() is None
@@ -79,8 +83,8 @@ class Node:
         return self.hasParent() and self.parent.hasRightChild() and self.value == self.parent.rightChild.value
     
     # Método para comprobar si el nodo es archivable
-    def isArchivable(self, time):
-        return self.value[0] == 1 and self.nodeCreationTime > time 
+    def isArchivable(self, actualTime, time):
+        return self.value[0] == 1 and self.calculateTime(actualTime) > time 
     
     # Método para calcular la profundidad del nodo
     def getDepth(self, counter):
@@ -99,33 +103,6 @@ class Node:
             counter = self.getRightChild().countNodes(counter)
         return counter
     
-    """ 2026-09-07T10:00:00Z. """
-    # Método para calcular el tiempo actual de creacion de el nodo
-    def calculateTime(self, time):
-        nodeCreationTime = self.nodeCreationTime
-        minutes = 0
-        seconds = 0
-        year = 0
-        month = 0
-        day = 0
-        hour = 0
-               
-        for i in range(0, len(nodeCreationTime)+1):
-            if i <= 3:
-                year += nodeCreationTime[i]
-            elif i >= 5 and i <= 6:
-                month += nodeCreationTime[i]
-            elif i >= 8 and i <= 9:
-                day += nodeCreationTime[i]
-            elif i >= 11 and i <= 12:
-                hour += nodeCreationTime[i]
-            elif i >= 14 and i <= 15:
-                minutes = nodeCreationTime[i]
-            elif i >= 17 and i <= 18:
-                seconds = nodeCreationTime[i]
-        
-        return None
-
     def toDict(self):
         return {
             "value": objectToDict(self.value),
