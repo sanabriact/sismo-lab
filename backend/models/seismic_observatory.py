@@ -195,7 +195,7 @@ class SeismicObservatory:
 
     def toDict(self):
         return {
-            "scenario_id": self.scenarioId,
+            "scenario_id": self.scenario_id,
             "avl_tree": objectToDict(self.avl_tree),
             "bst_tree":objectToDict(self.bst_tree),
             "stations":[objectToDict(station) for station in self.stations],

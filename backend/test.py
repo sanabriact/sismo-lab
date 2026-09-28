@@ -1,4 +1,5 @@
 from backend.services.seismic_observatory_service import SeismicObservatoryService
+from backend.services.tree_service import TreeService
 from backend.structures.avl import AVL
 from backend.structures.bst import BST
 from backend.models.event import Event
@@ -36,3 +37,7 @@ observatory.getAVLTree().draw()
 
 persistence._write(observatory.toDict())
 print("=========================================================================")
+
+
+tree_service = TreeService("tree.json")
+tree_service.postTree(observatory.getAVLTree())

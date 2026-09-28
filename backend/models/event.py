@@ -127,7 +127,7 @@ class Event:
                 "epicenter_y": self.epicenter_y,
                 "datetime": self.datetime.isoformat(),
                 "revision": self.revision,
-                "reporting_stations": [ station.toDict() for station in self.reporting_stations],
+                "reporting_stations": [ station for station in self.reporting_stations],
                 "attention_status": self.attention_status,
                 "event_status": self.event_status,
                 "populated_zone": self.populated_zone,

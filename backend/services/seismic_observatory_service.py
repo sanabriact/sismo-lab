@@ -1,3 +1,4 @@
+from datetime import datetime
 from uuid import uuid4
 from backend.repositories.seismic_observatory_repository import SeismicObservatoryRepository
 from backend.models.seismic_observatory import SeismicObservatory
@@ -89,6 +90,7 @@ class SeismicObservatoryService:
             "success": True,
             "event": event.toDict()
         }
+    
     def load_scenario(self, data):
         if not isinstance(data, dict):
             raise ValueError("El escenario debe ser un JSON")

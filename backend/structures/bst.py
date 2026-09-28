@@ -87,7 +87,7 @@ class BST:
         node = Node(data)
         if self.root is None:
             self.root = node
-            self.index[node.getValue().getKey()[2]]
+            self.index[node.getValue().getKey()[2]] = node
             self._touch(node)
             return True
         else:
