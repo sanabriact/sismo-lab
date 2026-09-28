@@ -532,9 +532,12 @@ class AVL:
             listToArchivate = []
             archivateRoot = self._archiveSubTree(self.root, time, listToArchivate)
             if archivateRoot:
-                a = 0
+                self.root = None
+                return archivateRoot
             else:
                 rootToArchivate = self.findArchiveSubTree(listToArchivate, 1, listToArchivate[0])
+                self.removeSubTree(rootToArchivate)
+                return rootToArchivate
 
     # Private method for archivating a sub-tree
     def _archiveSubTree(self, node, time, listToArchivate):
