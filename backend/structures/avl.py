@@ -139,6 +139,10 @@ class AVL:
             self.index[node.getValue().getKey()[2]] = node
             return True
         return self._insert(node, child, balance)
+    
+    def _updateTree(self, event):
+        self.delete(event.getKey()[2])
+        self.insert(event)
         
     # Public method for searching a node
     def search(self, data):

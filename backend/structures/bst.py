@@ -63,6 +63,7 @@ class BST:
         if leftChild is None:
             currentRoot.setLeftChild(node)
             node.setParent(currentRoot)
+            self.index[node.getValue().getKey()[2]] = node
             self._touch(node)
             self._touch(currentRoot)
             return True, leftChild
@@ -75,6 +76,7 @@ class BST:
         if rightChild is None:
             currentRoot.setRightChild(node)
             node.setParent(currentRoot)
+            self.index[node.getValue().getKey()[2]] = node
             self._touch(node)
             self._touch(currentRoot)
             return True, rightChild
@@ -107,8 +109,8 @@ class BST:
         return self._insert(node, child)
 
     # Method for updating the tree when a report changes an event key.
-    def _updateKey(self, event, oldKey):
-        self.delete(oldKey)
+    def _updateTree(self, event):
+        self.delete(event.getKey()[2])
         self.insert(event)
      
     # Search and element by its key

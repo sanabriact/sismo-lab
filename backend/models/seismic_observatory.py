@@ -161,9 +161,8 @@ class SeismicObservatory:
             event.updateEventData(report)
             
             if event.getKey() != oldKey:
-                self.deleteEventById(report.getEventId())
-                self.avl_tree.insert(event)
-                self.bst_tree._updateKey(event, oldKey)
+                self.avl_tree._updateTree(event)
+                self.bst_tree._updateTree(event)
                 #RECALCULAR ASOCIACIONES Y METRICAS
                 
                 return True
