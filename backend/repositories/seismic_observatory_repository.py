@@ -12,6 +12,15 @@ from backend.structures.queue import Queue
 from backend.structures.stack import Stack
 
 class SeismicObservatoryRepository(JSONRepository):
+    """
+    Responsible only for translating between the SeismicObservatory
+    domain object and its JSON representation on disk.
+ 
+    It does not know about business rules (creating an event, processing
+    a report, etc.). That belongs to SeismicObservatory (the domain) and
+    to SeismicObservatoryService (the use-case orchestration layer).
+    """
+
     def __init__(self):
         super().__init__("seismic_observatory.json")
 
@@ -25,15 +34,6 @@ class SeismicObservatoryRepository(JSONRepository):
             return None
         observatory = SeismicObservatory.fromDict(data)
         return observatory
-
-    def getAll(self):
-        return self._read()
-
-    def post(self, object):
-        data = self._read()
-        observatory = data.setdefault("seismic_observatory",{})
-
-        return self._write(data)
 
     
     #def get by id 

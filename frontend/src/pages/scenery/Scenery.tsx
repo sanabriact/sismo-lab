@@ -94,7 +94,7 @@ const SeismicMapPage = () => {
   const [selectedId, setSelectedId] = useState<number | null>(null);
 
   return (
-    <section className="min-h-screen w-full px-6 py-10 lg:px-10">
+    <section className="min-h-screen w-full">
       <MapScenery
         zones={zones}
         events={events}
