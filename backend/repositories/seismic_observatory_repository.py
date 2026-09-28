@@ -25,8 +25,7 @@ class SeismicObservatoryRepository(JSONRepository):
             return None
         observatory = SeismicObservatory.fromDict(data)
         return observatory
-        
-        
+
     def getAll(self):
         return self._read()
 

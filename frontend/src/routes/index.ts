@@ -9,6 +9,7 @@ const ConsultEvent = lazy(() => import ('../pages/events/consult/ConsultEvent'))
 const CorrectEvent = lazy(() => import ('../pages/events/correct/CorrectEvent'));
 const CreateEvent = lazy(() => import ('../pages/events/create/CreateEvent'));
 const DeleteEvent = lazy (() => import ('../pages/events/delete/DeleteEvent'));
+const Scenery = lazy(() => import ('../pages/scenery/Scenery'));
 
 /* Adding components to each route */
 const coreRoutes: AppRoute[] = [
@@ -16,6 +17,11 @@ const coreRoutes: AppRoute[] = [
         path: "/home",
         title: "Inicio",
         component: Home
+    },
+    {
+        path: "/escenary",
+        title: "Escenario",
+        component: Scenery
     },
     {
         path: "/events/visualize-trees",

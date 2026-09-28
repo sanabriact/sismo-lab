@@ -4,6 +4,7 @@ from backend.models.event import Event
 from backend.models.seismic_observatory import SeismicObservatory
 from backend.models.report import Report
 from backend.repositories.seismic_observatory_repository import SeismicObservatoryRepository
+from backend.repositories.json_repository import JSONRepository
 
 from datetime import datetime
 
@@ -16,19 +17,21 @@ for i in range(1,7):
     magnitude = 4.0 + i * 0.5
     observatory.createEvent(n-i,magnitude,10.0,20.0,30.0, date,1,"ST-001")
      
-
+print("================================= DIBUJO ÁRBOLES ========================================")
 observatory.getAVLTree().draw()
-print("=========================================================================") 
-print(observatory.searchEventById(100))
-print(observatory.deleteEventById(2))
+observatory.getBSTTree().draw()
+print("=========================================================================")
+print(f"Busqueda (id = 100): {observatory.searchEventById(100)}")
+print(f"Eliminación (id = 2): {observatory.deleteEventById(2)}")
 observatory.getAVLTree().draw()
-
+observatory.getBSTTree().draw()
+print("=========================================================================")
 report = Report(3,2,"ST-001", 3.2,23,105,105,datetime(2025, 6, 1, 12, 0, 0))
 observatory.editEvent(report)
+observatory.getBSTTree().draw()
+persistence = JSONRepository("seismic_observatory.json")
 observatory.getAVLTree().draw()
 persistence = SeismicObservatoryRepository()
 
 persistence._write(observatory.toDict())
-
-
-
+print("=========================================================================")

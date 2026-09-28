@@ -38,6 +38,9 @@ class SeismicObservatory:
         # ===================== versiones y modo de ejecución =====================
         self.saved_versions = []          
         self.execution_mode = "normal"  
+        
+        # ===================== Escenario =========================
+        self.scenario_id = None
 
     
     def getAVLTree(self):
@@ -111,8 +114,8 @@ class SeismicObservatory:
     def setExecutionMode(self, mode):
         self.execution_mode = mode
 
-    def createEvent(self, id, magnitude, depth, epicenter_x, epicenter_y, datetime: datetime, revision, station):
-        if self.avl_tree.searchById(id) is not None:
+    def createEvent(self, id, magnitude, depth, epicenter_x, epicenter_y, datetime: datetime, revision, station, balance=True):
+        if self.avl_tree.searchById(id) is not None and self.bst_tree.searchById(id) is not None:
             return False
         #Validar que no este en historico
         if id in self.history.getArchived():
@@ -120,8 +123,22 @@ class SeismicObservatory:
         if id in self.history.getDeletedIds():
             return False
         event = Event(id, magnitude, depth, epicenter_x, epicenter_y, datetime, revision, station, self.zones)
-        return self.avl_tree.insert(event)
-        
+        return self.avl_tree.insert(event, balance), self.bst_tree.insert(event)
+    
+    def begin_visual_operation(self):
+        self.avl_tree.begin_visual_operation()
+        self.bst_tree.begin_visual_operation()
+    
+    
+    def finish_visual_operation(self):
+        avl_steps = self.avl_tree.finish_visual_operation()
+        bst_patch = self.bst_tree.finish_visual_operation()
+
+        # El BST solo cambia durante la inserción inicial.
+        if len(avl_steps) > 0:
+            avl_steps[0]["bstPatch"] = bst_patch
+
+        return avl_steps
 
     def searchEventById(self, id):
         node = self.avl_tree.searchById(id)
@@ -141,11 +158,13 @@ class SeismicObservatory:
         if event is not None:
             oldKey = event.getKey()
             event.updateEventData(report)
+            
             if event.getKey() != oldKey:
                 self.deleteEventById(report.getEventId())
                 self.avl_tree.insert(event)
+                self.bst_tree._updateKey(event, oldKey)
                 #RECALCULAR ASOCIACIONES Y METRICAS
-
+                
                 return True
         return False
 
@@ -172,6 +191,7 @@ class SeismicObservatory:
 
     def toDict(self):
         return {
+            "scenario_id": self.scenarioId,
             "avl_tree": objectToDict(self.avl_tree),
             "bst_tree":objectToDict(self.bst_tree),
             "stations":[objectToDict(station) for station in self.stations],
@@ -191,6 +211,7 @@ class SeismicObservatory:
     @classmethod
     def fromDict(cls,data):
         observatory = cls()
+        observatory.scenario_id = data["scenario_id"]
         observatory.avl_tree = AVL.fromDict(data["avl_tree"])
         observatory.bst_tree = BST.fromDict(data["bst_tree"])
         observatory.stations = [Station.fromDict(station) for station in data["stations"]]

@@ -1,4 +1,5 @@
-import type { DropdownMenuItems } from "../../types/DropdownMenuItems";
+import type { DropdownMenuItems } from "./DropdownMenuItems";
+
 
 export interface DropdownMenuProps {
     title: string;
