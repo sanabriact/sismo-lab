@@ -166,7 +166,7 @@ class SeismicObservatory:
                 self.bst_tree._updateKey(event, oldKey)
                 #RECALCULAR ASOCIACIONES Y METRICAS
                 
-                return True
+            return True
         return False
 
 
@@ -218,8 +218,8 @@ class SeismicObservatory:
     def fromDict(cls,data):
         observatory = cls()
         observatory.scenario_id = data["scenario_id"]
-        observatory.avl_tree = AVL.fromDict(data["avl_tree"])
-        observatory.bst_tree = BST.fromDict(data["bst_tree"])
+        observatory.avl_tree = AVL.fromDict(data["avl_tree"], Event)
+        observatory.bst_tree = BST.fromDict(data["bst_tree"], Event)
         observatory.stations = [Station.fromDict(station) for station in data["stations"]]
         observatory.zones = [Zone.fromDict(zone) for zone in data["zones"]]
         observatory.history = History.fromDict(data["history"])

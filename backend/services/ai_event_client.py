@@ -1,5 +1,6 @@
 import json
 import os
+from datetime import datetime, timezone
 from pathlib import Path
 from dotenv import load_dotenv
 from groq import Groq
@@ -34,6 +35,36 @@ EVENT_SCHEMA = {
         "datetime",
     ],
 }
+
+def validate_ai_response(data, clock):
+    magnitude = round(float(data["magnitude"]), 1)
+    depth = round(float(data["depth"]), 1)
+    x = round(float(data["epicenter_x"]), 1)
+    y = round(float(data["epicenter_y"]), 1)
+
+    date = datetime.fromisoformat(data["datetime"].replace("Z", "+00:00"))
+    date = date.astimezone(timezone.utc)
+
+    if not -2 <= magnitude <= 10:
+        raise ValueError("Magnitud inválida")
+
+    if not 0 <= depth <= 700:
+        raise ValueError("Profundidad inválida")
+
+    if not 0 <= x <= 1000 or not 0 <= y <= 1000:
+        raise ValueError("Epicentro inválido")
+
+    if date > clock.current_time:
+        raise ValueError("La fecha supera el reloj del escenario")
+
+    return {
+        "magnitude": magnitude,
+        "depth": depth,
+        "epicenter_x": x,
+        "epicenter_y": y,
+        "datetime": date,
+    }
+
 
 class AIEventClient:
     def __init__(self):

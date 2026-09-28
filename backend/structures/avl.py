@@ -54,31 +54,6 @@ class AVL:
             "avlPatch": patch,
         })
 
-    """ # Método para insertar evento
-    def insertEvent(self, data, time):
-        if self.comprobatorNode(data):
-            self.updateNodeValues(data)
-        else:
-            self.insert(data)
-            self.insertTime(time, self.search(data[2]))
-
-    # Método para comprobar la existencia del nodo
-    def comprobatorNode(self, data):
-        if self.search(data.getValue()[2]) is None:
-            return False
-        else:
-            return True
-
-    # Método para actualizar valores del nodo
-    def updateNodeValues(self, data):
-        node = self.search(data.getValue()[2])
-        node.setValue()[0] = data[0]
-        node.setValue()[1] = data[1]
-        print("This event already existing in the tree, the data has been updated")
-
-    def insertTime(self, time, node):
-        node.setNodeCreationTime(time)"""
-
     # Method for trying inserting left child
     def _tryInsertLeftChild(self, currentRoot, node):
         leftChild = currentRoot.getLeftChild()

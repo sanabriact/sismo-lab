@@ -8,11 +8,10 @@ class SeismicObservatoryService:
         self.repository = SeismicObservatoryRepository()
 
     def getObservatory(self):
-        return self.repository.getAll()
-        """  observatory = self.repository.load()
-            if observatory is None:
-                observatory = SeismicObservatory()
-            return observatory """
+        observatory = self.repository.load()
+        if observatory is None:
+            observatory = SeismicObservatory()
+        return observatory
  
 
     def createEvent(self, id, magnitude, depth, epicenter_x, epicenter_y, datetime: datetime, revision, station):

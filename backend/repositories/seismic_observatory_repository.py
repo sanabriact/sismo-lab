@@ -28,9 +28,6 @@ class SeismicObservatoryRepository(JSONRepository):
         data = observatory.toDict()
         return self._write(data)
     
-    def getAll(self):
-        return self._read()
-
     def load(self):
         data = self._read()
         if not data:

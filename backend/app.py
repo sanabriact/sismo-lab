@@ -3,6 +3,7 @@ from datetime import datetime
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from flask_socketio import SocketIO
+from backend.repositories.json_utils import objectToDict
 from backend.services.seismic_observatory_service import SeismicObservatoryService
 from backend.services.realtime_service import init_realtime
 from backend.services.event_engine import EventEngine
@@ -25,7 +26,7 @@ generator_manager = ScenarioGeneratorManager( ai_client=ai_client, engine=event_
 def getSeismicObservatory():
     observatory = event_engine.get_observatory()
     if observatory is None:
-        return jsonify(obs_service.getObservatory())
+        return jsonify(objectToDict(obs_service.getObservatory()))
     
     return jsonify(observatory.toDict())
 

@@ -16,7 +16,6 @@ class BST:
     def begin_visual_operation(self):
         self._dirty_ids.clear()
 
-
     def finish_visual_operation(self):
         upserted = []
 
@@ -87,7 +86,7 @@ class BST:
         node = Node(data)
         if self.root is None:
             self.root = node
-            self.index[node.getValue().getKey()[2]] = node
+            """self.index[node.getValue().getKey()[2]] """
             self._touch(node)
             return True
         else:
