@@ -4,6 +4,59 @@ from backend.repositories.json_utils import objectToDict
 class BST:
     def __init__(self):
         self.root = None
+        self.index = {}
+        self._dirty_ids = set()
+        self._visual_steps = []
+    
+    def _touch(self, node):
+        if node is not None:
+            event_id = node.getValue().getKey()[2]
+            self._dirty_ids.add(event_id)
+    
+    def begin_visual_operation(self):
+        self._dirty_ids.clear()
+
+
+    def finish_visual_operation(self):
+        upserted = []
+
+        for event_id in self._dirty_ids:
+            node = self.index[event_id]
+
+            upserted.append({
+                "id": event_id,
+                "key": list(node.getValue().getKey()),
+                "height": node.getHeight(),
+                "leftChildId": (
+                    node.getLeftChild().getValue().getKey()[2]
+                    if node.hasLeftChild()
+                    else None
+                ),
+                "rightChildId": (
+                    node.getRightChild().getValue().getKey()[2]
+                    if node.hasRightChild()
+                    else None
+                ),
+                "parentId": (
+                    node.getParent().getValue().getKey()[2]
+                    if node.hasParent()
+                    else None
+                ),
+            })
+
+        root_id = None
+
+        if self.root is not None:
+            root_id = self.root.getValue().getKey()[2]
+
+        self._dirty_ids.clear()
+
+        return {
+            "operation": "insert",
+            "upserted": upserted,
+            "removedIds": [],
+            "rootId": root_id,
+        }
 
     # Method for trying inserting left child
     def _tryInsertLeftChild(self, currentRoot, node):
@@ -11,6 +64,8 @@ class BST:
         if leftChild is None:
             currentRoot.setLeftChild(node)
             node.setParent(currentRoot)
+            self._touch(node)
+            self._touch(currentRoot)
             return True, leftChild
         else:
             return False, leftChild
@@ -21,6 +76,8 @@ class BST:
         if rightChild is None:
             currentRoot.setRightChild(node)
             node.setParent(currentRoot)
+            self._touch(node)
+            self._touch(currentRoot)
             return True, rightChild
         else:
             return False, rightChild
@@ -30,6 +87,8 @@ class BST:
         node = Node(data)
         if self.root is None:
             self.root = node
+            self.index[node.getValue().getKey()[2]]
+            self._touch(node)
             return True
         else:
             return self._insert(node, self.root)

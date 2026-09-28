@@ -123,8 +123,22 @@ class SeismicObservatory:
         if id in self.history.getDeletedIds():
             return False
         event = Event(id, magnitude, depth, epicenter_x, epicenter_y, datetime, revision, station, self.zones)
-        return self.avl_tree.insert(event, balance=balance), self.bst_tree.insert(event)
-        
+        return self.avl_tree.insert(event, balance), self.bst_tree.insert(event)
+    
+    def begin_visual_operation(self):
+        self.avl_tree.begin_visual_operation()
+        self.bst_tree.begin_visual_operation()
+    
+    
+    def finish_visual_operation(self):
+        avl_steps = self.avl_tree.finish_visual_operation()
+        bst_patch = self.bst_tree.finish_visual_operation()
+
+        # El BST solo cambia durante la inserción inicial.
+        if len(avl_steps) > 0:
+            avl_steps[0]["bstPatch"] = bst_patch
+
+        return avl_steps
 
     def searchEventById(self, id):
         node = self.avl_tree.searchById(id)

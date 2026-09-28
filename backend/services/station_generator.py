@@ -26,9 +26,8 @@ class StationGenerator:
                 observatory = self.engine.get_observatory()
 
                 data = self.ai_client.generate(
-                    station=self.station,
-                    clock=observatory.getClock(),
-                    zones=observatory.getZones(),
+                    self.station,
+                    observatory.getClock()
                 )
 
                 event_data = validate_ai_response(
