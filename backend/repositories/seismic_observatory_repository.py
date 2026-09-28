@@ -34,4 +34,9 @@ class SeismicObservatoryRepository(JSONRepository):
             return None
         observatory = SeismicObservatory.fromDict(data)
         return observatory
-        
+
+    
+    #def get by id 
+    #def post para cada clase
+    #def delete para cada clase
+    #def put para cada clase

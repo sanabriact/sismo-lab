@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { ObservatoryService } from "../../../services/seismicObservatory/seismicObservatoryService";
 import type { SeismicObservatory } from "../../../models/interfaces/observatory/SeismicObservatory";
-import { TreeView } from "../../../components/Tree/TreeView";
+import { TreeView } from "../../../components/tree/TreeView";
 
 const VisualizeTrees = () => {
     /* 
@@ -55,13 +55,13 @@ const VisualizeTrees = () => {
                 <div>
                     <h2 className="mb-2 text-xl font-semibold">AVL</h2>
                     <div className="overflow-auto rounded-lg border border-gray-200">
-                        <TreeView data={data.avl_tree} />
+                        <TreeView data={data.avl_tree} type="avl"/>
                     </div>
                 </div>
                 <div>
                     <h2 className="mb-2 text-xl font-semibold">BST</h2>
                     <div className="overflow-auto rounded-lg border border-gray-200">
-                        <TreeView data={data.bst_tree} />
+                        <TreeView data={data.bst_tree} type="bst"/>
                     </div>
                 </div>
             </>
