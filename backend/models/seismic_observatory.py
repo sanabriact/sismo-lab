@@ -113,6 +113,8 @@ class SeismicObservatory:
         return self.execution_mode
     def setExecutionMode(self, mode):
         self.execution_mode = mode
+    def getScenarioId(self):
+        return self.scenario_id
 
     def createEvent(self, id, magnitude, depth, epicenter_x, epicenter_y, datetime: datetime, revision, station, balance=True):
         if self.avl_tree.searchById(id) is not None and self.bst_tree.searchById(id) is not None:

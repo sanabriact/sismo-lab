@@ -1,7 +1,19 @@
+import json
 from datetime import datetime
 from uuid import uuid4
 from backend.repositories.seismic_observatory_repository import SeismicObservatoryRepository
 from backend.models.seismic_observatory import SeismicObservatory
+from backend.models.station import Station
+from backend.models.zone import Zone
+from backend.utils.quantities import parseDatetime, hasAtMostOneDecimal
+
+EXECUTION_MODES = ("normal", "stress")
+
+class ScenarioValidationError(Exception):
+    """El escenario no es válido. `issues` lista todos los problemas encontrados."""
+    def __init__(self, issues):
+        super().__init__("; ".join(issues))
+        self.issues = issues
 
 class SeismicObservatoryService:
     def __init__(self):
@@ -92,34 +104,334 @@ class SeismicObservatoryService:
             "event": event.toDict()
         }
     
-    def load_scenario(self, data):
-        if not isinstance(data, dict):
-            raise ValueError("El escenario debe ser un JSON")
+    # ===================== Carga de escenarios =====================
+    # La carga es completa o no se aplica: primero se construye y valida un
+    # observatorio nuevo; solo si no hay problemas se guarda en disco.
 
-        # Permite recibir el escenario directo o dentro de la clave
-        # seismic_observatory.
-        if "seismic_observatory" in data:
+    def loadScenarioFromText(self, content):
+        observatory = self.buildScenario(self.parseScenarioText(content))
+        self.repository.save(observatory)
+        return observatory
+
+    def loadScenarioFromAI(self, ai_mode):
+        # Aún no hay generación de escenarios con la IA: "empty" usa una
+        # configuración base (estaciones y zonas fijas, sin eventos).
+        if ai_mode != "empty":
+            raise ScenarioValidationError([
+                "La generación de escenarios con IA en el modo '" + str(ai_mode) + "' aún no está implementada"
+            ])
+        observatory = self.buildScenario({
+            "execution_mode": "normal",
+            "stations": [
+                {"id": 1, "name": "Estación Norte"},
+                {"id": 2, "name": "Estación Centro"},
+                {"id": 3, "name": "Estación Sur"},
+            ],
+            "zones": [
+                {"id": 1, "x_min": 0, "x_max": 500, "y_min": 0, "y_max": 500, "is_populated": True},
+                {"id": 2, "x_min": 500, "x_max": 1000, "y_min": 500, "y_max": 1000, "is_populated": False},
+            ],
+            "events": [],
+        })
+        self.repository.save(observatory)
+        return observatory
+
+    def parseScenarioText(self, content):
+        if not isinstance(content, str) or not content.strip():
+            raise ScenarioValidationError(["El archivo está vacío"])
+        try:
+            data = json.loads(content)
+        except json.JSONDecodeError as error:
+            raise ScenarioValidationError([
+                f"JSON inválido (línea {error.lineno}, columna {error.colno}): {error.msg}"
+            ])
+        if isinstance(data, dict) and "seismic_observatory" in data:
             data = data["seismic_observatory"]
+        if not isinstance(data, dict):
+            raise ScenarioValidationError(["El escenario debe ser un objeto JSON"])
+        return data
 
-        if "stations" not in data:
-            raise ValueError("El escenario no tiene estaciones")
+    def buildScenario(self, data):
+        """
+        Construye y valida un SeismicObservatory a partir de un dict.
 
-        if len(data["stations"]) == 0:
-            raise ValueError("El escenario debe tener al menos una estación")
+        - Con "avl_tree" se carga por topología (se recupera el árbol tal cual).
+        - Sin "avl_tree" se carga por inserciones: los eventos de "events" se
+          insertan uno a uno, con balanceo, en el AVL y en el BST.
+        """
+        mode = data.get("execution_mode", "normal")
+        if mode not in EXECUTION_MODES:
+            raise ScenarioValidationError(["execution_mode debe ser 'normal' o 'stress'"])
 
-        if "execution_mode" not in data:
-            data["execution_mode"] = "normal"
+        if "avl_tree" in data:
+            observatory = self._buildFromTopology(data, mode)
+        else:
+            observatory = self._buildFromInsertions(data, mode)
 
-        if data["execution_mode"] != "normal" and data["execution_mode"] != "stress":
+        # Siempre un id nuevo: evita que eventos en cola de un escenario
+        # anterior con el mismo id se apliquen a este.
+        observatory.scenario_id = str(uuid4())
+        return observatory
+
+    def _buildFromInsertions(self, data, mode):
+        issues = []
+        observatory = SeismicObservatory()
+
+        # ---- reloj ----
+        clock_text = data.get("datetime") or (data.get("clock") or {}).get("current_time")
+        if clock_text is not None:
+            try:
+                observatory.getClock().setCurrentTime(parseDatetime(clock_text))
+            except (ValueError, TypeError, AttributeError):
+                issues.append("El reloj (datetime) no es una fecha ISO 8601 válida")
+        clock_time = observatory.getClock().getCurrentTime()
+
+        # ---- estaciones ----
+        stations = data.get("stations")
+        station_ids = set()
+        if not isinstance(stations, list) or len(stations) == 0:
+            issues.append("El escenario debe tener al menos una estación")
+        else:
+            for i, item in enumerate(stations):
+                if not isinstance(item, dict) or "id" not in item or "name" not in item:
+                    issues.append(f"Estación #{i + 1}: debe tener 'id' y 'name'")
+                    continue
+                if item["id"] in station_ids:
+                    issues.append(f"Estación #{i + 1}: id {item['id']} repetido")
+                    continue
+                station_ids.add(item["id"])
+                observatory.addStation(Station(item["id"], item["name"]))
+
+        # ---- zonas ----
+        zones = data.get("zones", [])
+        if not isinstance(zones, list):
+            issues.append("'zones' debe ser una lista")
+            zones = []
+        for i, item in enumerate(zones):
+            try:
+                observatory.addZone(Zone(
+                    item["id"], item["x_min"], item["x_max"],
+                    item["y_min"], item["y_max"], item["is_populated"],
+                ))
+            except (KeyError, TypeError, ValueError) as error:
+                issues.append(f"Zona #{i + 1}: {error}")
+
+        # ---- eventos ----
+        events = data.get("events", [])
+        if not isinstance(events, list):
+            issues.append("'events' debe ser una lista")
+            events = []
+
+        seen_ids = set()
+        required = ("id", "magnitude", "depth", "epicenter_x", "epicenter_y", "datetime", "station")
+        for i, item in enumerate(events):
+            label = f"Evento #{i + 1}"
+            if not isinstance(item, dict):
+                issues.append(f"{label}: debe ser un objeto")
+                continue
+            missing = [field for field in required if field not in item]
+            if missing:
+                issues.append(f"{label}: faltan campos {', '.join(missing)}")
+                continue
+
+            label = f"Evento #{i + 1} (id {item['id']})"
+            if item["id"] in seen_ids:
+                issues.append(f"{label}: id repetido en el archivo")
+                continue
+            seen_ids.add(item["id"])
+
+            numeric_ok = True
+            for field in ("magnitude", "depth", "epicenter_x", "epicenter_y"):
+                value = item[field]
+                if isinstance(value, bool) or not isinstance(value, (int, float)):
+                    issues.append(f"{label}: '{field}' debe ser numérico")
+                    numeric_ok = False
+                elif not hasAtMostOneDecimal(value):
+                    issues.append(f"{label}: '{field}' admite máximo un decimal")
+                    numeric_ok = False
+            if not numeric_ok:
+                continue
+
+            # Sin estaciones válidas ya hay un error propio; no se repite por evento.
+            if station_ids and item["station"] not in station_ids:
+                issues.append(f"{label}: la estación {item['station']} no existe")
+                continue
+
+            try:
+                event_time = parseDatetime(item["datetime"])
+            except (ValueError, TypeError, AttributeError):
+                issues.append(f"{label}: 'datetime' no es una fecha ISO 8601 válida")
+                continue
+            if event_time > clock_time:
+                issues.append(f"{label}: la fecha supera el reloj del escenario")
+                continue
+
+            try:
+                result = observatory.createEvent(
+                    id=item["id"],
+                    magnitude=item["magnitude"],
+                    depth=item["depth"],
+                    epicenter_x=item["epicenter_x"],
+                    epicenter_y=item["epicenter_y"],
+                    datetime=event_time,
+                    revision=item.get("revision", 1),
+                    station=item["station"],
+                    balance=True,
+                )
+            except (ValueError, TypeError) as error:
+                issues.append(f"{label}: {error}")
+                continue
+            if result is False or not all(result):
+                issues.append(f"{label}: ya existe un evento con esa clave")
+
+        if issues:
+            raise ScenarioValidationError(issues)
+
+        observatory.setExecutionMode(mode)
+        return observatory
+
+    def _buildFromTopology(self, data, mode):
+        issues = []
+
+        # Se completa lo que falte con los valores por defecto de un
+        # observatorio vacío, para aceptar exportaciones parciales.
+        base = SeismicObservatory().toDict()
+        merged = {**base, **{key: value for key, value in data.items() if key in base}}
+        merged["scenario_id"] = None
+        if "datetime" in data and "clock" not in data:
+            merged["clock"] = {"current_time": data["datetime"]}
+
+        try:
+            observatory = SeismicObservatory.fromDict(merged)
+        except (KeyError, TypeError, ValueError, AttributeError) as error:
+            raise ScenarioValidationError([f"Topología inválida: {type(error).__name__}: {error}"])
+
+        if len(observatory.getStations()) == 0:
+            issues.append("El escenario debe tener al menos una estación")
+
+        # Si el archivo no trae BST, se reconstruye insertando los eventos.
+        if "bst_tree" not in data:
+            for event in observatory.getAVLTree().preorder() or []:
+                observatory.getBSTTree().insert(event)
+
+        audit = observatory.getAVLTree().audit()
+        for issue in audit["issues"]:
+            detail = ", ".join(f"{k}={v}" for k, v in issue.items() if k != "type")
+            issues.append(f"AVL: {issue['type']} ({detail})")
+
+        if not audit["balanced"] and mode != "stress":
+            issues.append(
+                f"La topología está desbalanceada (desbalance máx. {audit['max_imbalance']}): "
+                "solo puede cargarse con execution_mode 'stress'"
+            )
+
+        if issues:
+            raise ScenarioValidationError(issues)
+
+        observatory.setExecutionMode(mode)
+        return observatory
+
+    # ===================== Métodos para el EventEngine =====================
+    # El EventEngine trabaja con el observatorio que tiene en memoria
+    # (el escenario activo), por eso estos métodos reciben la instancia
+    # en lugar de cargarla desde disco.
+
+    def saveObservatory(self, observatory):
+        return self.repository.save(observatory)
+
+    def nextAvailableEventId(self, observatory):
+        used_ids = set(observatory.getAVLTree().index.keys())
+        used_ids.update(observatory.getHistory().getArchived().keys())
+        used_ids.update(observatory.getHistory().getDeletedIds())
+
+        for event_id in range(1, 1000000):
+            if event_id not in used_ids:
+                return event_id
+
+        raise RuntimeError("No hay ids disponibles.")
+
+    def createGeneratedEvent(self, observatory, station, data):
+        """
+        Inserta un evento generado (por la IA) en el observatorio activo, lo
+        guarda y devuelve la operación visual que se enviará al frontend.
+        En modo normal el AVL se balancea; en modo estrés no.
+        """
+        event_id = self.nextAvailableEventId(observatory)
+        mode = observatory.getExecutionMode()
+        balance = mode == "normal"
+
+        observatory.begin_visual_operation()
+
+        result = observatory.createEvent(
+            id=event_id,
+            magnitude=data["magnitude"],
+            depth=data["depth"],
+            epicenter_x=data["epicenter_x"],
+            epicenter_y=data["epicenter_y"],
+            datetime=data["datetime"],
+            revision=1,
+            station=station.getId(),
+            balance=balance,
+        )
+
+        if result is False or not all(result):
+            raise ValueError("No se pudo insertar el evento generado")
+
+        event = observatory.searchEventById(event_id)
+        if event is None:
+            raise ValueError("El evento generado no quedó en el árbol")
+
+        steps = observatory.finish_visual_operation()
+        self.repository.save(observatory)
+
+        return {
+            "mode": mode,
+            "stationId": station.getId(),
+            "event": event.toDict(),
+            "steps": steps,
+        }
+
+    def auditBalance(self, observatory):
+        audit = observatory.getAVLTree().audit()
+        return {
+            "ok": audit["ok"],
+            "balanced": audit["balanced"],
+            "maxImbalance": audit["max_imbalance"],
+            "issues": audit["issues"],
+        }
+
+    def changeExecutionMode(self, observatory, mode):
+        """
+        Cambia el modo de ejecución del observatorio activo y lo persiste.
+        Solo sirve para pasar a estrés: volver a normal requiere recuperar
+        primero el equilibrio del AVL (ver recoverFromStress).
+        """
+        if mode not in EXECUTION_MODES:
             raise ValueError("El modo debe ser normal o stress")
 
-        observatory = SeismicObservatory.fromDict(data)
+        observatory.setExecutionMode(mode)
+        self.repository.save(observatory)
+        return self.auditBalance(observatory)
 
-        if "scenario_id" in data:
-            observatory.scenario_id = data["scenario_id"]
-        else:
-            observatory.scenario_id = str(uuid4())
+    def recoverFromStress(self, observatory):
+        """
+        Reequilibra el AVL, lo audita y, solo si la auditoría confirma que
+        quedó bien, pasa el observatorio a modo normal. Si la auditoría falla
+        el observatorio se mantiene en modo estrés.
+        """
+        avl_tree = observatory.getAVLTree()
+
+        observatory.begin_visual_operation()
+        avl_tree.recover_balance()
+        steps = observatory.finish_visual_operation()
+
+        report = self.auditBalance(observatory)
+        if report["ok"]:
+            observatory.setExecutionMode("normal")
 
         self.repository.save(observatory)
 
-        return observatory
+        report["mode"] = observatory.getExecutionMode()
+        report["steps"] = steps
+        report["rotations"] = len([s for s in steps if s.get("kind") == "rotation"])
+        return report
