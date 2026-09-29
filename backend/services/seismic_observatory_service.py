@@ -12,6 +12,7 @@ class SeismicObservatoryService:
         if observatory is None:
             observatory = SeismicObservatory()
         return observatory
+ 
 
     def createEvent(self, id, magnitude, depth, epicenter_x, epicenter_y, datetime: datetime, revision, station):
         # load the observatory

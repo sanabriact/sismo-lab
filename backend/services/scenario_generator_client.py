@@ -35,6 +35,33 @@ EVENT_SCHEMA = {
     ],
 }
 
+def validate_ai_response(data, clock):
+    magnitude = round(float(data["magnitude"]), 1)
+    depth = round(float(data["depth"]), 1)
+    x = round(float(data["epicenter_x"]), 1)
+    y = round(float(data["epicenter_y"]), 1)
+
+    if not -2 <= magnitude <= 10:
+        raise ValueError("Magnitud inválida")
+
+    if not 0 <= depth <= 700:
+        raise ValueError("Profundidad inválida")
+
+    if not 0 <= x <= 1000 or not 0 <= y <= 1000:
+        raise ValueError("Epicentro inválido")
+
+    if date > clock.current_time:
+        raise ValueError("La fecha supera el reloj del escenario")
+
+    return {
+        "magnitude": magnitude,
+        "depth": depth,
+        "epicenter_x": x,
+        "epicenter_y": y,
+        "datetime": date,
+    }
+
+
 class AIEventClient:
     def __init__(self):
         api_key = os.getenv("GROQ_API_KEY")

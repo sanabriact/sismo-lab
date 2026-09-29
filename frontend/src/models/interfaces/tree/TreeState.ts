@@ -1,4 +1,4 @@
-import type { FlatNode } from "./FlatNode";
+import type { FlatNode } from "../realTime/FlatNode";
 
 export interface TreeState {
     rootId: number | null;

@@ -16,7 +16,6 @@ class BST:
     def begin_visual_operation(self):
         self._dirty_ids.clear()
 
-
     def finish_visual_operation(self):
         upserted = []
 
@@ -64,6 +63,7 @@ class BST:
         if leftChild is None:
             currentRoot.setLeftChild(node)
             node.setParent(currentRoot)
+            self.index[node.getValue().getKey()[2]] = node
             self._touch(node)
             self._touch(currentRoot)
             return True, leftChild
@@ -76,6 +76,7 @@ class BST:
         if rightChild is None:
             currentRoot.setRightChild(node)
             node.setParent(currentRoot)
+            self.index[node.getValue().getKey()[2]] = node
             self._touch(node)
             self._touch(currentRoot)
             return True, rightChild
@@ -108,8 +109,8 @@ class BST:
         return self._insert(node, child)
 
     # Method for updating the tree when a report changes an event key.
-    def _updateKey(self, event, oldKey):
-        self.delete(oldKey)
+    def _updateTree(self, event):
+        self.delete(event.getKey()[2])
         self.insert(event)
      
     # Search and element by its key
@@ -132,6 +133,22 @@ class BST:
                 return left
 
         return self._search(data, currentRoot.getRightChild())
+
+    # Search an element by its id
+    def searchById(self, id):
+        if self.root is None:
+            print("The tree is empty.")
+            return None
+        else:
+            return self._searchById(id)
+
+    # Private method of searching an element by id
+    def _searchById(self, id):
+        if id in self.index:
+            return self.index[id]
+        else:
+            return None
+    
     
     # Public method for preorder transversal
     def preorder(self):
@@ -194,7 +211,7 @@ class BST:
             return None
         else:
             # We check that the node exists in the tree
-            targetNode = self.search(data[2])
+            targetNode = self.searchById(data)
             if targetNode is None:
                 return None
             else:

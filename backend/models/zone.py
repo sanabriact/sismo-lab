@@ -60,7 +60,7 @@ class Zone:
 
     @classmethod
     def fromDict(cls, data):
-        zone = cls()
+        zone = cls.__new__(data)
         zone.id = data["id"]
         zone.x_min = data["x_min"]
         zone.x_max = data["x_max"]

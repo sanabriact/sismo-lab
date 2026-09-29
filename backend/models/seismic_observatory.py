@@ -150,7 +150,7 @@ class SeismicObservatory:
         node = self.avl_tree.searchById(id)
         if node is not None: 
             self.history.addDeletedId(id)
-            return self.avl_tree.delete(id)
+            return self.avl_tree.delete(id), self.bst_tree.delete(id)
         return False
 
     def editEvent(self,report):
@@ -161,12 +161,11 @@ class SeismicObservatory:
             event.updateEventData(report)
             
             if event.getKey() != oldKey:
-                self.deleteEventById(report.getEventId())
-                self.avl_tree.insert(event)
-                self.bst_tree._updateKey(event, oldKey)
+                self.avl_tree._updateTree(event)
+                self.bst_tree._updateTree(event)
                 #RECALCULAR ASOCIACIONES Y METRICAS
                 
-                return True
+            return True
         return False
 
 
@@ -175,7 +174,9 @@ class SeismicObservatory:
         if event is not None:
             event.setAttentionStatus("revised")
     
-    #def archiveSubTree() lo hace el viejo
+    # Méthod to archivate a sub tree 
+    def archivateSubTree(self, actualTime):
+        rootToArchivate = self.avl_tree.archiveSubTree(actualTime)
 
     def enqueueReport(self, report):
         self.report_queue.enqueue(report)
@@ -216,8 +217,8 @@ class SeismicObservatory:
     def fromDict(cls,data):
         observatory = cls()
         observatory.scenario_id = data["scenario_id"]
-        observatory.avl_tree = AVL.fromDict(data["avl_tree"])
-        observatory.bst_tree = BST.fromDict(data["bst_tree"])
+        observatory.avl_tree = AVL.fromDict(data["avl_tree"], Event)
+        observatory.bst_tree = BST.fromDict(data["bst_tree"], Event)
         observatory.stations = [Station.fromDict(station) for station in data["stations"]]
         observatory.zones = [Zone.fromDict(zone) for zone in data["zones"]]
         observatory.history = History.fromDict(data["history"])
@@ -229,6 +230,7 @@ class SeismicObservatory:
         observatory.association_manager = AssociationManager.fromDict(data["association_manager"])
         observatory.metrics = Metrics.fromDict(data["metrics"])
         observatory.saved_versions = data["saved_versions"]
+        observatory.execution_mode = data.get("execution_mode", "normal")
         return observatory
 
 

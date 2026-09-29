@@ -1,6 +1,6 @@
 import threading
 import random
-from backend.services.ai_event_client import validate_ai_response
+from backend.services.event_generator_client import validate_ai_response
 
 class StationGenerator:
     def __init__(self, station, ai_client, engine):

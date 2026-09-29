@@ -7,7 +7,6 @@ from backend.models.seismic_observatory import SeismicObservatory
 from backend.models.report import Report
 from backend.repositories.seismic_observatory_repository import SeismicObservatoryRepository
 from backend.repositories.json_repository import JSONRepository
-
 from datetime import datetime
 
 observatory = SeismicObservatory()
@@ -25,7 +24,7 @@ observatory.getAVLTree().draw()
 observatory.getBSTTree().draw()
 print("=========================================================================")
 print(f"Busqueda (id = 100): {observatory.searchEventById(100)}")
-print(f"Eliminación (id = 2): {observatory.deleteEventById(2)}")
+""" print(f"Eliminación (id = 2): {observatory.deleteEventById(2)}") """
 observatory.getAVLTree().draw()
 observatory.getBSTTree().draw()
 print("=========================================================================")

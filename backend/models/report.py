@@ -95,7 +95,7 @@ class Report:
 
     @classmethod
     def fromDict(cls, data):
-        report = cls()
+        report = cls.__new__(data)
         report.event_id = data["event_id"]
         report.revision = data["revision"]
         report.station = Station.fromDict(data["station"])

@@ -11,5 +11,5 @@ export function applyPatch(state: TreeState, patch: TreePatch): TreeState {
         delete nodesById[id];
     }
     
-    return { rootId: patch.rootId ?? state.rootId, nodesById };
+    return { rootId: patch.rootId , nodesById };
 }

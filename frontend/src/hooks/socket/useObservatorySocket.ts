@@ -1,10 +1,11 @@
 import { useEffect } from "react";
 import { socketService } from "../../services/socket/socketService";
+import type { TreeOperation } from "../../models/interfaces/realTime/TreeOperation";
 
-export function useObservatorySocket(onEvent: (payload: unknown) => void) {
+export function useObservatorySocket(onOperation: (op: TreeOperation) => void) {
     useEffect(() => {
         const socket = socketService.connect()
-        socket.on("report_processed", onEvent)
-        return () => { socket.off("report_processed", onEvent)};
-    }, [onEvent])
+        socket.on("tree:operation", onOperation)
+        return () => { socket.off("tree:operation", onOperation)};
+    }, [onOperation])
 }
