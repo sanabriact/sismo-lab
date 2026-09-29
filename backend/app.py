@@ -56,6 +56,7 @@ def createEvent():
 
     try:
         event_datetime = datetime.fromisoformat(data["datetime"])
+        
     except ValueError:
         return jsonify({
             "success": False,
