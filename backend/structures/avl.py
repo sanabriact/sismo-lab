@@ -66,31 +66,6 @@ class AVL:
             "avlPatch": self._build_patch("delete")
         })
 
-    """ # Método para insertar evento
-    def insertEvent(self, data, time):
-        if self.comprobatorNode(data):
-            self.updateNodeValues(data)
-        else:
-            self.insert(data)
-            self.insertTime(time, self.search(data[2]))
-
-    # Método para comprobar la existencia del nodo
-    def comprobatorNode(self, data):
-        if self.search(data.getValue()[2]) is None:
-            return False
-        else:
-            return True
-
-    # Método para actualizar valores del nodo
-    def updateNodeValues(self, data):
-        node = self.search(data.getValue()[2])
-        node.setValue()[0] = data[0]
-        node.setValue()[1] = data[1]
-        print("This event already existing in the tree, the data has been updated")
-
-    def insertTime(self, time, node):
-        node.setNodeCreationTime(time)"""
-
     # Method for trying inserting left child
     def _tryInsertLeftChild(self, currentRoot, node):
         leftChild = currentRoot.getLeftChild()
@@ -560,12 +535,12 @@ class AVL:
         return False
 
     # Public method for archiving a sub-tree
-    def archiveSubTree(self, time):
+    def archiveSubTree(self, actualTime, time):
         if self.root is None:
             print("The tree is empty")
         else:
             listToArchivate = []
-            archivateRoot = self._archiveSubTree(self.root, time, listToArchivate)
+            archivateRoot = self._archiveSubTree(self.root, actualTime, time ,listToArchivate)
             if archivateRoot:
                 self.root = None
                 return archivateRoot
@@ -575,11 +550,11 @@ class AVL:
                 return rootToArchivate
 
     # Private method for archivating a sub-tree
-    def _archiveSubTree(self, node, time, listToArchivate):
+    def _archiveSubTree(self, node, actualTime, time, listToArchivate):
         if node is not None:
-            leftEligible = self._archiveSubTree(node.getLeftChild(), time, listToArchivate)
-            rightEligible= self._archiveSubTree(node.getRightChild(), time, listToArchivate)
-            Eligible = node.isArchivable(time) and leftEligible and rightEligible
+            leftEligible = self._archiveSubTree(node.getLeftChild(), actualTime, time, listToArchivate)
+            rightEligible= self._archiveSubTree(node.getRightChild(), actualTime, time, listToArchivate)
+            Eligible = node.isArchivable(actualTime, time) and leftEligible and rightEligible
             if not Eligible:
                 if leftEligible and node.getLeftChild() is not None:
                     listToArchivate.append(node.getLeftChild())

@@ -7,7 +7,6 @@ from backend.models.seismic_observatory import SeismicObservatory
 from backend.models.report import Report
 from backend.repositories.seismic_observatory_repository import SeismicObservatoryRepository
 from backend.repositories.json_repository import JSONRepository
-
 from datetime import datetime
 
 observatory = SeismicObservatory()
