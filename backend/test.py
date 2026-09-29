@@ -24,7 +24,7 @@ observatory.getAVLTree().draw()
 observatory.getBSTTree().draw()
 print("=========================================================================")
 print(f"Busqueda (id = 100): {observatory.searchEventById(100)}")
-print(f"Eliminación (id = 2): {observatory.deleteEventById(2)}")
+""" print(f"Eliminación (id = 2): {observatory.deleteEventById(2)}") """
 observatory.getAVLTree().draw()
 observatory.getBSTTree().draw()
 print("=========================================================================")

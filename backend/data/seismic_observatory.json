@@ -99,8 +99,8 @@
                 "value": {
                     "key": [
                         3,
-                        7.0,
-                        1
+                        6.5,
+                        2
                     ],
                     "depth": 10.0,
                     "epicenter_x": 20.0,
@@ -115,9 +115,33 @@
                     "populated_zone": false,
                     "expensive_access": false
                 },
-                "height": 0,
+                "height": 1,
                 "left_child": null,
-                "right_child": null,
+                "right_child": {
+                    "value": {
+                        "key": [
+                            3,
+                            7.0,
+                            1
+                        ],
+                        "depth": 10.0,
+                        "epicenter_x": 20.0,
+                        "epicenter_y": 30.0,
+                        "datetime": "2024-06-01T12:00:00",
+                        "revision": 1,
+                        "reporting_stations": [
+                            "ST-001"
+                        ],
+                        "attention_status": "pending",
+                        "event_status": "active",
+                        "populated_zone": false,
+                        "expensive_access": false
+                    },
+                    "height": 0,
+                    "left_child": null,
+                    "right_child": null,
+                    "node_creation_time": null
+                },
                 "node_creation_time": null
             },
             "node_creation_time": null
@@ -274,10 +298,7 @@
     "zones": [],
     "history": {
         "archived": {},
-        "deleted_ids": [
-            2,
-            3
-        ]
+        "deleted_ids": []
     },
     "report_queue": {
         "items": []
@@ -286,7 +307,7 @@
         "items": []
     },
     "clock": {
-        "current_time": "2026-09-28T16:02:54.353155+00:00"
+        "current_time": "2026-09-28T17:54:30.503501+00:00"
     },
     "l": 3,
     "t": 72.0,
