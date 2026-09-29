@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useObservable } from "../../stores/useObservable";
+import { modeStore } from "../../stores/modeStore";
+import { modeService } from "../../services/socket/modeService";
 import Logo from "../../assets/sidebar/svg/logo";
 
 import routes from "../../routes";
@@ -13,7 +15,14 @@ const Sidebar = () => {
     2. A common Tailwind className for every button on the sidebar.
     3. Routes that doesn't belong to a group.
   */
-  const [stressMode, setStressMode] = useState(false);
+  const modeState = useObservable(modeStore);
+  const busy = modeState.status === "pending" || modeState.status === "recovering";
+  const modeMessage =
+    modeState.status === "recovering" ? "Recuperando el equilibrio…"
+      : modeState.reason
+      ?? (modeState.mode === "stress" && !modeState.balanced
+        ? `El árbol ya no es AVL (desbalance máx. ${modeState.maxImbalance})`
+        : null);
   const linkClass = `block p-2 rounded-lg hover:bg-white/10`;
   const ungroupedRoutes = routes.filter((route) => !route.group)
 
@@ -28,7 +37,7 @@ const Sidebar = () => {
     >
       <nav className="h-full flex flex-col">
         <div className="p-4 flex gap-7 items-center border-b border-white/20">
-          <Logo/>
+          <Logo />
           <h2 className="text-xl font-bold">SismoLab</h2>
         </div>
 
@@ -44,7 +53,7 @@ const Sidebar = () => {
               </NavLink>
             </li>
           ))}
-          
+
           {/* 
             Here we renderize each group of elements (Used when we want to make more dropdowns beside the "event" ones.),
             calling the component RouteGroupMenu.
@@ -61,26 +70,28 @@ const Sidebar = () => {
         */}
 
         <div className="p-4 border-t border-white/20">
-            {/* 
+          {/* 
               Label with content that shows "Modo estrés" and toggle type button.
             */}
-            <label className="w-full flex items-center justify-between gap-2 p-2 rounded-lg hover:bg-white/20 transition-colors cursor-pointer">
+          <label className="w-full flex items-center justify-between gap-2 p-2 rounded-lg hover:bg-white/20 transition-colors cursor-pointer">
             <span>Modo estrés</span>
-            
+
             {/* 
               Div that contains the button for activating stress mode.
             */}
             <div className="relative">
               <input
                 type="checkbox"
-                checked={stressMode}
-                onChange={(e) => setStressMode(e.target.checked)}
+                checked={modeState.mode === "stress"}
+                disabled={busy}
+                onChange={(e) => modeService.request(e.target.checked ? "stress" : "normal")}
                 className="sr-only peer"
               />
               <div className="w-10 h-5 bg-white/20 rounded-full peer-checked:bg-emerald-500 transition-colors"></div>
               <div className="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-5"></div>
             </div>
           </label>
+          {modeMessage && <p className="px-2 pt-1 text-xs text-amber-300">{modeMessage}</p>}
         </div>
       </nav>
     </aside>

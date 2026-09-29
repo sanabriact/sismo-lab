@@ -7,7 +7,7 @@ class SocketService {
 
     connect(): Socket {
         if (!this.socket) {
-            this.socket= io(API_URL, { transports: ["websocket"]});
+            this.socket = io(API_URL);
         }
         return this.socket;
     }

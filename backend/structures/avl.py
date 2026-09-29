@@ -53,6 +53,18 @@ class AVL:
             },
             "avlPatch": patch,
         })
+    
+    def _record_heights(self):
+        self._visual_steps.append({
+            "kind": "heights",
+            "avlPatch": self._build_patch("heights")
+        })
+    
+    def _record_delete(self):
+        self._visual_steps.append({
+            "kind": "delete",
+            "avlPatch": self._build_patch("delete")
+        })
 
     """ # Método para insertar evento
     def insertEvent(self, data, time):
@@ -140,9 +152,9 @@ class AVL:
             return True
         return self._insert(node, child, balance)
     
-    def _updateTree(self, event):
-        self.delete(event.getKey()[2])
-        self.insert(event)
+    def _updateTree(self, event, balance=True):
+        self.delete(event.getKey()[2], balance)
+        self.insert(event, balance)
         
     # Public method for searching a node
     def search(self, data):
@@ -238,25 +250,29 @@ class AVL:
         return None
 
     # Public method for deleting a node
-    def delete(self, data):
+    def delete(self, data, balance=True):
         # First we check the tree has a root
         if self.root is None:
             return None
         else:
             # We check the node exists in the tree
-            targetNode = self.search(data)
+            targetNode = self.index.get(data)
 
             if targetNode is None:
                 return False
             else:
-                return self._delete(targetNode)
+                return self._delete(targetNode, balance)
 
     # Private method for deleting a node
-    def _delete(self, node):
+    def _delete(self, node, balance=True):
         nodeParent = node.getParent()
+        start = nodeParent
+        removed_id = node.getValue().getKey()[2]
         # We ask if the node doesn't has children
         if node.isLeaf():
-            if node.isLeftChild():
+            if nodeParent is None:
+                self.root = None
+            elif node.isLeftChild():
                 nodeParent.setLeftChild(None)
             else:
                 nodeParent.setRightChild(None)
@@ -265,60 +281,60 @@ class AVL:
             self._removed_ids.add(node.getValue().getKey()[2])
             self._touch(nodeParent)
             node.setParent(None)
-            del self.index[node.getValue().getKey()[2]]
+            del self.index[removed_id]
             
-        else:
+        elif node.hasLeftChild() and node.hasRightChild():
             # If the node isn't leaf, then we validate the 2 cases left.
             # First we ask if the node has both children
-            if node.hasLeftChild() and node.hasRightChild():
-                predecessor = self._getPredecessor(node.getLeftChild())
-                original_id = node.getValue().getKey()[2]
-                predecessor_id = predecessor.getValue().getKey()[2]
-                self._updateNodeValue(node, predecessor)
-                # We add the node id to the removed ids
-                self._removed_ids.add(predecessor.getValue().getKey()[2])
-                self._touch(node)
-                del self.index[original_id]
-                self.index[predecessor_id] = node # Node has predeccesor data now
-
-                # We validate if the predeccesor is leaf
-                if predecessor.isLeaf():
-                    predecessorParent = predecessor.getParent()
-                    predecessorParent.setRightChild(None)
-                else:
-                    # If not, then the predeccesor only has left child (We don't have to validate existence of the right child thanks to the getPredeccesor logic
-                    predecessor.getParent().setLeftChild(predecessor.getLeftChild())
-                    predecessor.getLeftChild().setParent(predecessor.getParent())
-                    predecessor.setLeftChild(None)
-
-                predecessor.setParent(None)
-                
+            predecessor = self._getPredecessor(node.getLeftChild())
+            predecessorParent = predecessor.getParent()
+            predecessor_id = predecessor.getValue().getKey()[2]
+            start = predecessorParent
+            self._updateNodeValue(node, predecessor)
+            # We add the node id to the removed ids
+            self._removed_ids.add(removed_id)
+            self.index.pop(removed_id, None)
+            self.index[predecessor_id] = node
+            self._touch(node)
+            self._touch(nodeParent)
+            self._touch(node.getLeftChild())
+            self._touch(node.getRightChild())
+            
+            replacement = predecessor.getLeftChild()
+            if predecessorParent is node:
+                predecessorParent.setLeftChild(replacement)
+            else:
+                predecessorParent.setRightChild(replacement)
+            if replacement is not None:
+                replacement.setParent(predecessorParent)
+                self._touch(replacement)
+            self._touch(predecessorParent)
+            predecessor.setLeftChild(None)
+            predecessor.setParent(None)                
 
             # If the node doesn't has both children, then we validate if has left or right child.
             # Then for both them, we ask again if the node has left or right child.
+        else:
+            child = node.getLeftChild() if node.hasLeftChild() else node.getRightChild()
+            if nodeParent is None:
+                self.root = child
+            elif node.isLeftChild():
+                nodeParent.setLeftChild(child)
             else:
-                if node.isLeftChild():
-                    if node.hasLeftChild():
-                        node.getParent().setLeftChild(node.getLeftChild())
-                        node.getLeftChild().setParent(node.getParent())
-                        node.setLeftChild(None)
-                    else:
-                        node.getParent().setLeftChild(node.getRightChild())
-                        node.getRightChild().setParent(node.getParent())
-                        node.setRightChild(None)
-                else:
-                    if node.hasLeftChild():
-                        node.getParent().setRightChild(node.getLeftChild())
-                        node.getLeftChild().setParent(node.getParent())
-                        node.setLeftChild(None)
-                    else:
-                        node.getParent().setRightChild(node.getRightChild())
-                        node.getRightChild().setParent(node.getParent())
-                        node.setRightChild(None)
+                nodeParent.setRightChild(child)
+            child.setParent(nodeParent)
+            self._removed_ids.add(removed_id)
+            self._touch(nodeParent)
+            self._touch(child)
+            node.setLeftChild(None)
+            node.setRightChild(None)
+            node.setParent(None)
+            del self.index[removed_id]
 
-                node.setParent(None)
-                del self.index[node.getValue().getKey()[2]]
-        self._checkBalance(nodeParent, 0)
+        self._update_heights_to_root(start)
+        self._record_delete()
+        if balance:
+            self._checkBalance(start, 0)
         return True
 
     # Private method for getting a predeccesor of a root.
@@ -402,6 +418,7 @@ class AVL:
                 grandparent.setLeftChild(middle)
             else:
                 grandparent.setRightChild(middle)
+            self._touch(grandparent)
         else:
             self.root = middle
         self._updateHeight(top)
@@ -440,8 +457,17 @@ class AVL:
         return case
 
     # Private method for rebalancing
-    def _rebalance(self, superior, superiorBalanceFactor, childBalanceFactor):
-        balanceCase = self._getCaseOfBalance(superiorBalanceFactor, childBalanceFactor)
+    def _rebalance(self, superior, superiorBalanceFactor, childBalanceFactor = 0):
+        # 1) Decide the case from the real children, not from the argument
+        if superiorBalanceFactor > 0:                      # heavy on the left
+            child = superior.getLeftChild()
+            child_bf = self._height(child.getLeftChild()) - self._height(child.getRightChild())
+            balanceCase = "LL" if child_bf >= 0 else "LR"
+        else:                                              # heavy on the right
+            child = superior.getRightChild()
+            child_bf = self._height(child.getLeftChild()) - self._height(child.getRightChild())
+            balanceCase = "RR" if child_bf <= 0 else "RL"
+            balanceCase = self._getCaseOfBalance(superiorBalanceFactor, childBalanceFactor)
 
         match(balanceCase):
             case "LL":
@@ -460,14 +486,18 @@ class AVL:
                 self._record_rotation("RL", superior)
             case _:
                 return None
+        self._record_rotation(balanceCase, superior)
+        self._checkBalance(superior.getParent().getParent(), 0)
+        if self._dirty_ids:
+            self._record_heights()
     
     def recover_balance(self):
         while True:
             self._refresh_heights(self.root)
-
             if not self._recover_one_node(self.root):
-                return
-
+                break
+        if self._dirty_ids or self._removed_ids:
+            self._record_heights()
 
     def _refresh_heights(self, node):
         if node is None:
@@ -577,6 +607,47 @@ class AVL:
                     best = node
         
         return self.findArchiveSubTree(listToArchivate, index+1, best)
+    
+    def audit(self):
+        issues = []
+        seen = set()
+        max_imbalance = 0
+
+        def walk(node, low, high, parent):
+            nonlocal max_imbalance
+            if node is None:
+                return -1
+            key = node.getValue().getKey()
+            event_id = key[2]
+
+            if event_id in seen:
+                issues.append({"id": event_id, "type": "duplicate_id"})
+            seen.add(event_id)
+            if node.getParent() is not parent:
+                issues.append({"id": event_id, "type": "parent_link"})
+            if self.index.get(event_id) is not node:
+                issues.append({"id": event_id, "type": "index"})
+            if (low is not None and not key > low) or (high is not None and not key < high):
+                issues.append({"id": event_id, "type": "order"})
+
+            left_h = walk(node.getLeftChild(), low, key, node)
+            right_h = walk(node.getRightChild(), key, high, node)
+            real_h = 1 + max(left_h, right_h)
+
+            if node.getHeight() != real_h:
+                issues.append({"id": event_id, "type": "height",
+                            "stored": node.getHeight(), "real": real_h})
+            max_imbalance = max(max_imbalance, abs(left_h - right_h))
+            return real_h
+
+        walk(self.root, None, None, None)
+        balanced = max_imbalance <= 1
+        return {
+            "ok": not issues and balanced,
+            "issues": issues,
+            "balanced": balanced,
+            "max_imbalance": max_imbalance,
+        }
     
     # Public method for drawing a tree
     def draw(self):

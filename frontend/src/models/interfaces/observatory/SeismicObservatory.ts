@@ -1,3 +1,4 @@
+import type { ExecutionMode } from "../../types/observatory/ExecutionMode";
 import type { AssociationManager } from "../associationManager/AssociationManager";
 import type { Tree } from "../tree/Tree";
 
@@ -6,4 +7,5 @@ export interface SeismicObservatory {
     association_manager: AssociationManager;
     avl_tree: Tree;
     bst_tree: Tree;
+    execution_mode: ExecutionMode;
 }

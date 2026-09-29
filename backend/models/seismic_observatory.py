@@ -228,6 +228,7 @@ class SeismicObservatory:
         observatory.association_manager = AssociationManager.fromDict(data["association_manager"])
         observatory.metrics = Metrics.fromDict(data["metrics"])
         observatory.saved_versions = data["saved_versions"]
+        observatory.execution_mode = data.get("execution_mode", "normal")
         return observatory
 
 
