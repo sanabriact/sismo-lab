@@ -1,7 +1,8 @@
-import type { RealTimeNode } from "./RealtimeNode";
+import type { FlatNode } from "./FlatNode";
 
 export interface TreePatch {
-    upserted: RealTimeNode[];   
+    operation: "inserted" | "rotation";
+    upserted: FlatNode[];   
     removedIds: number[];  
     rootId: number | null; 
 }

@@ -26,6 +26,7 @@ class EventEngine:
             return
             
         self.events.put({
+            "scenario_id": self.scenario_id,
             "station": station,
             "data": data,
         })
@@ -36,7 +37,7 @@ class EventEngine:
     def run(self):
         while True:
             candidate = self.events.get()
-            if candidate["scenario_id"] != self.scenario_id:
+            if candidate.get("scenario_id") != self.scenario_id:
                 continue
             
             while self.paused:

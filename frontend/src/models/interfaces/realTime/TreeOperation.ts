@@ -5,7 +5,7 @@ export interface TreeOperation {
     scenarioId: string;
     sequence: number;
     mode: "normal" | "stress";
-    stationId: number;
-    event: SeismicEvent;
+    stationId: number | null;
+    event: SeismicEvent | null;
     steps: TreeStep[]
 }

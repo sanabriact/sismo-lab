@@ -1,3 +1,5 @@
+from backend.models.seismic_observatory import SeismicObservatory
+seismic_observatory = SeismicObservatory()
 
 class LoadScenarioManager:
     def load(self, data):
@@ -11,7 +13,8 @@ class LoadScenarioManager:
             case "insertion":
                 if self.comprobateJson():
                     list_events = data["events"]
-                    
+                    for event in list_events:
+                        seismic_observatory.createEvent(event)
                 else:
                     return None
 

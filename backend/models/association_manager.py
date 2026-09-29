@@ -1,5 +1,3 @@
-from backend.models.event import Event
-
 class AssociationManager:
     def __init__(self):
         self.W = 48.0 #horas
@@ -41,18 +39,21 @@ class AssociationManager:
         return {
             "W": self.W,
             "R": self.R,
-            "candidates": {
-            key: [candidate.toDict() for candidate in candidates]
-            for key, candidates in self.candidates.items()
-        },
-            "selected_references": self.selected_references
+            "candidates": {str(key): list(ids) for key, ids in self.candidates.items()},
+            "selected_references": {str(key): value for key, value in self.selected_references.items()}
         }
 
-    @classmethod
+    @classmethod    
     def fromDict(cls,data):
         manager = cls()
         manager.W = data["W"]
         manager.R = data["R"]
-        manager.candidates = {int(key): Event.fromDict(candidate) for key,candidate in data["candidates"].items()}
-        manager.selected_references = {int(key): int(value) for key,value in data["selected_references"].items()}
+        manager.candidates = {
+            int(key): [int(i) for i in ids]
+            for key, ids in data["candidates"].items()
+        }
+        manager.selected_references = {
+            int(key): int(value)
+            for key, value in data["selected_references"].items()
+        }
         return manager

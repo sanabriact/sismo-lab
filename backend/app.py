@@ -6,7 +6,7 @@ from backend.repositories.json_utils import objectToDict
 from backend.services.seismic_observatory_service import SeismicObservatoryService
 from backend.services.realtime_service import init_realtime
 from backend.services.event_engine import EventEngine
-from backend.services.ai_event_client import AIEventClient 
+from backend.services.event_generator_client import AIEventClient 
 from backend.services.scenario_generator_manager import ScenarioGeneratorManager
 from backend.services.load_scenario_manager import LoadScenarioManager
 
@@ -22,7 +22,7 @@ load_scenario_manager = LoadScenarioManager()
 
 generator_manager = ScenarioGeneratorManager( ai_client=ai_client, engine=event_engine)
 
-
+""" Rutas de FLASK (API rest) """
 @app.route("/api/seismic-observatory", methods=["GET"])
 def getSeismicObservatory():
     observatory = event_engine.get_observatory()
@@ -30,7 +30,6 @@ def getSeismicObservatory():
         return jsonify(objectToDict(obs_service.getObservatory()))
     
     return jsonify(observatory.toDict())
-
 
 @app.route("/api/events", methods=["POST"])
 def createEvent():
@@ -82,7 +81,7 @@ def createEvent():
 def load_scenario():
     data = request.get_json()
     Falta crear método loadScenario para obs_service (Lee, valida y construye un SeismicObservatory a partir de un JSON)
-    observatory = obs_service.loadScenario(data)
+    observatory = obs_service.load_scenario(data)
     generator_manager.load_scenario(observatory)
     
     return jsonify({
@@ -90,7 +89,7 @@ def load_scenario():
         "stations": len(observatory.getStations())
     }), 200 """
     
-    # Method to load the JSON
+# Method to load the JSON
 @app.route("/api/scenario", methods=["POST"])
 def load_scenario():
     data = request.get_json()
@@ -104,6 +103,22 @@ def handle_connect():
 @socketio.on("disconnect")
 def handle_disconnect():
     print("Cliente desconectado del WebSocket")
+
+@socketio.on("mode:set")
+def handle_mode_set(data):
+    mode = data.get("mode")
+    print(f"Solicitud de cambio de modo: {mode}")
+    
+    if mode not in ["normal", "stress"]:
+        return {
+            "ok": False,
+            "reason": "Invalid mode type."
+        }
+        
+    return {
+        "ok": True,
+        "mode": mode
+    }
     
 if __name__ == "__main__":
     event_engine.start()

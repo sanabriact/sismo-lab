@@ -31,7 +31,7 @@ class Action:
 
     @classmethod
     def fromDict(cls, data):
-        action = cls()
+        action = cls.__new__(data)
         action.action_type = data["action_type"]
         action.datetime = datetime.fromisoformat(data["datetime"])
         action.before_snapshot = None #no se que tipo de dato es jajajaj
