@@ -1,4 +1,4 @@
-from backend.repositories.json_utils import objectToDict
+from backend.utils.json_utils import objectToDict
 from backend.models.report import Report
 class Queue:
     def __init__(self):

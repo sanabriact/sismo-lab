@@ -1,4 +1,4 @@
-from backend.repositories.json_utils import objectToDict
+from backend.utils.json_utils import objectToDict
 from backend.models.action import Action
 class Stack:
     def __init__(self):

@@ -2,7 +2,7 @@ from datetime import datetime
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from flask_socketio import SocketIO
-from backend.repositories.json_utils import objectToDict
+from backend.utils.json_utils import objectToDict
 from backend.services.seismic_observatory_service import SeismicObservatoryService
 from backend.services.realtime_service import init_realtime
 from backend.services.event_engine import EventEngine
@@ -89,8 +89,8 @@ def load_scenario():
         "stations": len(observatory.getStations())
     }), 200 """
     
-    # Method to load the JSON
-@app.route("/api/scenario", methods=["POST"])
+# Method to load the JSON
+@app.route("/api/scenario", methods=["GET"])
 def load_scenario():
     data = request.get_json()
     result = load_scenario_manager.load(data)

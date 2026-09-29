@@ -1,5 +1,5 @@
 from backend.structures.node import Node
-from backend.repositories.json_utils import objectToDict
+from backend.utils.json_utils import objectToDict
 
 class AVL:
     def __init__(self):
@@ -432,35 +432,30 @@ class AVL:
         return case
 
     # Private method for rebalancing
-    def _rebalance(self, superior, superiorBalanceFactor, childBalanceFactor = 0):
-        # 1) Decide the case from the real children, not from the argument
-        if superiorBalanceFactor > 0:                      # heavy on the left
+    def _rebalance(self, superior, superiorBalanceFactor, childBalanceFactor=0):
+        if superiorBalanceFactor > 0:
             child = superior.getLeftChild()
             child_bf = self._height(child.getLeftChild()) - self._height(child.getRightChild())
             balanceCase = "LL" if child_bf >= 0 else "LR"
-        else:                                              # heavy on the right
+        else:
             child = superior.getRightChild()
             child_bf = self._height(child.getLeftChild()) - self._height(child.getRightChild())
             balanceCase = "RR" if child_bf <= 0 else "RL"
-            balanceCase = self._getCaseOfBalance(superiorBalanceFactor, childBalanceFactor)
 
-        match(balanceCase):
+        match balanceCase:
             case "LL":
                 self._simpleRightTurn(superior)
-                self._record_rotation("LL", superior)
             case "RR":
                 self._simpleLeftTurn(superior)
-                self._record_rotation("RR", superior)
             case "LR":
                 self._simpleLeftTurn(superior.getLeftChild())
                 self._simpleRightTurn(superior)
-                self._record_rotation("LR", superior)
             case "RL":
                 self._simpleRightTurn(superior.getRightChild())
                 self._simpleLeftTurn(superior)
-                self._record_rotation("RL", superior)
             case _:
                 return None
+
         self._record_rotation(balanceCase, superior)
         self._checkBalance(superior.getParent().getParent(), 0)
         if self._dirty_ids:
