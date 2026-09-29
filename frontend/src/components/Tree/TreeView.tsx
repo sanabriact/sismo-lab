@@ -12,7 +12,7 @@ import { toVIZ } from "../../utils/viznode/toHierarchy";
     r its the node circle radius.
     Each of them are in pixels units.
 */
-const NODE_W = 250;
+const NODE_W = 100;
 const NODE_H = 90;
 const R = 25;
 
@@ -109,7 +109,7 @@ export function TreeView({ data, type }: TreeViewProps) {
                     <g key={n.data.id} transform={`translate(${n.x},${n.y})`}>
                         <circle r={R} fill="#fff" stroke="#333" />
                         <text textAnchor="middle" dy=".3em" fontSize={10}>
-                            {dto.value.key.join(",")}
+                            {dto.value.key.join(" , ")}
                         </text>
                         {type === "avl" ? (
                             <text textAnchor="middle" y={R + 14} fontSize={10} fill="#666">

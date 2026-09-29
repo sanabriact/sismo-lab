@@ -1,5 +1,5 @@
 {
-    "scenario_id": "08ff252c-6c96-4cfe-980f-488cf7271bc7",
+    "scenario_id": "f8a96e91-1d06-434e-8894-dc137a4fd2a9",
     "avl_tree": {
         "root": {
             "value": {
@@ -666,5 +666,5 @@
         "simple_right_rotations": 0
     },
     "saved_versions": [],
-    "execution_mode": "stress"
+    "execution_mode": "normal"
 }

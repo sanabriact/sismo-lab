@@ -31,6 +31,13 @@ const coreRoutes: AppRoute[] = [
         requiresScenario: true
     },
     {
+        path: "/events/create-events",
+        title: "Crear eventos",
+        component: CreateEvent,
+        group: "events",
+        requiresScenario: true
+    },
+    {
         path: "/events/visualize-trees",
         title: "Visualizar eventos",
         component: VisualizeTrees,
@@ -58,13 +65,7 @@ const coreRoutes: AppRoute[] = [
         group: "events",
         requiresScenario: true
     },
-    {
-        path: "/events/create-events",
-        title: "Crear eventos",
-        component: CreateEvent,
-        group: "events",
-        requiresScenario: true
-    },
+    
     {
         path: "/events/delete-events",
         title: "Eliminar eventos",
