@@ -1,5 +1,6 @@
 import { useObservable } from "../../stores/useObservable";
-import { modeStore } from "../../stores/modeStore";
+import { useScenarioLoaded } from "../../hooks/scenario/useScenarioLoaded";
+import { modeStore } from "../../stores/mode/modeStore";
 import { modeService } from "../../services/socket/modeService";
 import Logo from "../../assets/sidebar/svg/logo";
 
@@ -24,7 +25,9 @@ const Sidebar = () => {
         ? `El árbol ya no es AVL (desbalance máx. ${modeState.maxImbalance})`
         : null);
   const linkClass = `block p-2 rounded-lg hover:bg-white/10`;
-  const ungroupedRoutes = routes.filter((route) => !route.group)
+
+  const scenarioLoaded = useScenarioLoaded();
+  const ungroupedRoutes = routes.filter((route) => !route.group && (scenarioLoaded || !route.requiresScenario));
 
   return (
     <aside
@@ -58,7 +61,7 @@ const Sidebar = () => {
             Here we renderize each group of elements (Used when we want to make more dropdowns beside the "event" ones.),
             calling the component RouteGroupMenu.
           */}
-          {sidebarGroups.map(({ group, title }) => (
+          {scenarioLoaded && sidebarGroups.map(({ group, title }) => (
             <li key={group}>
               <RouteGroupMenu group={group} title={title} />
             </li>
@@ -69,7 +72,7 @@ const Sidebar = () => {
           Stress mode button
         */}
 
-        <div className="p-4 border-t border-white/20">
+        {scenarioLoaded && (<div className="p-4 border-t border-white/20">
           {/* 
               Label with content that shows "Modo estrés" and toggle type button.
             */}
@@ -92,7 +95,7 @@ const Sidebar = () => {
             </div>
           </label>
           {modeMessage && <p className="px-2 pt-1 text-xs text-amber-300">{modeMessage}</p>}
-        </div>
+        </div>)}
       </nav>
     </aside>
   );

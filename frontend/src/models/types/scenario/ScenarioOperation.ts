@@ -1,0 +1,1 @@
+export type ScenarioOperation = "idle" | "validating" | "succeeded" | "failed";

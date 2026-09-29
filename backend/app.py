@@ -119,7 +119,25 @@ def handle_mode_set(data):
         "ok": True,
         "mode": mode
     }
+
+@socketio.on("scenario:load")
+def handle_scenario_load(data):
+    source = data["source"]
+    content = data["content"]
+    print(f"Archivo cargado de tipo { source } y contenido: \n { content }")
     
+    if source not in ["file", "ai"]:
+        return {
+            "ok": False,
+            "reason": "Tipo de documento inválido"
+        }
+    
+    return {
+        "ok": True,
+        "scenario": content
+    }
+
+ 
 if __name__ == "__main__":
     event_engine.start()
     socketio.run(app, debug = True, use_reloader=False)

@@ -4,6 +4,7 @@ import routes from './routes';
 import { Navigate, Route, Routes } from "react-router-dom";
 import Fallback from './pages/fallback/Fallback';
 import Loading from './pages/loading/Loading';
+import RequireScenario from './components/scenery/RequireScenario';
 
 function App() {
   return (
@@ -14,8 +15,11 @@ function App() {
           element={<Navigate to="/home" replace/>}
         />
         <Route element={<DefaultLayout />}>
-          {routes.map(({ path, component: Component }) => (
-            <Route key={path} path={path} element={<Component />} />
+          {routes.map(({ path, component: Component, requiresScenario }) => (
+            <Route 
+            key={path} 
+            path={path} 
+            element={requiresScenario ? <RequireScenario><Component /></RequireScenario> : <Component />} />
           ))}
         </Route>
         <Route
