@@ -10,7 +10,7 @@ from backend.models.association_manager import AssociationManager
 from backend.models.metrics import Metrics
 from backend.models.event import Event
 from backend.models.station import Station
-from backend.repositories.json_utils import objectToDict
+from backend.utils.json_utils import objectToDict
 
 class SeismicObservatory:
     def __init__(self):
@@ -158,10 +158,11 @@ class SeismicObservatory:
         event = self.searchEventById(report.getEventId())
         if event is not None:
             oldKey = event.getKey()
-            event.updateEventData(report)
+            event.updateEventData(report, self.zones)
             
             if event.getKey() != oldKey:
-                self.avl_tree._updateTree(event)
+                balance = self.execution_mode == "normal"
+                self.avl_tree._updateTree(event, balance)
                 self.bst_tree._updateTree(event)
                 #RECALCULAR ASOCIACIONES Y METRICAS
                 
@@ -183,16 +184,19 @@ class SeismicObservatory:
 
     def toVersion(self):
         return {
-                    "avl_tree": objectToDict(self.avl_tree),
-                    "bst_tree":objectToDict(self.bst_tree),
-                    "history": objectToDict(self.history),
-                    "clock":objectToDict(self.clock),
-                    "l":self.l,
-                    "t":self.t,
-                    "association_manager":objectToDict(self.association_manager),
-                    "metrics": objectToDict(self.metrics),
-                    "execution_mode":self.execution_mode
-                }
+            "avl_tree": objectToDict(self.avl_tree),
+            "bst_tree": objectToDict(self.bst_tree),
+            "stations": [objectToDict(s) for s in self.stations],
+            "zones": [objectToDict(z) for z in self.zones],
+            "history": objectToDict(self.history),
+            "report_queue": objectToDict(self.report_queue),
+            "clock": objectToDict(self.clock),
+            "l": self.l,
+            "t": self.t,
+            "association_manager": objectToDict(self.association_manager),
+            "metrics": objectToDict(self.metrics),
+            "execution_mode": self.execution_mode,
+        }
 
     def toDict(self):
         return {

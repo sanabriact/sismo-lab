@@ -1,5 +1,5 @@
 from backend.structures.node import Node
-from backend.repositories.json_utils import objectToDict
+from backend.utils.json_utils import objectToDict
 
 class BST:
     def __init__(self):
@@ -208,71 +208,76 @@ class BST:
     def delete(self, data):
         # We check the tree has root
         if self.root is None:
-            return None
+            return False
         else:
             # We check that the node exists in the tree
             targetNode = self.searchById(data)
             if targetNode is None:
-                return None
+                return False
             else:
                 self._delete(targetNode)
+                return True
 
     # Private method for eliminating a node
+        # Private method for eliminating a node
     def _delete(self, node):
+        removed_id = node.getValue().getKey()[2]          # CHANGE 1: remember the id
+
         # We ask if the node doesn´t has children
         if node.isLeaf():
             nodeParent = node.getParent()
 
-            if node.isLeftChild():
+            if nodeParent is None:                        # CHANGE 2: the root was the only node
+                self.root = None
+            elif node.isLeftChild():
                 nodeParent.setLeftChild(None)
             else:
                 nodeParent.setRightChild(None)
 
             node.setParent(None)
         else:
-            # If the node is not leaf, then we check the 2 restant cases.
-            # We first ask if the node has both children.
             if node.hasLeftChild() and node.hasRightChild():
                 predecessor = self._getPredecessor(node.getLeftChild())
+                predecessor_id = predecessor.getValue().getKey()[2]
                 self._updateNodeValue(node, predecessor)
+                self.index[predecessor_id] = node         # CHANGE 1: the value now lives in `node`
 
-                # We validate if the predeccesor is leaf
-                if predecessor.isLeaf():
-                    predecessorParent = predecessor.getParent()
-                    predecessorParent.setRightChild(None)
+                # CHANGE 3: the predecessor has at most a left child, so one branch is enough
+                predecessorParent = predecessor.getParent()
+                replacement = predecessor.getLeftChild()  # may be None (leaf case)
+                if predecessorParent is node:
+                    node.setLeftChild(replacement)
                 else:
-                    # If the predeccesor isn't a leaf, it means that the node has a left child (Right child validation isn't neccesary thanks to the getPredeccesor method logic)
-                    predecessor.getParent().setLeftChild(predecessor.getLeftChild())
-                    predecessor.getLeftChild().setParent(predecessor.getParent())
-                    predecessor.setLeftChild(None)
+                    predecessorParent.setRightChild(replacement)
+                if replacement is not None:
+                    replacement.setParent(predecessorParent)
 
+                predecessor.setLeftChild(None)
                 predecessor.setParent(None)
 
-            # If the node doesn't have both children, then we validate if has a left or a right child.
-            # For both cases, we validate that child has again left or right child.
-            # For each case, they intercambiate and we eliminate the references of the parent to the old and new child and vice versa.
             else:
-                if node.isLeftChild():
-                    if node.hasLeftChild():
-                        node.getParent().setLeftChild(node.getLeftChild())
-                        node.getLeftChild().setParent(node.getParent())
-                        node.setLeftChild(None)
-                    else:
-                        node.getParent().setLeftChild(node.getRightChild())
-                        node.getRightChild().setParent(node.getParent())
-                        node.setRightChild(None)
-                else:
-                    if node.hasLeftChild():
-                        node.getParent().setRightChild(node.getLeftChild())
-                        node.getLeftChild().setParent(node.getParent())
-                        node.setLeftChild(None)
-                    else:
-                        node.getParent().setRightChild(node.getRightChild())
-                        node.getRightChild().setParent(node.getParent())
-                        node.setRightChild(None)
+                # CHANGE 2: one child; it also works when the node is the root
+                child = node.getLeftChild() if node.hasLeftChild() else node.getRightChild()
+                nodeParent = node.getParent()
 
+                if nodeParent is None:
+                    self.root = child
+                elif node.isLeftChild():
+                    nodeParent.setLeftChild(child)
+                else:
+                    nodeParent.setRightChild(child)
+
+                child.setParent(nodeParent)
+                node.setLeftChild(None)
+                node.setRightChild(None)
                 node.setParent(None)
 
+        # CHANGE 1 (end): clean the index and the dirty set
+        if removed_id != (node.getValue().getKey()[2] if False else None):
+            self.index.pop(removed_id, None)
+            self._dirty_ids.discard(removed_id)
+
+            
     # Private method for getting a predeccesor of a root.
     def _getPredecessor(self, node):
         rightChild = node.getRightChild()
