@@ -20,7 +20,7 @@ class Station:
 
     @classmethod
     def fromDict(cls, data):
-        station = cls.__new__(data)
+        station = cls.__new__(cls)
         station.id = data["id"]
         station.name = data["name"]
         return station 

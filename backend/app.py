@@ -2,7 +2,7 @@ from datetime import datetime
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from flask_socketio import SocketIO
-from backend.repositories.json_utils import objectToDict
+from backend.utils.json_utils import objectToDict
 from backend.services.seismic_observatory_service import SeismicObservatoryService
 from backend.services.realtime_service import init_realtime
 from backend.services.event_engine import EventEngine
@@ -81,7 +81,7 @@ def createEvent():
 def load_scenario():
     data = request.get_json()
     Falta crear método loadScenario para obs_service (Lee, valida y construye un SeismicObservatory a partir de un JSON)
-    observatory = obs_service.load_scenario(data)
+    observatory = obs_service.loadScenario(data)
     generator_manager.load_scenario(observatory)
     
     return jsonify({
