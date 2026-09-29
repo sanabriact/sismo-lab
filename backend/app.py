@@ -6,11 +6,12 @@ from backend.utils.json_utils import objectToDict
 from backend.services.seismic_observatory_service import SeismicObservatoryService, ScenarioValidationError
 from backend.services.realtime_service import init_realtime
 from backend.services.event_engine import EventEngine
-from backend.services.event_generator_client import AIEventClient 
-from backend.services.scenario_generator_manager import ScenarioGeneratorManager
-from backend.services.load_scenario_manager import LoadScenarioManager
-from backend.services.socket_broadcaster import SocketBroadcaster
-from backend.services.event_bus import mode_changed, scenario_loaded
+from backend.services.ai_client.event_generator_client import AIEventClient 
+from backend.managers.stress_mode_manager import StressModeManager
+from backend.managers.scenario_generator_manager import ScenarioGeneratorManager
+from backend.managers.load_scenario_manager import LoadScenarioManager
+from backend.services.socket.socket_broadcaster import SocketBroadcaster
+from backend.services.ai_client.event_bus import mode_changed, scenario_loaded
 
 app = Flask(__name__)
 CORS(app)
@@ -18,7 +19,12 @@ CORS(app)
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
 init_realtime(socketio)
 obs_service = SeismicObservatoryService()
-event_engine = EventEngine(socketio=socketio, service=obs_service, mode_changed=mode_changed)
+event_engine = EventEngine(
+    socketio=socketio,
+    service=obs_service,
+    mode_changed=mode_changed,
+    stress_mode_manager=StressModeManager(),
+)
 socket_broadcaster = SocketBroadcaster(mode_changed, scenario_loaded)
 ai_client = AIEventClient()
 load_scenario_manager = LoadScenarioManager()

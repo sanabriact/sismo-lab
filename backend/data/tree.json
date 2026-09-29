@@ -9,7 +9,7 @@
             "depth": 10.0,
             "epicenter_x": 20.0,
             "epicenter_y": 30.0,
-            "datetime": "2024-06-01T12:00:00",
+            "datetime": "2024-06-01T12:00:00+00:00",
             "revision": 1,
             "reporting_stations": [
                 "ST-001"
@@ -19,7 +19,7 @@
             "populated_zone": false,
             "expensive_access": false
         },
-        "height": 3,
+        "height": 2,
         "left_child": {
             "value": {
                 "key": [
@@ -30,7 +30,7 @@
                 "depth": 10.0,
                 "epicenter_x": 20.0,
                 "epicenter_y": 30.0,
-                "datetime": "2024-06-01T12:00:00",
+                "datetime": "2024-06-01T12:00:00+00:00",
                 "revision": 1,
                 "reporting_stations": [
                     "ST-001"
@@ -51,9 +51,10 @@
                     "depth": 23,
                     "epicenter_x": 105,
                     "epicenter_y": 105,
-                    "datetime": "2025-06-01T12:00:00",
+                    "datetime": "2025-06-01T12:00:00+00:00",
                     "revision": 2,
                     "reporting_stations": [
+                        1,
                         "ST-001"
                     ],
                     "attention_status": "pending",
@@ -76,7 +77,7 @@
                     "depth": 10.0,
                     "epicenter_x": 20.0,
                     "epicenter_y": 30.0,
-                    "datetime": "2024-06-01T12:00:00",
+                    "datetime": "2024-06-01T12:00:00+00:00",
                     "revision": 1,
                     "reporting_stations": [
                         "ST-001"
@@ -97,13 +98,13 @@
             "value": {
                 "key": [
                     3,
-                    6.5,
-                    2
+                    7.0,
+                    1
                 ],
                 "depth": 10.0,
                 "epicenter_x": 20.0,
                 "epicenter_y": 30.0,
-                "datetime": "2024-06-01T12:00:00",
+                "datetime": "2024-06-01T12:00:00+00:00",
                 "revision": 1,
                 "reporting_stations": [
                     "ST-001"
@@ -113,33 +114,9 @@
                 "populated_zone": false,
                 "expensive_access": false
             },
-            "height": 1,
+            "height": 0,
             "left_child": null,
-            "right_child": {
-                "value": {
-                    "key": [
-                        3,
-                        7.0,
-                        1
-                    ],
-                    "depth": 10.0,
-                    "epicenter_x": 20.0,
-                    "epicenter_y": 30.0,
-                    "datetime": "2024-06-01T12:00:00",
-                    "revision": 1,
-                    "reporting_stations": [
-                        "ST-001"
-                    ],
-                    "attention_status": "pending",
-                    "event_status": "active",
-                    "populated_zone": false,
-                    "expensive_access": false
-                },
-                "height": 0,
-                "left_child": null,
-                "right_child": null,
-                "node_creation_time": null
-            },
+            "right_child": null,
             "node_creation_time": null
         },
         "node_creation_time": null

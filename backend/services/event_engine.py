@@ -10,10 +10,11 @@ class EventEngine:
     toca el dominio o el disco pasa por SeismicObservatoryService.
     """
 
-    def __init__(self, socketio, service, mode_changed):
+    def __init__(self, socketio, service, mode_changed, stress_mode_manager):
         self.socketio = socketio
         self.service = service
         self.mode_changed = mode_changed
+        self.stress_mode_manager = stress_mode_manager
         self.observatory = None
         self.events = queue.Queue()
         self.lock = threading.Lock()
@@ -112,7 +113,10 @@ class EventEngine:
                 return {"ok": True, "mode": current}
 
             if mode == "stress":
-                report = self.service.changeExecutionMode(self.observatory, "stress")
+                report = self.stress_mode_manager.activateStressMode(
+                    self.observatory
+                )
+                self.service.saveObservatory(self.observatory)
                 self._notify_mode(report, "stress", "changed")
                 return {"ok": True, "mode": "stress"}
 
@@ -128,7 +132,10 @@ class EventEngine:
     def _recover(self):
         try:
             with self.lock:
-                report = self.service.recoverFromStress(self.observatory)
+                report = self.stress_mode_manager.deactivateStressMode(
+                    self.observatory
+                )
+                self.service.saveObservatory(self.observatory)
                 steps = report["steps"]
                 payload = None
 
