@@ -90,7 +90,7 @@ def load_scenario():
     }), 200 """
     
 # Method to load the JSON
-@app.route("/api/scenario", methods=["POST"])
+@app.route("/api/scenario", methods=["GET"])
 def load_scenario():
     data = request.get_json()
     result = load_scenario_manager.load(data)
