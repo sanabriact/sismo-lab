@@ -163,7 +163,7 @@ class SeismicObservatoryService:
         if mode not in EXECUTION_MODES:
             raise ScenarioValidationError(["execution_mode debe ser 'normal' o 'stress'"])
 
-        if "avl_tree" in data:
+        if "tree" in data:
             observatory = self._buildFromTopology(data, mode)
         else:
             observatory = self._buildFromInsertions(data, mode)
@@ -276,7 +276,6 @@ class SeismicObservatoryService:
                     datetime=event_time,
                     revision=item.get("revision", 1),
                     station=item["station"],
-                    balance=True,
                 )
             except (ValueError, TypeError) as error:
                 issues.append(f"{label}: {error}")
@@ -288,6 +287,8 @@ class SeismicObservatoryService:
             raise ScenarioValidationError(issues)
 
         observatory.setExecutionMode(mode)
+        # Keep the AVL policy synchronized with the scenario mode.
+        observatory.getAVLTree().balance = mode == "normal"
         return observatory
 
     def _buildFromTopology(self, data, mode):
@@ -329,6 +330,8 @@ class SeismicObservatoryService:
             raise ScenarioValidationError(issues)
 
         observatory.setExecutionMode(mode)
+        # A topology loaded in stress mode must keep accepting unbalanced inserts.
+        observatory.getAVLTree().balance = mode == "normal"
         return observatory
 
     # ===================== Métodos para el EventEngine =====================
@@ -358,7 +361,6 @@ class SeismicObservatoryService:
         """
         event_id = self.nextAvailableEventId(observatory)
         mode = observatory.getExecutionMode()
-        balance = mode == "normal"
 
         observatory.begin_visual_operation()
 
@@ -371,7 +373,6 @@ class SeismicObservatoryService:
             datetime=data["datetime"],
             revision=1,
             station=station.getId(),
-            balance=balance,
         )
 
         if result is False or not all(result):
@@ -400,38 +401,3 @@ class SeismicObservatoryService:
             "issues": audit["issues"],
         }
 
-    def changeExecutionMode(self, observatory, mode):
-        """
-        Cambia el modo de ejecución del observatorio activo y lo persiste.
-        Solo sirve para pasar a estrés: volver a normal requiere recuperar
-        primero el equilibrio del AVL (ver recoverFromStress).
-        """
-        if mode not in EXECUTION_MODES:
-            raise ValueError("El modo debe ser normal o stress")
-
-        observatory.setExecutionMode(mode)
-        self.repository.save(observatory)
-        return self.auditBalance(observatory)
-
-    def recoverFromStress(self, observatory):
-        """
-        Reequilibra el AVL, lo audita y, solo si la auditoría confirma que
-        quedó bien, pasa el observatorio a modo normal. Si la auditoría falla
-        el observatorio se mantiene en modo estrés.
-        """
-        avl_tree = observatory.getAVLTree()
-
-        observatory.begin_visual_operation()
-        avl_tree.recover_balance()
-        steps = observatory.finish_visual_operation()
-
-        report = self.auditBalance(observatory)
-        if report["ok"]:
-            observatory.setExecutionMode("normal")
-
-        self.repository.save(observatory)
-
-        report["mode"] = observatory.getExecutionMode()
-        report["steps"] = steps
-        report["rotations"] = len([s for s in steps if s.get("kind") == "rotation"])
-        return report

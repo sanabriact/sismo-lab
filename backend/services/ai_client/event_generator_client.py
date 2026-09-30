@@ -5,7 +5,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from groq import Groq
 
-env_path = Path(__file__).resolve().parent.parent / ".env"
+env_path = Path(__file__).resolve().parent.parent.parent / ".env"
 load_dotenv(env_path)
 EVENT_SCHEMA = {
     "type": "object",
