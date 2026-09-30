@@ -1,5 +1,5 @@
 export interface Zone {
-    id: string;
+    id: string | number;
     name: string;
     is_populated: boolean;
     x_min: number;

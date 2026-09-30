@@ -1,0 +1,1 @@
+export type AIScenarioMode = "empty" | "insertion" | "topology"

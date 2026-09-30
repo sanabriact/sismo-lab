@@ -1,5 +1,5 @@
 import type { ExecutionMode } from "../../models/types/observatory/ExecutionMode";
-import { modeStore } from "../../stores/modeStore";
+import { modeStore } from "../../stores/mode/modeStore";
 
 export function applySnapshot(mode: ExecutionMode, imbalance: number): void {
     const current = modeStore.getSnapshot();

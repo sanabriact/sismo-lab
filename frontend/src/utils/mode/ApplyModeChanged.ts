@@ -1,5 +1,5 @@
 import type { ModeChangedPayload } from "../../models/interfaces/realTime/ModeChangedPayload";
-import { modeStore } from "../../stores/modeStore";
+import { modeStore } from "../../stores/mode/modeStore";
 
 export function applyModeChanged(payload: ModeChangedPayload): void {
     modeStore.set({

@@ -13,7 +13,10 @@ class JSONRepository:
 
     def _write(self,data):
         os.makedirs(os.path.dirname(self.path), exist_ok=True)
-        with open(self.path,"w",encoding="utf-8") as file:  
-            json.dump(data, file, indent=4, ensure_ascii=False)            
+        # Se serializa antes de abrir el archivo: si data no es serializable,
+        # el JSON que ya existe en disco no queda truncado.
+        content = json.dumps(data, indent=4, ensure_ascii=False)
+        with open(self.path,"w",encoding="utf-8") as file:
+            file.write(content)
             return True
         return False

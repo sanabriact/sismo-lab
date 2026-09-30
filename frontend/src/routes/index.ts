@@ -9,7 +9,8 @@ const ConsultEvent = lazy(() => import ('../pages/events/consult/ConsultEvent'))
 const CorrectEvent = lazy(() => import ('../pages/events/correct/CorrectEvent'));
 const CreateEvent = lazy(() => import ('../pages/events/create/CreateEvent'));
 const DeleteEvent = lazy (() => import ('../pages/events/delete/DeleteEvent'));
-const Scenery = lazy(() => import ('../pages/scenery/Scenery'));
+const Scenario = lazy(() => import ('../pages/scenery/Scenery'));
+const LoadScenario = lazy(() => import ('../pages/load/loadScenario'));
 
 /* Adding components to each route */
 const coreRoutes: AppRoute[] = [
@@ -19,45 +20,58 @@ const coreRoutes: AppRoute[] = [
         component: Home
     },
     {
-        path: "/escenary",
+        path: "/load-scenario",
+        title: "Cargar escenario",
+        component: LoadScenario,
+    },
+    {
+        path: "/scenario",
         title: "Escenario",
-        component: Scenery
-    },
-    {
-        path: "/events/visualize-trees",
-        title: "Visualizar eventos",
-        component: VisualizeTrees,
-        group: "events"
-    },
-    {
-        path: "/events/check-events",
-        title: "Marcar eventos",
-        component: CheckEvent,
-        group: "events"
-    },
-    {
-        path: "/events/consult-events",
-        title: "Consultar eventos",
-        component: ConsultEvent,
-        group: "events"
-    },
-    {
-        path: "/events/correct-events",
-        title: "Corregir eventos",
-        component: CorrectEvent,
-        group: "events"
+        component: Scenario,
+        requiresScenario: true
     },
     {
         path: "/events/create-events",
         title: "Crear eventos",
         component: CreateEvent,
-        group: "events"
+        group: "events",
+        requiresScenario: true
     },
+    {
+        path: "/events/visualize-trees",
+        title: "Visualizar eventos",
+        component: VisualizeTrees,
+        group: "events",
+        requiresScenario: true
+    },
+    {
+        path: "/events/check-events",
+        title: "Marcar eventos",
+        component: CheckEvent,
+        group: "events",
+        requiresScenario: true
+    },
+    {
+        path: "/events/consult-events",
+        title: "Consultar eventos",
+        component: ConsultEvent,
+        group: "events",
+        requiresScenario: true
+    },
+    {
+        path: "/events/correct-events",
+        title: "Corregir eventos",
+        component: CorrectEvent,
+        group: "events",
+        requiresScenario: true
+    },
+    
     {
         path: "/events/delete-events",
         title: "Eliminar eventos",
         component: DeleteEvent,
-        group: "events"
+        group: "events",
+        requiresScenario: true
     }
 ]
 

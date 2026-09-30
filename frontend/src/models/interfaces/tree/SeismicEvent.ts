@@ -10,11 +10,9 @@ export interface SeismicEvent {
     epicenter_x: number;
     epicenter_y: number;
     event_status: EventStatus;
-    expensive_acces: boolean;
+    expensive_access: boolean;
     key: EventKey;
     populated_zone: boolean;
-    reporting_stations: Station[];
+    reporting_stations: Station["id"][];
     revision: number;
-    eliminated: boolean;
-    archived: boolean;
 }

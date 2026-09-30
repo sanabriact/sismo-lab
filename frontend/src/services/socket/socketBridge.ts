@@ -4,6 +4,8 @@ import { applyModeChanged } from "../../utils/mode/ApplyModeChanged";
 import { applySnapshot } from "../../utils/mode/ApplySnapshot";
 import { maxImbalance } from "../../utils/tree/maxImbalance";
 import type { ModeChangedPayload } from "../../models/interfaces/realTime/ModeChangedPayload";
+import type { TreeOperation } from "../../models/interfaces/realTime/TreeOperation";
+import { applyScenarioEvent } from "../../utils/scenario/ApplyScenario";
 
 let started = false;
 
@@ -19,5 +21,6 @@ export function startSocketBridge(): void {
 
     const socket = socketService.connect();
     socket.on("mode:changed", (payload: ModeChangedPayload) => applyModeChanged(payload));
+    socket.on("tree:operation", (operation: TreeOperation) => applyScenarioEvent(operation));
     socket.on("connect", loadSnapshot)
 }

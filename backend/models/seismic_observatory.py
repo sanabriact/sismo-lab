@@ -113,9 +113,13 @@ class SeismicObservatory:
         return self.execution_mode
     def setExecutionMode(self, mode):
         self.execution_mode = mode
+    def getScenarioId(self):
+        return self.scenario_id
 
-    def createEvent(self, id, magnitude, depth, epicenter_x, epicenter_y, datetime: datetime, revision, station, balance=True):
-        if self.avl_tree.searchById(id) is not None and self.bst_tree.searchById(id) is not None:
+    def createEvent(self, id, magnitude, depth, epicenter_x, epicenter_y, datetime: datetime, revision, station):
+        if self.avl_tree.searchById(id) is not None:
+            return False
+        if self.bst_tree.searchById(id) is not None:
             return False
         #Validar que no este en historico
         if id in self.history.getArchived():
@@ -123,7 +127,8 @@ class SeismicObservatory:
         if id in self.history.getDeletedIds():
             return False
         event = Event(id, magnitude, depth, epicenter_x, epicenter_y, datetime, revision, station, self.zones)
-        return self.avl_tree.insert(event, balance), self.bst_tree.insert(event)
+        # AVL decides whether to rotate using its current balance attribute.
+        return self.avl_tree.insert(event), self.bst_tree.insert(event)
     
     def begin_visual_operation(self):
         self.avl_tree.begin_visual_operation()
@@ -161,8 +166,7 @@ class SeismicObservatory:
             event.updateEventData(report, self.zones)
             
             if event.getKey() != oldKey:
-                balance = self.execution_mode == "normal"
-                self.avl_tree._updateTree(event, balance)
+                self.avl_tree._updateTree(event)
                 self.bst_tree._updateTree(event)
                 #RECALCULAR ASOCIACIONES Y METRICAS
                 
@@ -223,9 +227,13 @@ class SeismicObservatory:
         observatory.avl_tree = AVL.fromDict(data["avl_tree"], Event)
         observatory.bst_tree = BST.fromDict(data["bst_tree"], Event)
         observatory.stations = [Station.fromDict(station) for station in data["stations"]]
+        stations_by_id = {
+            station.getId(): station
+            for station in observatory.stations
+        }
         observatory.zones = [Zone.fromDict(zone) for zone in data["zones"]]
         observatory.history = History.fromDict(data["history"])
-        observatory.report_queue = Queue.fromDict(data["report_queue"])
+        observatory.report_queue = Queue.fromDict(data["report_queue"], stations_by_id)
         observatory.action_stack = Stack.fromDict(data["action_stack"])
         observatory.clock = SimulationClock.fromDict(data["clock"])
         observatory.l = data["l"]
