@@ -1,0 +1,88 @@
+{
+  "load_type": "topology",
+  "datetime": "2026-09-07T10:00:00Z",
+  "zones": [
+    {
+      "id": "z1",
+      "name": "North zone",
+      "is_populated": true,
+      "x_min": 0,
+      "x_max": 400,
+      "y_min": 600,
+      "y_max": 1000
+    },
+    {
+      "id": "z2",
+      "name": "Sur zone",
+      "is_populated": true,
+      "x_min": 0,
+      "x_max": 400,
+      "y_min": 600,
+      "y_max": 1000
+    }
+  ],
+  "stations": [
+    {
+      "id": "ST-001",
+      "emmited_events": [],
+      "name": "S1",
+      "x": 0,
+      "y": 0
+    },
+    {
+      "id": "ST-002",
+      "emmited_events": [],
+      "name": "S2",
+      "x": 0,
+      "y": 0
+    }
+  ],
+  "tree": {
+    "root": {
+      "event": {
+        "key": [
+          3,
+          7.0,
+          2
+        ],
+        "epicenter_x": 20,
+        "epicenter_y": 30,
+        "depth": 10,
+        "datetime": "2024-06-01T12:00:00Z",
+        "revision": 1,
+        "reporting_stations": [],
+        "attention_status": "pending",
+        "event_status": "active",
+        "populated_zone": false,
+        "expensive_access": false,
+        "eliminated": false,
+        "archived": false
+      },
+      "left_child": {
+        "event": {
+          "key": [
+            3,
+            7.0,
+            1
+          ],
+          "epicenter_x": 20,
+          "epicenter_y": 30,
+          "depth": 10,
+          "datetime": "2024-06-01T12:00:00Z",
+          "revision": 1,
+          "reporting_stations": [],
+          "attention_status": "pending",
+          "event_status": "active",
+          "populated_zone": false,
+          "expensive_access": false,
+          "eliminated": false,
+          "archived": false
+        },
+        "left_child": null,
+        "right_child": null
+      },
+      "right_child": null
+    }
+  }
+}
+

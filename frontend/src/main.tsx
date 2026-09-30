@@ -4,8 +4,10 @@ import { BrowserRouter } from 'react-router-dom'
 import './index.css'
 import App from './App.tsx'
 import { startSocketBridge } from './services/socket/socketBridge.ts';
+import { startScenarioBridge } from './services/scenario/ScenarioBridge.ts'
 
 startSocketBridge();
+startScenarioBridge();
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>

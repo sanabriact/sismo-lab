@@ -1,7 +1,18 @@
 class Station:
-    def __init__(self, id, name):
+    def __init__(self, id, name, x, y):
+        self._validate_coordinates(x, y)
         self.id = id
         self.name = name
+        self.x = x
+        self.y = y
+
+    def _validate_coordinates(self, x, y):
+        if isinstance(x, bool) or not isinstance(x, (int, float)):
+            raise ValueError("La coordenada x de la estación debe ser numérica")
+        if isinstance(y, bool) or not isinstance(y, (int, float)):
+            raise ValueError("La coordenada y de la estación debe ser numérica")
+        if not 0 <= x <= 1000 or not 0 <= y <= 1000:
+            raise ValueError("Las coordenadas de la estación deben estar entre 0 y 1000")
 
     def getId(self):
         return self.id
@@ -11,16 +22,36 @@ class Station:
         return self.name
     def setName(self,name):
         self.name = name
+    def getX(self):
+        return self.x
+    def setX(self, x):
+        self._validate_coordinates(x, self.y)
+        self.x = x
+    def getY(self):
+        return self.y
+    def setY(self, y):
+        self._validate_coordinates(self.x, y)
+        self.y = y
+    
 
     def toDict(self):
         return {
             "id":self.id,
-            "name":self.name
+            "name":self.name,
+            "x":self.x,
+            "y":self.y
+
         }
 
     @classmethod
     def fromDict(cls, data):
-        station = cls.__new__(data)
-        station.id = data["id"]
-        station.name = data["name"]
-        return station 
+        missing = [
+            field for field in ("id", "name", "x", "y")
+            if field not in data
+        ]
+        
+        if missing:
+            station_id = data.get("id")
+            raise ValueError(f"Estación {station_id}: faltan campos {','.join(missing)}")
+        
+        return cls(data["id"], data["name"], data["x"], data["y"])

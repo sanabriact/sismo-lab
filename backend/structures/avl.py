@@ -1,5 +1,5 @@
 from backend.structures.node import Node
-from backend.repositories.json_utils import objectToDict
+from backend.utils.json_utils import objectToDict
 
 class AVL:
     def __init__(self):
@@ -8,6 +8,12 @@ class AVL:
         self._dirty_ids = set()
         self._removed_ids = set()
         self._visual_steps = []
+        self.balance = True
+
+    def getBalance(self):
+        return self.balance
+    def setBalance(self, balance):
+        self.balance = balance
     
     def _touch(self, node):
         if node is not None:
@@ -75,7 +81,6 @@ class AVL:
             self.index[node.getValue().getKey()[2]] = node
             self._touch(node)
             self._touch(currentRoot)
-            print(node.getValue(), " has been inserted as left child of ", currentRoot.getValue())
             return True, leftChild
         else:
             return False, leftChild
@@ -89,13 +94,12 @@ class AVL:
             self.index[node.getValue().getKey()[2]] = node
             self._touch(node)
             self._touch(currentRoot)    
-            print(node.getValue(), " has been inserted as right child of ",currentRoot.getValue())
             return True, rightChild
         else:
             return False, rightChild
 
     # Public method of inserting
-    def insert(self, data, balance=True):
+    def insert(self, data):
         node = Node(data)
         if self.root is None:
             self.root = node
@@ -105,7 +109,7 @@ class AVL:
             
             return True
         else:
-            return self._insert(node, self.root, balance)
+            return self._insert(node, self.root, self.balance)
 
     # Private method of inserting
     def _insert(self, node, currentRoot, balance):
@@ -127,9 +131,9 @@ class AVL:
             return True
         return self._insert(node, child, balance)
     
-    def _updateTree(self, event, balance=True):
-        self.delete(event.getKey()[2], balance)
-        self.insert(event, balance)
+    def _updateTree(self, event):
+        self.delete(event.getKey()[2])
+        self.insert(event)
         
     # Public method for searching a node
     def search(self, data):
@@ -225,7 +229,7 @@ class AVL:
         return None
 
     # Public method for deleting a node
-    def delete(self, data, balance=True):
+    def delete(self, data):
         # First we check the tree has a root
         if self.root is None:
             return None
@@ -236,10 +240,10 @@ class AVL:
             if targetNode is None:
                 return False
             else:
-                return self._delete(targetNode, balance)
+                return self._delete(targetNode, self.balance)
 
     # Private method for deleting a node
-    def _delete(self, node, balance=True):
+    def _delete(self, node, balance):
         nodeParent = node.getParent()
         start = nodeParent
         removed_id = node.getValue().getKey()[2]
@@ -432,35 +436,30 @@ class AVL:
         return case
 
     # Private method for rebalancing
-    def _rebalance(self, superior, superiorBalanceFactor, childBalanceFactor = 0):
-        # 1) Decide the case from the real children, not from the argument
-        if superiorBalanceFactor > 0:                      # heavy on the left
+    def _rebalance(self, superior, superiorBalanceFactor, childBalanceFactor=0):
+        if superiorBalanceFactor > 0:
             child = superior.getLeftChild()
             child_bf = self._height(child.getLeftChild()) - self._height(child.getRightChild())
             balanceCase = "LL" if child_bf >= 0 else "LR"
-        else:                                              # heavy on the right
+        else:
             child = superior.getRightChild()
             child_bf = self._height(child.getLeftChild()) - self._height(child.getRightChild())
             balanceCase = "RR" if child_bf <= 0 else "RL"
-            balanceCase = self._getCaseOfBalance(superiorBalanceFactor, childBalanceFactor)
 
-        match(balanceCase):
+        match balanceCase:
             case "LL":
                 self._simpleRightTurn(superior)
-                self._record_rotation("LL", superior)
             case "RR":
                 self._simpleLeftTurn(superior)
-                self._record_rotation("RR", superior)
             case "LR":
                 self._simpleLeftTurn(superior.getLeftChild())
                 self._simpleRightTurn(superior)
-                self._record_rotation("LR", superior)
             case "RL":
                 self._simpleRightTurn(superior.getRightChild())
                 self._simpleLeftTurn(superior)
-                self._record_rotation("RL", superior)
             case _:
                 return None
+
         self._record_rotation(balanceCase, superior)
         self._checkBalance(superior.getParent().getParent(), 0)
         if self._dirty_ids:
@@ -659,21 +658,6 @@ class AVL:
             return "(" + ", ".join(str(v) for v in value) + ")"
         return str(value)
 
-    # Converting a AVL tree instance into a dictionary or JSON type
-    def toDict(self):
-        return {
-            "root": objectToDict(self.root),
-            #The index is not included in the dictionary representation because it can be reconstructed from the tree structure.
-        }
-
-    # Class method for converting a JSON or dictionary type to a instance of AVL.
-    @classmethod
-    def fromDict(cls, data, event_cls):
-        tree = cls()
-        if data["root"] is not None:
-            tree.root = Node.fromDict(data["root"], event_cls)
-            tree._rebuildIndex(tree.root)  # reconstruye self.index recorriendo el árbol
-        return tree
 
     # Private method for rebuilding an index.
     def _rebuildIndex(self, node):
@@ -705,3 +689,20 @@ class AVL:
         self._dirty_ids.clear()
         self._removed_ids.clear()
         return patch
+    
+    
+    # Converting a AVL tree instance into a dictionary or JSON type
+    def toDict(self):
+        return {
+            "root": objectToDict(self.root),
+            #The index is not included in the dictionary representation because it can be reconstructed from the tree structure.
+        }
+
+    # Class method for converting a JSON or dictionary type to a instance of AVL.
+    @classmethod
+    def fromDict(cls, data, event_cls):
+        tree = cls()
+        if data["root"] is not None:
+            tree.root = Node.fromDict(data["root"], event_cls)
+            tree._rebuildIndex(tree.root)  # reconstruye self.index recorriendo el árbol
+        return tree

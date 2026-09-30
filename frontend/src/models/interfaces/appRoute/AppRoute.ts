@@ -5,4 +5,5 @@ export interface AppRoute {
     title: string;
     component: LazyExoticComponent<ComponentType>;
     group?: string;
+    requiresScenario?: boolean;
 }

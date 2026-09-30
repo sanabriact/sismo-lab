@@ -10,7 +10,7 @@ from backend.models.association_manager import AssociationManager
 from backend.models.metrics import Metrics
 from backend.models.event import Event
 from backend.models.station import Station
-from backend.repositories.json_utils import objectToDict
+from backend.utils.json_utils import objectToDict
 
 class SeismicObservatory:
     def __init__(self):
@@ -113,9 +113,13 @@ class SeismicObservatory:
         return self.execution_mode
     def setExecutionMode(self, mode):
         self.execution_mode = mode
+    def getScenarioId(self):
+        return self.scenario_id
 
-    def createEvent(self, id, magnitude, depth, epicenter_x, epicenter_y, datetime: datetime, revision, station, balance=True):
-        if self.avl_tree.searchById(id) is not None and self.bst_tree.searchById(id) is not None:
+    def createEvent(self, id, magnitude, depth, epicenter_x, epicenter_y, datetime: datetime, revision, station):
+        if self.avl_tree.searchById(id) is not None:
+            return False
+        if self.bst_tree.searchById(id) is not None:
             return False
         #Validar que no este en historico
         if id in self.history.getArchived():
@@ -123,7 +127,8 @@ class SeismicObservatory:
         if id in self.history.getDeletedIds():
             return False
         event = Event(id, magnitude, depth, epicenter_x, epicenter_y, datetime, revision, station, self.zones)
-        return self.avl_tree.insert(event, balance), self.bst_tree.insert(event)
+        # AVL decides whether to rotate using its current balance attribute.
+        return self.avl_tree.insert(event), self.bst_tree.insert(event)
     
     def begin_visual_operation(self):
         self.avl_tree.begin_visual_operation()
@@ -158,7 +163,7 @@ class SeismicObservatory:
         event = self.searchEventById(report.getEventId())
         if event is not None:
             oldKey = event.getKey()
-            event.updateEventData(report)
+            event.updateEventData(report, self.zones)
             
             if event.getKey() != oldKey:
                 self.avl_tree._updateTree(event)
@@ -168,13 +173,12 @@ class SeismicObservatory:
             return True
         return False
 
-
     def markAsRevised(self, id):
         event = self.searchEventById(id)
         if event is not None:
             event.setAttentionStatus("revised")
     
-    # Méthod to archivate a sub tree 
+    # Méthod to archivate a sub tree , por hacer
     def archivateSubTree(self, actualTime):
         rootToArchivate = self.avl_tree.archiveSubTree(actualTime)
 
@@ -183,16 +187,19 @@ class SeismicObservatory:
 
     def toVersion(self):
         return {
-                    "avl_tree": objectToDict(self.avl_tree),
-                    "bst_tree":objectToDict(self.bst_tree),
-                    "history": objectToDict(self.history),
-                    "clock":objectToDict(self.clock),
-                    "l":self.l,
-                    "t":self.t,
-                    "association_manager":objectToDict(self.association_manager),
-                    "metrics": objectToDict(self.metrics),
-                    "execution_mode":self.execution_mode
-                }
+            "avl_tree": objectToDict(self.avl_tree),
+            "bst_tree": objectToDict(self.bst_tree),
+            "stations": [objectToDict(s) for s in self.stations],
+            "zones": [objectToDict(z) for z in self.zones],
+            "history": objectToDict(self.history),
+            "report_queue": objectToDict(self.report_queue),
+            "clock": objectToDict(self.clock),
+            "l": self.l,
+            "t": self.t,
+            "association_manager": objectToDict(self.association_manager),
+            "metrics": objectToDict(self.metrics),
+            "execution_mode": self.execution_mode,
+        }
 
     def toDict(self):
         return {
@@ -220,9 +227,13 @@ class SeismicObservatory:
         observatory.avl_tree = AVL.fromDict(data["avl_tree"], Event)
         observatory.bst_tree = BST.fromDict(data["bst_tree"], Event)
         observatory.stations = [Station.fromDict(station) for station in data["stations"]]
+        stations_by_id = {
+            station.getId(): station
+            for station in observatory.stations
+        }
         observatory.zones = [Zone.fromDict(zone) for zone in data["zones"]]
         observatory.history = History.fromDict(data["history"])
-        observatory.report_queue = Queue.fromDict(data["report_queue"])
+        observatory.report_queue = Queue.fromDict(data["report_queue"], stations_by_id)
         observatory.action_stack = Stack.fromDict(data["action_stack"])
         observatory.clock = SimulationClock.fromDict(data["clock"])
         observatory.l = data["l"]

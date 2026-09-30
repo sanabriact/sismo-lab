@@ -1,11 +1,13 @@
 from datetime import datetime
 
 from backend.models.station import Station
+from backend.utils.quantities import normalizeDatetime, parseDatetime
 
 
 class Report:
     def __init__(self, event_id, revision, station,magnitude, depth, epicenter_x, epicenter_y, datetime_: datetime):
-
+        if isinstance(datetime_, datetime):
+            datetime_ = normalizeDatetime(datetime_)
         self._validateData(event_id, revision, magnitude, depth,epicenter_x, epicenter_y, datetime_, station)
 
         self.event_id = event_id #int
@@ -78,8 +80,8 @@ class Report:
         if not isinstance(datetime_, datetime):
             raise TypeError("occurrenceDateTime must be a datetime object, not a string")
 
-        if not station or not isinstance(station, str):
-            raise ValueError("issuingStation code must be provided")
+        if not isinstance(station, Station):
+            raise ValueError("station must be a Station instance")
     
     def toDict(self):
         return{
@@ -94,15 +96,24 @@ class Report:
         }
 
     @classmethod
-    def fromDict(cls, data):
-        report = cls.__new__(data)
+    def fromDict(cls, data, stations_by_id):
+        station_data = data["station"]
+        if "x" in station_data and "y" in station_data:
+            station = Station.fromDict(station_data)
+        else:
+            station = stations_by_id(station_data["id"])
+        
+            if station is None:
+                raise ValueError(f"No existe una estación con id {station_data['id']} para restaurar el reporte.")
+            
+        report = cls.__new__(cls)
         report.event_id = data["event_id"]
         report.revision = data["revision"]
-        report.station = Station.fromDict(data["station"])
+        report.station = station
         report.magnitude = data["magnitude"]
         report.depth = data["depth"]
         report.epicenter_x = data["epicenter_x"]
         report.epicenter_y = data["epicenter_y"]
-        report.datetime = datetime.fromisoformat(data["datetime"])
+        report.datetime = parseDatetime(data["datetime"])
         return report
         

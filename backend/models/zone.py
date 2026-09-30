@@ -1,7 +1,8 @@
 class Zone:
-    def __init__(self,id,x_min,x_max,y_min,y_max,is_populated):
+    def __init__(self, id, name, x_min, x_max, y_min, y_max, is_populated):
         self._validateData(x_min, x_max, y_min, y_max)
         self.id = id
+        self.name = name
         self.x_min = x_min
         self.x_max = x_max
         self.y_min = y_min
@@ -13,6 +14,10 @@ class Zone:
         return self.id 
     def setid(self, id):
         self.id = id
+    def getName(self):
+        return self.name
+    def setName(self, name):
+        self.name = name
     def getXMin(self):
         return self.x_min
     def setXMin(self, x_min):
@@ -51,6 +56,7 @@ class Zone:
     def toDict(self):
         return {
             "id":self.id,
+            "name":self.name,
             "x_min":self.x_min,
             "x_max":self.x_max,
             "y_min":self.y_min,
@@ -60,11 +66,8 @@ class Zone:
 
     @classmethod
     def fromDict(cls, data):
-        zone = cls.__new__(data)
-        zone.id = data["id"]
-        zone.x_min = data["x_min"]
-        zone.x_max = data["x_max"]
-        zone.y_min = data["y_min"]
-        zone.y_max = data["y_max"]
-        zone.is_populated = data["is_populated"]
-        return zone
+        name = data.get("name", f"Zona {data['id']}")
+        return cls(
+            data["id"], name, data["x_min"], data["x_max"],
+            data["y_min"], data["y_max"], data["is_populated"],
+        )

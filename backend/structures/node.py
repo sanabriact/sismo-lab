@@ -1,4 +1,4 @@
-from backend.repositories.json_utils import objectToDict
+from backend.utils.json_utils import objectToDict
 from datetime import datetime
 
 
@@ -77,12 +77,11 @@ class Node:
 
     # Retorna true si el nodo es hijo izquierdo
     def isLeftChild(self):
-        return self.hasParent() and self.parent.hasLeftChild() and self.value == self.parent.leftChild.value
+        return self.hasParent() and self.parent.getLeftChild() is self
 
     # Retorna true si el nodo es hijo derecho
     def isRightChild(self):
-        return self.hasParent() and self.parent.hasRightChild() and self.value == self.parent.rightChild.value
-
+        return self.hasParent() and self.parent.getRightChild() is self
     # Método para comprobar si el nodo es archivable
     def isArchivable(self, actualTime, time):
         return self.value[0] == 1 and self.calculateTime(actualTime) > time 

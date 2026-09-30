@@ -142,7 +142,7 @@ class Metrics:
         return {
             "active_events": self.active_events,
             "historical_events": self.historical_events,
-            "events_by_priority":self.events_by_priority,
+                        "events_by_priority": dict(self.events_by_priority),
             "pending_attention":self.pending_attention,
             "high_cost_access_events":self.high_cost_access_events,
             "accepted_corrections":self.accepted_corrections,

@@ -1,0 +1,1 @@
+export type ScenarioSource = "file" | "ai";

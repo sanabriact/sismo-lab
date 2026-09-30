@@ -1,4 +1,4 @@
-from backend.repositories.json_utils import objectToDict
+from backend.utils.json_utils import objectToDict
 from backend.models.report import Report
 class Queue:
     def __init__(self):
@@ -31,7 +31,7 @@ class Queue:
         }
 
     @classmethod
-    def fromDict(cls,data):
+    def fromDict(cls,data, stations_by_id):
         queue = cls()
-        queue.items = [Report.fromDict(report) for report in data["items"]]
+        queue.items = [Report.fromDict(report, stations_by_id) for report in data["items"]]
         return queue

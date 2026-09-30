@@ -1,5 +1,5 @@
 from datetime import datetime
-
+from backend.utils.quantities import normalizeDatetime
 class Event:
 
     def __init__(self, id, magnitude, depth, epicenter_x, epicenter_y, datetime: datetime, revision, station, zones = None):
@@ -9,9 +9,9 @@ class Event:
         self.epicenter_y = round(epicenter_y,1)  # float
         self.populated_zone = self.calculatePopulatedZone(zones or [])  # bool
         priority = self.calculatePriority(magnitude)
-        self.datetime = datetime  # datetime
+        self.datetime = self.datetime = normalizeDatetime(datetime)  # datetime
         self.revision = revision  # int
-        self.reporting_stations = {station}  # station
+        self.reporting_stations = {station}  # station id
         self.attention_status = "pending"  # str pending or revised
         self.event_status = "active"  # str active, archived, deleted
         self.expensive_access = False  # bool
@@ -43,9 +43,9 @@ class Event:
         self.datetime = date
     
     def getCurrentRevision(self):
-        return self.current_revision
+        return self.revision
     def setCurrentRevision(self, revision):
-        self.current_revision = revision
+        self.revision = revision
 
     def getReportingStations(self):
         return self.reporting_stations
@@ -97,17 +97,19 @@ class Event:
     
     def updateEventData(self, report, zones = None):
         self._validate_data(report.getEventId(), report.getMagnitude(), report.getDepth(), report.getEpicenterX(), report.getEpicenterY(), report.getDatetime())
-        self.revision+=1
+        # The revision comes from the report, it is NOT incremented locally
+        self.revision = report.getRevision()
         self.depth = round(report.getDepth(), 1)
         self.epicenter_x = round(report.getEpicenterX(), 1)
         self.epicenter_y = round(report.getEpicenterY(), 1)
-        self.datetime = report.getDatetime()
+        self.datetime = normalizeDatetime(report.getDatetime())
         self.populated_zone = self.calculatePopulatedZone(zones or [])
         self.key = (self.calculatePriority(report.getMagnitude()), round(report.getMagnitude(), 1), self.key[2])
         self.attention_status = "pending"
+        self.addReportingStation(report.getStation().getId())
 
 
-    def _validate_data(self,id, magnitude, depth, epicenter_x, epicenter_y, date):
+    def _validate_data(self, id, magnitude, depth, epicenter_x, epicenter_y, date):
         if not (-2 <= magnitude <= 10):
             raise ValueError("magnitud debe estar entre -2 y 10")
         if not isinstance(id, int) or not (1 <= id <= 999999):
@@ -142,7 +144,7 @@ class Event:
         event.depth = data["depth"]
         event.epicenter_x = data["epicenter_x"]
         event.epicenter_y = data["epicenter_y"]
-        event.datetime = datetime.fromisoformat(data["datetime"])
+        event.datetime = normalizeDatetime(datetime.fromisoformat(data["datetime"]))
         event.revision = data["revision"]
         event.reporting_stations = set(data["reporting_stations"])
         event.attention_status = data["attention_status"]

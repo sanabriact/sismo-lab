@@ -1,5 +1,5 @@
 import { socketService } from "./socketService";
-import { modeStore } from "../../stores/modeStore";
+import { modeStore } from "../../stores/mode/modeStore";
 import type { ExecutionMode } from "../../models/types/observatory/ExecutionMode";
 import type { ModeSetResponse } from "../../models/interfaces/realTime/ModeSetResponse";
 

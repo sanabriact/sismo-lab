@@ -1,5 +1,5 @@
 from datetime import datetime
-from backend.repositories.json_utils import objectToDict
+from backend.utils.json_utils import objectToDict
 
 class Action:
     def __init__(self, acction_type, datetime:datetime, before_snapshot):
@@ -26,13 +26,13 @@ class Action:
         return {
             "action_type": self.action_type,
             "datetime": self.datetime.isoformat(),
-            "before_snapshot": objectToDict(self.before_snapshot)
+            "before_snapshot": self.before_snapshot   # already a plain dict
         }
 
     @classmethod
     def fromDict(cls, data):
-        action = cls.__new__(data)
+        action = cls.__new__(cls)
         action.action_type = data["action_type"]
         action.datetime = datetime.fromisoformat(data["datetime"])
-        action.before_snapshot = None #no se que tipo de dato es jajajaj
+        action.before_snapshot = data["before_snapshot"]
         return action

@@ -1,3 +1,4 @@
+from backend.models.station import Station
 from backend.services.seismic_observatory_service import SeismicObservatoryService
 from backend.services.tree_service import TreeService
 from backend.structures.avl import AVL
@@ -24,11 +25,12 @@ observatory.getAVLTree().draw()
 observatory.getBSTTree().draw()
 print("=========================================================================")
 print(f"Busqueda (id = 100): {observatory.searchEventById(100)}")
-""" print(f"Eliminación (id = 2): {observatory.deleteEventById(2)}") """
+print(F"Eliminación (id = 2): {observatory.deleteEventById(2)}") 
 observatory.getAVLTree().draw()
 observatory.getBSTTree().draw()
 print("=========================================================================")
-report = Report(3,2,"ST-001", 3.2,23,105,105,datetime(2025, 6, 1, 12, 0, 0))
+station = Station(1,"ST-001", 20, 40)
+report = Report(3,2,station, 3.2,23,105,105,datetime(2025, 6, 1, 12, 0, 0))
 observatory.editEvent(report)
 observatory.getBSTTree().draw()
 persistence = JSONRepository("seismic_observatory.json")
