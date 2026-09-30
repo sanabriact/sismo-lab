@@ -11,12 +11,12 @@ export function startScenarioBridge(): void {
     started = true;
 
     const socket = socketService.connect();
-    socket.on("scenario:loaded", (payload: ScenarioLoadedPayload) => applyScenarioPayload(payload));
+    socket.on("scenario:loaded", (payload: ScenarioLoadedPayload) => void applyScenarioPayload(payload));
     socket.on("connect", () => {
         socket.timeout(STATUS_TIMEOUT_MS).emit(
             "scenario:status",
             (error: Error | null, response?: ScenarioStatusResponse) => {
-                applyScenarioStatus(error || !response ? null: response);
+                void applyScenarioStatus(error || !response ? null: response);
             }
         );
     });

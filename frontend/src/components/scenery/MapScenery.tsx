@@ -32,7 +32,12 @@ const PLOT = {
     selected: "#38bdf8",
 };
 
-export default function MapScenery({ zones, events, selectedEventId = null, onSelectEvent }: SeismicMapProps) {
+export default function MapScenery({
+    zones,
+    stations,
+    events,
+    selectedEventId = null,
+    onSelectEvent }: SeismicMapProps) {
     const [hoverId, setOnHover] = useState<number | null>(null);
 
     return (
@@ -169,37 +174,76 @@ export default function MapScenery({ zones, events, selectedEventId = null, onSe
                     </text>
 
                     {/* Zones */}
-                    {zones.map((z) => (
-                        <g key={z.id}>
+                    {zones.map((zone) => (
+                        <g key={zone.id}>
                             <rect
-                                x={MARGIN.left + z.x_min}
-                                y={MARGIN.top + yScreen(SIZE, z.y_max)}
-                                width={z.x_max - z.x_min}
-                                height={z.y_max - z.y_min}
+                                x={MARGIN.left + zone.x_min}
+                                y={MARGIN.top + yScreen(SIZE, zone.y_max)}
+                                width={zone.x_max - zone.x_min}
+                                height={zone.y_max - zone.y_min}
                                 rx={4}
-                                fill={z.is_populated ? PLOT.populatedFill : "url(#zone-hatch)"}
-                                stroke={z.is_populated ? PLOT.populatedStroke : PLOT.emptyStroke}
-                                strokeOpacity={z.is_populated ? 0.85 : 0.7}
-                                strokeDasharray={z.is_populated ? "0" : "6 4"}
+                                fill={zone.is_populated ? PLOT.populatedFill : "url(#zone-hatch)"}
+                                stroke={zone.is_populated ? PLOT.populatedStroke : PLOT.emptyStroke}
+                                strokeOpacity={zone.is_populated ? 0.85 : 0.7}
+                                strokeDasharray={zone.is_populated ? "0" : "6 4"}
                                 strokeWidth={1.5}
                             />
                             <text
-                                x={MARGIN.left + z.x_min + 10}
-                                y={MARGIN.top + yScreen(SIZE, z.y_max) + 20}
+                                x={MARGIN.left + zone.x_min + 10}
+                                y={MARGIN.top + yScreen(SIZE, zone.y_max) + 20}
                                 fontSize={12}
                                 fontWeight={600}
-                                fill={z.is_populated ? "#fcd28a" : "#a9b6cc"}
-                                style={{ paintOrder: "stroke", stroke: "#0a1120", strokeWidth: 3, strokeLinejoin: "round" }}
+                                fill={zone.is_populated ? "#fcd28a" : "#a9b6cc"}
+                                style={{
+                                    paintOrder: "stroke",
+                                    stroke: "#0a1120",
+                                    strokeWidth: 3,
+                                    strokeLinejoin: "round",
+                                }}
                             >
-                                {z.name}
+                                {zone.name}
                             </text>
                         </g>
-                    ))}
+                    ))} 
+                    {/* Stations */}
+                    {stations.map((station) => {
+                        const cx = MARGIN.left + station.x;
+                        const cy = MARGIN.top + yScreen(SIZE, station.y);
+
+                        return (
+                            <g key={station.id}>
+                                <circle
+                                    cx={cx}
+                                    cy={cy}
+                                    r={6}
+                                    fill="#38bdf8"
+                                    stroke="#e0f2fe"
+                                    strokeWidth={1.5}
+                                />
+                                <text
+                                    x={cx + 10}
+                                    y={cy - 8}
+                                    fontSize={11}
+                                    fontWeight={600}
+                                    fill="#bae6fd"
+                                    style={{
+                                        paintOrder: "stroke",
+                                        stroke: "#0a1120",
+                                        strokeWidth: 3,
+                                        strokeLinejoin: "round",
+                                    }}
+                                >
+                                    {station.name}
+                                </text>
+                            </g>
+                        );
+                    })}
 
                     {/* Events */}
                     {events
-                        .filter((e) => !e.eliminated)
+                        .filter((e) => e.event_status !== "deleted")
                         .map((ev) => {
+                            const archived = ev.event_status === "archived";
                             const cx = MARGIN.left + ev.epicenter_x;
                             const cy = MARGIN.top + yScreen(SIZE, ev.epicenter_y);
                             const r = magnitudeByRadio(ev.key[1]);
@@ -217,7 +261,7 @@ export default function MapScenery({ zones, events, selectedEventId = null, onSe
                                         r={r + 7}
                                         fill="none"
                                         stroke={color}
-                                        strokeOpacity={ev.archived ? 0.08 : 0.28}
+                                        strokeOpacity={archived ? 0.08 : 0.28}
                                         strokeWidth={1}
                                         pointerEvents="none"
                                     />
@@ -227,8 +271,8 @@ export default function MapScenery({ zones, events, selectedEventId = null, onSe
                                         cy={cy}
                                         r={r}
                                         fill={color}
-                                        fillOpacity={ev.archived ? 0.3 : 0.85}
-                                        filter={ev.key[0] === 3 && !ev.archived ? "url(#glow)" : undefined}
+                                        fillOpacity={archived ? 0.3 : 0.85}
+                                        filter={ev.key[0] === 3 && !archived ? "url(#glow)" : undefined}
                                         stroke={
                                             ev.key[2] === selectedEventId
                                                 ? PLOT.selected
@@ -246,7 +290,7 @@ export default function MapScenery({ zones, events, selectedEventId = null, onSe
                                         onClick={() => onSelectEvent?.(ev.key[2])}
                                     />
 
-                                    {ev.expensive_acces && (
+                                    {ev.expensive_access && (
                                         <circle
                                             cx={cx}
                                             cy={cy}

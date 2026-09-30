@@ -1,6 +1,6 @@
 export interface Station {
     id: number;
     name: string;
-    x: string;
-    y: string;
+    x: number;
+    y: number;
 }
