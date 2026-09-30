@@ -227,9 +227,13 @@ class SeismicObservatory:
         observatory.avl_tree = AVL.fromDict(data["avl_tree"], Event)
         observatory.bst_tree = BST.fromDict(data["bst_tree"], Event)
         observatory.stations = [Station.fromDict(station) for station in data["stations"]]
+        stations_by_id = {
+            station.getId(): station
+            for station in observatory.stations
+        }
         observatory.zones = [Zone.fromDict(zone) for zone in data["zones"]]
         observatory.history = History.fromDict(data["history"])
-        observatory.report_queue = Queue.fromDict(data["report_queue"])
+        observatory.report_queue = Queue.fromDict(data["report_queue"], stations_by_id)
         observatory.action_stack = Stack.fromDict(data["action_stack"])
         observatory.clock = SimulationClock.fromDict(data["clock"])
         observatory.l = data["l"]

@@ -81,7 +81,6 @@ class AVL:
             self.index[node.getValue().getKey()[2]] = node
             self._touch(node)
             self._touch(currentRoot)
-            print(node.getValue(), " has been inserted as left child of ", currentRoot.getValue())
             return True, leftChild
         else:
             return False, leftChild
@@ -95,7 +94,6 @@ class AVL:
             self.index[node.getValue().getKey()[2]] = node
             self._touch(node)
             self._touch(currentRoot)    
-            print(node.getValue(), " has been inserted as right child of ",currentRoot.getValue())
             return True, rightChild
         else:
             return False, rightChild

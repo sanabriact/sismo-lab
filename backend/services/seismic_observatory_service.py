@@ -123,13 +123,13 @@ class SeismicObservatoryService:
         observatory = self.buildScenario({
             "execution_mode": "normal",
             "stations": [
-                {"id": 1, "name": "Estación Norte"},
-                {"id": 2, "name": "Estación Centro"},
-                {"id": 3, "name": "Estación Sur"},
+                {"id": 1, "name": "Estación Norte", "x": 250, "y": 750},
+                {"id": 2, "name": "Estación Centro", "x": 500, "y": 500},
+                {"id": 3, "name": "Estación Sur", "x": 750, "y": 250},
             ],
             "zones": [
-                {"id": 1, "x_min": 0, "x_max": 500, "y_min": 0, "y_max": 500, "is_populated": True},
-                {"id": 2, "x_min": 500, "x_max": 1000, "y_min": 500, "y_max": 1000, "is_populated": False},
+                {"id": 1, "name": "Zona Suroccidental", "x_min": 0, "x_max": 500, "y_min": 0, "y_max": 500, "is_populated": True},
+                {"id": 2, "name": "Zona Nororiental", "x_min": 500, "x_max": 1000, "y_min": 500, "y_max": 1000, "is_populated": False},
             ],
             "events": [],
         })
@@ -164,7 +164,11 @@ class SeismicObservatoryService:
             raise ScenarioValidationError(["execution_mode debe ser 'normal' o 'stress'"])
 
         if "tree" in data:
-            observatory = self._buildFromTopology(data, mode)
+            topology_data = {
+                **data,
+                "avl_tree": data["tree"]
+            }
+            observatory = self._buildFromTopology(topology_data, mode)
         else:
             observatory = self._buildFromInsertions(data, mode)
 
@@ -193,14 +197,26 @@ class SeismicObservatoryService:
             issues.append("El escenario debe tener al menos una estación")
         else:
             for i, item in enumerate(stations):
-                if not isinstance(item, dict) or "id" not in item or "name" not in item:
-                    issues.append(f"Estación #{i + 1}: debe tener 'id' y 'name'")
+                required_station_fields = ("id", "name", "x", "y")
+                if not isinstance(item, dict) or any(field not in item for field in required_station_fields):
+                    issues.append(f"Estación #{i + 1}: debe tener 'id', 'name', 'x' y 'y'")
                     continue
                 if item["id"] in station_ids:
                     issues.append(f"Estación #{i + 1}: id {item['id']} repetido")
                     continue
+                try:
+                    station = Station(
+                        item["id"],
+                        item["name"],
+                        item["x"],
+                        item["y"],
+                    )
+                except (TypeError, ValueError) as error:
+                    issues.append(f"Estación #{i + 1}: {error}")
+                    continue
+
                 station_ids.add(item["id"])
-                observatory.addStation(Station(item["id"], item["name"]))
+                observatory.addStation(station)
 
         # ---- zonas ----
         zones = data.get("zones", [])
@@ -210,7 +226,7 @@ class SeismicObservatoryService:
         for i, item in enumerate(zones):
             try:
                 observatory.addZone(Zone(
-                    item["id"], item["x_min"], item["x_max"],
+                    item["id"], item["name"], item["x_min"], item["x_max"],
                     item["y_min"], item["y_max"], item["is_populated"],
                 ))
             except (KeyError, TypeError, ValueError) as error:
