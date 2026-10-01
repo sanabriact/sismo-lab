@@ -5,6 +5,8 @@ from backend.utils.quantities import hasAtMostOneDecimal, normalizeDatetime, toT
 
 @dataclass
 class StepResult:
+    """Describe the decision and observable changes from one report."""
+
     decision: str
     reason: str
     event_id: int
@@ -17,6 +19,7 @@ class StepResult:
     tree_changed: bool = False
 
     def to_dict(self):
+        """Serialize the processing result for logs or transport payloads."""
         return {
             "decision": self.decision,
             "reason": self.reason,
@@ -38,6 +41,7 @@ class ReportProcessor:
         self.on_event_changed = on_event_changed or (lambda observatory, event_id: None)
 
     def apply(self, observatory, report, metrics_service=None):
+        """Apply one validated report and classify its domain outcome."""
         station_id = report.getStation().getId()
         event_id = report.getEventId()
         revision = report.getRevision()
@@ -73,6 +77,7 @@ class ReportProcessor:
         return StepResult("created", "Evento creado correctamente", event_id, revision, station_id, key_after=list(event.getKey()), tree_changed=True)
 
     def _apply_active(self, observatory, event, report):
+        """Handle a report whose event is currently present in both trees."""
         event_id = report.getEventId()
         station_id = report.getStation().getId()
         current_revision = event.getCurrentRevision()
@@ -97,6 +102,7 @@ class ReportProcessor:
         return StepResult("conflict", "El reporte entra en conflicto con los datos vigentes", event_id, report.getRevision(), station_id, key_before, key_before)
 
     def _apply_archived(self, observatory, event, report):
+        """Handle a report that may reactivate an archived event."""
         event_id = report.getEventId()
         station_id = report.getStation().getId()
         key_before = list(event.getKey())
@@ -124,6 +130,7 @@ class ReportProcessor:
         return StepResult("reactivated", "Evento archivado reactivado correctamente", event_id, report.getRevision(), station_id, key_before, list(event.getKey()), tree_changed=True)
 
     def _validate(self, observatory, report):
+        """Check station, clock, precision, and domain ranges before mutation."""
         station_ids = {station.getId() for station in observatory.getStations()}
         if report.getStation().getId() not in station_ids:
             return "La estación no pertenece al escenario"
@@ -140,6 +147,7 @@ class ReportProcessor:
         return None
 
     def _valid_report_values(self, report):
+        """Return whether all numeric report values fit domain limits."""
         return (
             -2 <= report.getMagnitude() <= 10
             and 0 <= report.getDepth() <= 700
@@ -148,6 +156,7 @@ class ReportProcessor:
         )
 
     def _same_data(self, event, report):
+        """Compare normalized values to identify an idempotent confirmation."""
         return (
             toTenths(event.getKey()[1]) == toTenths(report.getMagnitude())
             and toTenths(event.getDepth()) == toTenths(report.getDepth())

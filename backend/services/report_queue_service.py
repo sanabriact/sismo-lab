@@ -6,6 +6,7 @@ class ReportQueueService:
     """Prepares reports and exposes the FIFO queue without applying them."""
 
     def prepare(self, observatory, raw_reports):
+        """Validate the whole batch before enqueuing any report."""
         if not isinstance(raw_reports, list) or not raw_reports:
             return {"ok": False, "enqueued": 0, "issues": ["Se requiere al menos un reporte"]}
 
@@ -26,8 +27,8 @@ class ReportQueueService:
         return {"ok": True, "enqueued": len(prepared), "issues": []}
 
     def snapshot(self, observatory):
-        # Queue.dequeue is O(n) because Queue removes the first list element
-        # with pop(0); this read-only snapshot preserves the received order.
+        # Queue.dequeue is O(n) because it removes the first list element with
+        # pop(0); this read-only snapshot preserves the received order.
         items = []
         for position, report in enumerate(observatory.getReportQueue().items, start=1):
             items.append({
@@ -44,6 +45,7 @@ class ReportQueueService:
         return {"size": len(items), "items": items}
 
     def _build_report(self, raw, stations):
+        """Convert one raw payload into a domain Report instance."""
         if not isinstance(raw, dict):
             raise TypeError("El reporte debe ser un objeto")
         required = ("event_id", "revision", "station", "magnitude", "depth", "epicenter_x", "epicenter_y", "datetime")

@@ -2,9 +2,7 @@ from datetime import datetime, timezone
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from flask_socketio import SocketIO
-from backend.services.report_processor import ReportProcessor
 from backend.services.report_queue_runner import ReportQueueRunner
-from backend.services.report_queue_service import ReportQueueService
 from backend.utils.json_utils import objectToDict
 from backend.services.seismic_observatory_service import SeismicObservatoryService, ScenarioValidationError
 from backend.services.realtime_service import init_realtime
@@ -15,7 +13,6 @@ from backend.managers.scenario_generator_manager import ScenarioGeneratorManager
 from backend.managers.load_scenario_manager import LoadScenarioManager
 from backend.services.socket.socket_broadcaster import SocketBroadcaster
 from backend.services.ai_client.event_bus import mode_changed, scenario_loaded
-from backend.utils.quantities import parseDatetime
 
 app = Flask(__name__)
 CORS(app)
@@ -34,31 +31,24 @@ ai_client = AIEventClient()
 load_scenario_manager = LoadScenarioManager()
 
 generator_manager = ScenarioGeneratorManager( ai_client=ai_client, engine=event_engine)
+event_engine.set_scenario_manager(generator_manager)
+event_engine.set_scenario_validator(load_scenario_manager)
+event_engine.set_scenario_loaded_notifier(scenario_loaded)
 
-# Keep one queue runner attached to the active EventEngine.
-report_queue_service = ReportQueueService()
-report_processor = ReportProcessor()
-report_queue_runner = ReportQueueRunner(
-    event_engine,
-    report_queue_service,
-    report_processor,
-)
+# Keep one queue facade attached to the active EventEngine.
+report_queue_runner = ReportQueueRunner(event_engine)
 manual_event_minimums = {}
 
-""" Rutas de FLASK (API rest) """
+"""Flask REST API routes."""
 @app.route("/api/seismic-observatory", methods=["GET"])
 def getSeismicObservatory():
-    observatory = event_engine.get_observatory()
-    if observatory is None:
-        return jsonify(objectToDict(obs_service.getObservatory()))
-    
-    return jsonify(observatory.toDict())
+    return jsonify(event_engine.get_or_load_observatory().toDict())
 
 @app.route("/api/events", methods=["POST"])
 def createEvent():
-    #data is the object that arrives here from the frontend
+    # The request body is the object received from the frontend.
     data = request.json
-    #VALIDATING FIELDS
+    # Validate the transport-level required fields before entering the engine.
     required_fields = [
         "id",
         "magnitude",
@@ -77,25 +67,7 @@ def createEvent():
                 "reason": f"Missing field: {field}"
             }), 400
 
-    try:
-        event_datetime = parseDatetime(data["datetime"])
-        
-    except ValueError:
-        return jsonify({
-            "success": False,
-            "reason": "Invalid datetime format"
-        }), 400
-    #CREATING EVENT     
-    response = obs_service.createEvent(
-        data["id"],
-        data["magnitude"],
-        data["depth"],
-        data["epicenter_x"],
-        data["epicenter_y"],
-        event_datetime,
-        data["revision"],
-        data["station"]
-    )
+    response = event_engine.create_event_from_api(data)
 
     if not response["success"]:
         return jsonify(response), 400
@@ -104,7 +76,8 @@ def createEvent():
 """ @app.route("/api/scenario", methods=["POST"])
 def load_scenario():
     data = request.get_json()
-    Falta crear método loadScenario para obs_service (Lee, valida y construye un SeismicObservatory a partir de un JSON)
+    A loadScenario method would read, validate, and build a SeismicObservatory
+    from the JSON payload.
     observatory = obs_service.loadScenario(data)
     generator_manager.load_scenario(observatory)
     
@@ -113,7 +86,7 @@ def load_scenario():
         "stations": len(observatory.getStations())
     }), 200 """
     
-# Method to load the JSON
+# Legacy JSON loading endpoint retained for API compatibility.
 @app.route("/api/scenario", methods=["GET"])
 def load_scenario():
     data = request.get_json()
@@ -179,26 +152,9 @@ def handle_scenario_status():
     
 @socketio.on("structure:audit")
 def handle_structure_audit(_data=None):
-    """
-    Auditoría de solo lectura por WebSocket.
-    El lock evita que se inspeccione un árbol mientras el motor lo modifica.
-    """
+    """Delegate the read-only audit to the engine-owned service boundary."""
     print("Solicitud de auditar estructura")
-    with event_engine.lock:
-        observatory = event_engine.get_observatory()
-
-        if observatory is None:
-            return {
-                "ok": False,
-                "reason": "no_scenario",
-            }
-
-        report = obs_service.auditStructure(observatory)
-
-    return {
-        "ok": True,
-        "report": report,
-    }
+    return event_engine.audit_structure()
 @socketio.on("scenario:load")
 def handle_scenario_load(data):
     if not isinstance(data, dict):
@@ -215,20 +171,10 @@ def handle_scenario_load(data):
 
     try:
         if source == "file":
-            validation_data = load_scenario_manager.loadFromText(
-                data.get("content"),
-                stress_mode=False,
-            )
-            if validation_data is None:
-                return {
-                    "ok": False,
-                    "reason": "invalid_scenario",
-                    "issues": load_scenario_manager.errors,
-                }
-            observatory = obs_service.loadScenarioFromText(data.get("content"))
+            observatory = event_engine.load_scenario_from_text(data.get("content"))
         else:
-            # El frontend envía el modo en "aiMode" (o en "content").
-            observatory = obs_service.loadScenarioFromAI(data.get("aiMode") or data.get("content"))
+            # The frontend sends the AI mode in "aiMode" or "content".
+            observatory = event_engine.load_scenario_from_ai(data.get("aiMode") or data.get("content"))
 
     except ScenarioValidationError as error:
         return {"ok": False, "reason": "invalid_scenario", "issues": error.issues}
@@ -237,32 +183,27 @@ def handle_scenario_load(data):
         print(f"Error cargando el escenario: {error}")
         return {"ok": False, "reason": "server_error"}
 
-    # El escenario es válido: pasa a ser el escenario activo del motor.
-    generator_manager.load_scenario(observatory)
-
+    # The engine has validated and activated the scenario before this response.
     payload = {
         "scenarioId": observatory.scenario_id,
         "mode": observatory.getExecutionMode(),
         "stations": len(observatory.getStations()),
         "events": len(observatory.getAVLTree().index)
     }
-    scenario_loaded.notify(payload)
-    event_engine.announce_mode()
-
     print(f"Escenario cargado: {payload}")
     return {"ok": True, "scenario": payload}
 
 
 @socketio.on("reports:prepare")
 def prepare_reports(data):
-    # Validate the complete batch before adding any report to the FIFO queue.
+    # The engine validates the complete batch before adding it to the FIFO queue.
     reports = data.get("reports", []) if isinstance(data, dict) else data
     return report_queue_runner.prepare_reports(reports)
 
 
 @socketio.on("reports:step")
 def process_report_step():
-    # Process exactly one report and let the runner publish its events.
+    # Process exactly one report through the engine-owned lifecycle.
     return report_queue_runner.process_next()
 
 
@@ -274,18 +215,14 @@ def start_report_processing():
 
 @socketio.on("reports:pause")
 def pause_report_processing():
-    # Pause continuous processing without removing pending reports.
+    # Pause processing without removing pending reports.
     return report_queue_runner.pause()
 
 
 @socketio.on("reports:snapshot")
 def report_queue_snapshot():
     # Read the queue under the same lock used by report processing.
-    observatory = event_engine.get_observatory()
-    if observatory is None:
-        return {"ok": False, "reason": "no_scenario"}
-    with event_engine.lock:
-        return report_queue_service.snapshot(observatory)
+    return report_queue_runner.snapshot()
 
 if __name__ == "__main__":
     event_engine.start()

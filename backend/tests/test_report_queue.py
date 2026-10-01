@@ -11,6 +11,7 @@ from backend.services.metrics_service import MetricsService
 from backend.services.report_processor import ReportProcessor
 from backend.services.report_queue_runner import ReportQueueRunner
 from backend.services.report_queue_service import ReportQueueService
+from backend.services.event_engine import EventEngine
 from backend.utils.quantities import parseDatetime
 
 
@@ -41,17 +42,16 @@ class FakeService:
         return True
 
 
-class FakeEngine:
+class FakeEngine(EventEngine):
     def __init__(self, observatory):
-        import threading
-
-        self.lock = threading.Lock()
+        super().__init__(
+            FakeSocket(),
+            FakeService(),
+            type("ModeNotifier", (), {"notify": lambda self, payload: None})(),
+            object(),
+        )
         self.observatory = observatory
-        self.service = FakeService()
-        self.socketio = FakeSocket()
-        self.sequence = 0
         self.scenario_id = "test-scenario"
-        self.recovering = False
 
 
 def make_observatory():
