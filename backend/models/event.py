@@ -109,7 +109,7 @@ class Event:
         self.addReportingStation(report.getStation().getId())
 
 
-    def _validate_data(self,id, magnitude, depth, epicenter_x, epicenter_y, date):
+    def _validate_data(self, id, magnitude, depth, epicenter_x, epicenter_y, date):
         if not (-2 <= magnitude <= 10):
             raise ValueError("magnitud debe estar entre -2 y 10")
         if not isinstance(id, int) or not (1 <= id <= 999999):
