@@ -216,53 +216,16 @@ def handle_scenario_load(data):
     print(f"Escenario cargado: {payload}")
     return {"ok": True, "scenario": payload}
 
-pending_archive = {}
-
 @socketio.on("paint:tree")
 def handle_paint_tree(data=None):
     data = data if isinstance(data, dict) else {}
-    actual_time = data.get("actualTime")
-    T = data.get("T")
-    if actual_time is None or T is None:
-        return {"ok": False, "reason": "missing_params"}
-
-    try:
-        actual_time = datetime.fromisoformat(actual_time)
-    except (ValueError, TypeError):
-        return {"ok": False, "reason": "invalid_time"}
-
-    with event_engine.lock:
-        observatory = event_engine.get_observatory()
-        if observatory is None:
-            return {"ok": False, "reason": "no_scenario"}
-        try:
-            root, tree = obs_service.archiveAndGetTree(observatory, actual_time, T)
-        except Exception as error:
-            print(f"Error preparando el subárbol: {error}")
-            return {"ok": False, "reason": "server_error"}
-
-    if root is None:
-        return {"ok": False, "reason": "nothing_to_archive"}
-
-    pending_archive["root"] = root
-    return {"ok": True, "tree": tree}
+    return event_engine.prepare_archive_tree(data.get("T"), request.sid)
 
 
 @socketio.on("archive:decision")
 def handle_archive_decision(data=None):
     data = data if isinstance(data, dict) else {}
-    archive = data.get("archive") is True
-
-    root = pending_archive.pop("root", None)
-    if root is None:
-        return {"ok": False, "reason": "no_pending_archive"}
-
-    if not archive:
-        return {"ok": True, "archived": False}
-
-    subtree_json = obs_service.buildArchivedJson(root)
-    return {"ok": True, "archived": True, "subtree": subtree_json}
-    
+    return event_engine.decide_archive_tree(data.get("archive"), request.sid)
 
 @socketio.on("reports:prepare")
 def prepare_reports(data):
@@ -295,6 +258,5 @@ def report_queue_snapshot():
     return report_queue_runner.snapshot()
 
 if __name__ == "__main__":
-    
     event_engine.start()
     socketio.run(app, debug = True, use_reloader=False)

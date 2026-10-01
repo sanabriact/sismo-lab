@@ -607,3 +607,11 @@ class SeismicObservatoryService:
         observatory = self.getObservatory() 
         rootToArchivate, objectToPaintTree = observatory.archivateSubTree(actualTime, T)
         return rootToArchivate, objectToPaintTree
+    
+    def buildArchivedJson(self, currentRoot):
+        observatory = self.getObservatory()
+        avl = observatory.getAVLTree()
+        node = avl.searchById(currentRoot.getValue().getKey()[2])
+        nodeToDict = node.toDict()
+        avl.eliminateReferences(node)
+        return nodeToDict

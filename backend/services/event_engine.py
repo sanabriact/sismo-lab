@@ -3,6 +3,7 @@ import threading
 from backend.services.reports.report_processor import ReportProcessor
 from backend.services.reports.report_queue_service import ReportQueueService
 from backend.services.seismic_observatory_service import ScenarioValidationError
+from backend.services.archive_tree_service import ArchiveTreeService
 
 class EventEngine:
     """
@@ -27,6 +28,7 @@ class EventEngine:
         self.scenario_id = None
         self.report_queue_service = ReportQueueService()
         self.report_processor = ReportProcessor()
+        self.archive_tree_service = ArchiveTreeService()
         self.report_queue_interval = 1.5
         self.report_queue_running = False
         self.report_queue_paused = False
@@ -66,6 +68,50 @@ class EventEngine:
                 self.observatory = self.service.getObservatory()
                 self.scenario_id = self.observatory.scenario_id
             return self.observatory
+
+    def prepare_archive_tree(self, threshold_hours=None, client_id=None):
+        """Select and preview an archivable branch without changing the AVL."""
+        with self.lock:
+            if self.observatory is None:
+                return {"ok": False, "reason": "no_scenario"}
+            if self.recovering:
+                return {"ok": False, "reason": "busy"}
+            threshold = self.observatory.t if threshold_hours is None else threshold_hours
+            actual_time = self.observatory.getClock().getCurrentTime()
+            return self.archive_tree_service.prepare(
+                self.observatory, actual_time, threshold, client_id
+            )
+
+    def decide_archive_tree(self, archive, client_id=None):
+        """Apply a client's pending archive decision as one locked action."""
+        with self.lock:
+            if self.observatory is None:
+                return {"ok": False, "reason": "no_scenario"}
+            if self.recovering:
+                return {"ok": False, "reason": "busy"}
+            before_version = self.observatory.toVersion()
+            before_indicators = self.service.metrics_service.capture_display(self.observatory)
+            result = self.archive_tree_service.decide(
+                self.observatory, archive, client_id
+            )
+            if not result.get("ok") or not result.get("archived"):
+                return result
+
+            metrics = self.observatory.getMetrics()
+            metrics.incrementMassArchives()
+            for _ in result["subtree"]["affected_ids"]:
+                metrics.incrementArchivedEvents()
+            self.service.metrics_service.refresh_derived_metrics(self.observatory)
+            self.service.metrics_service.record_operation(
+                observatory=self.observatory,
+                action_type="mass_archive",
+                before_version=before_version,
+                before_indicators=before_indicators,
+                details={"root_id": result["subtree"]["root_id"],
+                         "affected_ids": result["subtree"]["affected_ids"]},
+            )
+            self.service.saveObservatory(self.observatory)
+            return result
 
     def clock_snapshot(self):
         """Return the active simulation clock in the public UTC format."""
