@@ -27,7 +27,7 @@ const linesGenerator = linkVertical<HierarchyPointLink<VIZNode>, HierarchyPointN
 /* 
     Here we define the props that the component need to renderize at its full (data).
 */
-export function TreeView({ data, type }: TreeViewProps) {
+export function TreeView({ data, type, highlightIds }: TreeViewProps) {
     /* 
         Here is the base of all the component.
     */
@@ -105,9 +105,15 @@ export function TreeView({ data, type }: TreeViewProps) {
                         The second one, will show the balance factor of each node, calculated with its formula. 
                  */
                 const dto = n.data.dto!;
+                const isArchiveCandidate = highlightIds?.has(dto.value.key[2]) ?? false;
                 return (
                     <g key={n.data.id} transform={`translate(${n.x},${n.y})`}>
-                        <circle r={R} fill="#fff" stroke="#333" />
+                        <circle
+                            r={R}
+                            fill={isArchiveCandidate ? "#fde68a" : "#fff"}
+                            stroke={isArchiveCandidate ? "#d97706" : "#333"}
+                            strokeWidth={isArchiveCandidate ? 3 : 1}
+                        />
                         <text textAnchor="middle" dy=".3em" fontSize={10}>
                             {dto.value.key.join(" , ")}
                         </text>
