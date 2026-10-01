@@ -72,7 +72,21 @@ const Sidebar = () => {
           Stress mode button
         */}
 
-        {scenarioLoaded && (<div className="p-4 border-t border-white/20">
+        {scenarioLoaded && (<div className="p-4 border-t border-white/20 space-y-6">
+        {
+          /* Label that contains that shows "Deshacer" and button type input */
+        }
+          <label className="w-full flex items-center justify-between gap-2 p-2 rounded-lg hover:bg-white/20 transition-colors cursor-pointer">
+            <span>Deshacer</span>
+            {
+              /* Div that contains the go-back button */
+            }
+            <div className="relative">
+              <input 
+                type="button"
+                />
+            </div>
+          </label>
           {/* 
               Label with content that shows "Modo estrés" and toggle type button.
             */}
