@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from flask_socketio import SocketIO
-from backend.services.report_queue_runner import ReportQueueRunner
+from backend.services.reports.report_queue_runner import ReportQueueRunner
 from backend.utils.json_utils import objectToDict
 from backend.services.seismic_observatory_service import SeismicObservatoryService, ScenarioValidationError
 from backend.services.realtime_service import init_realtime
@@ -147,8 +147,30 @@ def handle_scenario_status():
     observatory = event_engine.get_observatory()
     return {
         "loaded": observatory is not None,
-        "scenarioId": observatory.getScenarioId() if observatory is not None else None
+        "scenarioId": observatory.getScenarioId() if observatory is not None else None,
+        "currentTime": (
+            observatory.getClock().getCurrentTimeText()
+            if observatory is not None else None
+        ),
     }
+
+@socketio.on("clock:advance")
+def handle_clock_advance(data=None):
+    """Advance the simulation clock through the engine-owned API."""
+    data = data if isinstance(data, dict) else {}
+    if "hours" in data:
+        try:
+            return event_engine.advance_clock_hours(data["hours"])
+        except (TypeError, ValueError) as error:
+            return {"ok": False, "reason": str(error)}
+
+    if "datetime" in data:
+        try:
+            return event_engine.advance_clock_to(data["datetime"])
+        except (TypeError, ValueError) as error:
+            return {"ok": False, "reason": str(error)}
+
+    return {"ok": False, "reason": "missing_clock_advance_value"}
     
 @socketio.on("structure:audit")
 def handle_structure_audit(_data=None):
@@ -188,58 +210,22 @@ def handle_scenario_load(data):
         "scenarioId": observatory.scenario_id,
         "mode": observatory.getExecutionMode(),
         "stations": len(observatory.getStations()),
-        "events": len(observatory.getAVLTree().index)
+        "events": len(observatory.getAVLTree().index),
+        "currentTime": observatory.getClock().getCurrentTimeText(),
     }
     print(f"Escenario cargado: {payload}")
     return {"ok": True, "scenario": payload}
 
-pending_archive = {}
-
 @socketio.on("paint:tree")
 def handle_paint_tree(data=None):
     data = data if isinstance(data, dict) else {}
-    actual_time = data.get("actualTime")
-    T = data.get("T")
-    if actual_time is None or T is None:
-        return {"ok": False, "reason": "missing_params"}
-
-    try:
-        actual_time = datetime.fromisoformat(actual_time)
-    except (ValueError, TypeError):
-        return {"ok": False, "reason": "invalid_time"}
-
-    with event_engine.lock:
-        observatory = event_engine.get_observatory()
-        if observatory is None:
-            return {"ok": False, "reason": "no_scenario"}
-        try:
-            root, tree = obs_service.archiveAndGetTree(observatory, actual_time, T)
-        except Exception as error:
-            print(f"Error preparando el subárbol: {error}")
-            return {"ok": False, "reason": "server_error"}
-
-    if root is None:
-        return {"ok": False, "reason": "nothing_to_archive"}
-
-    pending_archive["root"] = root
-    return {"ok": True, "tree": tree}
+    return event_engine.prepare_archive_tree(data.get("T"), request.sid)
 
 
 @socketio.on("archive:decision")
 def handle_archive_decision(data=None):
     data = data if isinstance(data, dict) else {}
-    archive = data.get("archive") is True
-
-    root = pending_archive.pop("root", None)
-    if root is None:
-        return {"ok": False, "reason": "no_pending_archive"}
-
-    if not archive:
-        return {"ok": True, "archived": False}
-
-    subtree_json = obs_service.buildArchivedJson(root)
-    return {"ok": True, "archived": True, "subtree": subtree_json}
-    
+    return event_engine.decide_archive_tree(data.get("archive"), request.sid)
 
 @socketio.on("reports:prepare")
 def prepare_reports(data):

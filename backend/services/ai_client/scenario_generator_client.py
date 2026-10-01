@@ -53,7 +53,7 @@ def validate_ai_response(data, clock):
     if not 0 <= x <= 1000 or not 0 <= y <= 1000:
         raise ValueError("Epicentro inválido")
 
-    if date > clock.current_time:
+    if not clock.canOccurAt(date):
         raise ValueError("La fecha supera el reloj del escenario")
 
     return {
@@ -73,7 +73,7 @@ class AIEventClient:
         self.model = model
 
     def generate(self, station, clock):
-        current_time = clock.current_time.isoformat()
+        current_time = clock.getCurrentTimeText()
 
         prompt = f"""
                     Generate one fictional seismic event for this station.

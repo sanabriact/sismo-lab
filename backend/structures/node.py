@@ -68,10 +68,6 @@ class Node:
     def setNodeCreationTime(self, time):
         self.nodeCreationTime = normalizeDatetime(time)
     
-     # Se calcula el tiempo desde creacion
-    def calculateTime(self, actualTime):
-        return actualTime - self.nodeCreationTime
-    
     # Retorna true si es nodo hoja
     def isLeaf(self):
         return self.getLeftChild() is None and self.getRightChild() is None
@@ -85,7 +81,8 @@ class Node:
         return self.hasParent() and self.parent.getRightChild() is self
     # Método para comprobar si el nodo es archivable
     def isArchivable(self, actualTime, time):
-        return self.value[0] == 1 and self.calculateTime(actualTime) > time 
+        key = self.value.getKey()
+        return key[0] == 1 and self.calculateTime(actualTime) > time
     
     # Método para calcular la profundidad del nodo
     def getDepth(self, counter):
@@ -108,9 +105,7 @@ class Node:
     # Método para calcular el tiempo actual de creacion de el nodo
 
     def calculateTime(self, actualTime):
-        if self.nodeCreationTime is None:
-            return None
-        return actualTime - self.nodeCreationTime
+        return actualTime - self.value.getDateTime()
 
     def toDict(self):
 
