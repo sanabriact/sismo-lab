@@ -32,7 +32,7 @@ class ScenarioService {
                 } 
 
                 if( response.ok && response.scenario){
-                    applyScenarioPayload(response.scenario);
+                    void applyScenarioPayload(response.scenario);
                     return;
                 }
 

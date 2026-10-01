@@ -117,7 +117,7 @@ def handle_disconnect():
 @socketio.on("mode:set")
 def handle_mode_set(data):
     mode = data.get("mode") if isinstance(data, dict) else None
-    print(f"Solicitud de cambio de modo: {mode}")
+    print(f"Solicitud de cambio de modo hacia: {mode}")
     return event_engine.request_mode(mode)
 
 @socketio.on("scenario:status")
