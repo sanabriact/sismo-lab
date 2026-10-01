@@ -512,3 +512,8 @@ class SeismicObservatoryService:
             "audit": observatory.getAVLTree().audit(mode),
             "indicators": self.metrics_service.capture_display(observatory),
         }
+    
+    def archiveAndGetTree(self, actualTime, T):
+        observatory = self.getObservatory() 
+        rootToArchivate, objectToPaintTree = observatory.archivateSubTree(actualTime, T)
+        return rootToArchivate, objectToPaintTree

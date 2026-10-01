@@ -203,6 +203,10 @@ def handle_scenario_load(data):
     print(f"Escenario cargado: {payload}")
     return {"ok": True, "scenario": payload}
 
+@socketio.on("paint: tree")
+def handle_paint_tree():
+    a = 0
 if __name__ == "__main__":
+    
     event_engine.start()
     socketio.run(app, debug = True, use_reloader=False)
