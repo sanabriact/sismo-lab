@@ -12,6 +12,7 @@ from backend.managers.scenario_generator_manager import ScenarioGeneratorManager
 from backend.managers.load_scenario_manager import LoadScenarioManager
 from backend.services.socket.socket_broadcaster import SocketBroadcaster
 from backend.services.ai_client.event_bus import mode_changed, scenario_loaded
+from backend.utils.quantities import parseDatetime
 
 app = Flask(__name__)
 CORS(app)
@@ -64,7 +65,7 @@ def createEvent():
             }), 400
 
     try:
-        event_datetime = datetime.fromisoformat(data["datetime"])
+        event_datetime = parseDatetime(data["datetime"])
         
     except ValueError:
         return jsonify({

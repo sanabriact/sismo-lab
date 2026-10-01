@@ -1,5 +1,5 @@
 {
-    "scenario_id": "dc24c22f-5dab-4dfe-b175-cd7d804287ea",
+    "scenario_id": "268e1b16-ac37-4188-a7e1-dc5b65fe0807",
     "avl_tree": {
         "root": {
             "value": {
@@ -14,7 +14,7 @@
                 "datetime": "2024-06-01T12:00:00+00:00",
                 "revision": 1,
                 "reporting_stations": [
-                    "ST-002"
+                    "ST-001"
                 ],
                 "attention_status": "pending",
                 "event_status": "active",
@@ -35,7 +35,7 @@
                     "datetime": "2024-06-01T12:00:00+00:00",
                     "revision": 1,
                     "reporting_stations": [
-                        "ST-002"
+                        "ST-001"
                     ],
                     "attention_status": "pending",
                     "event_status": "active",
@@ -65,7 +65,7 @@
                 "datetime": "2024-06-01T12:00:00+00:00",
                 "revision": 1,
                 "reporting_stations": [
-                    "ST-002"
+                    "ST-001"
                 ],
                 "attention_status": "pending",
                 "event_status": "active",
@@ -86,7 +86,7 @@
                     "datetime": "2024-06-01T12:00:00+00:00",
                     "revision": 1,
                     "reporting_stations": [
-                        "ST-002"
+                        "ST-001"
                     ],
                     "attention_status": "pending",
                     "event_status": "active",
@@ -147,7 +147,7 @@
         "items": []
     },
     "clock": {
-        "current_time": "2026-09-07T10:00:00+00:00"
+        "current_time": "2026-09-07T10:00:00Z"
     },
     "l": 3,
     "t": 72.0,
