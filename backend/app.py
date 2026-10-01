@@ -144,6 +144,16 @@ def handle_scenario_load(data):
 
     try:
         if source == "file":
+            validation_data = load_scenario_manager.loadFromText(
+                data.get("content"),
+                stress_mode=False,
+            )
+            if validation_data is None:
+                return {
+                    "ok": False,
+                    "reason": "invalid_scenario",
+                    "issues": load_scenario_manager.errors,
+                }
             observatory = obs_service.loadScenarioFromText(data.get("content"))
         else:
             # El frontend envía el modo en "aiMode" (o en "content").

@@ -1,3 +1,4 @@
+import json
 from datetime import datetime
 from backend.services.seismic_observatory_service import SeismicObservatoryService
 from backend.repositories.json_scenario_repository import JsonScenarioRepository
@@ -24,14 +25,60 @@ class LoadScenarioManager:
         if data is None:
             self.errors.append(self.repository.error)
             return None
-        return self.load(data, stress_mode)
+        try:
+            return self.load(
+                data,
+                stress_mode or data.get("execution_mode") == "stress",
+            )
+        except (AttributeError, IndexError, KeyError, TypeError, ValueError) as error:
+            self.errors.append(f"invalid scenario data: {error}")
+            return None
+
+    def loadFromText(self, content, stress_mode=False):
+        """Validate JSON content received from an uploaded scenario file."""
+        self.errors = []
+
+        if not isinstance(content, str) or not content.strip():
+            self.errors.append("the json file is empty")
+            return None
+
+        try:
+            data = json.loads(content, object_pairs_hook=self.repository._rejectDuplicateKeys)
+        except json.JSONDecodeError as error:
+            self.errors.append(
+                f"Invalid JSON at line {error.lineno}, column {error.colno}: {error.msg}"
+            )
+            return None
+        except ValueError as error:
+            self.errors.append(str(error))
+            return None
+
+        if not isinstance(data, dict):
+            self.errors.append("invalid format of the json")
+            return None
+
+        # Older scenario files may omit load_type. Infer it from the payload
+        # so the same manager validation is applied to both supported layouts.
+        if "load_type" not in data:
+            data = {
+                **data,
+                "load_type": "topology" if "tree" in data else "insertion",
+            }
+
+        try:
+            return self.load(
+                data,
+                stress_mode or data.get("execution_mode") == "stress",
+            )
+        except (AttributeError, IndexError, KeyError, TypeError, ValueError) as error:
+            self.errors.append(f"invalid scenario data: {error}")
+            return None
     
     # Method to see the case of scenario
     def caseScenary(self, data, stress_mode):
         match data.get("load_type"):
             case "insertion":
                 if self.comprobateJson(data):
-                    self.addEvents(data["events"])
                     return data
                 else:
                     return None
@@ -45,6 +92,9 @@ class LoadScenarioManager:
                     return None
                 else:
                     return None
+            case _:
+                self.errors.append("load_type must be 'insertion' or 'topology'")
+                return None
 
     # Method to comprobate if json is usable
     def comprobateJson(self, data):
@@ -53,6 +103,23 @@ class LoadScenarioManager:
             if field not in data:
                 self.errors.append("data not has a required fields")
                 return False
+
+        if not isinstance(data["events"], list):
+            self.errors.append("events must be a list")
+            return False
+
+        # Insertion scenarios sent by the current API use the event fields
+        # consumed by SeismicObservatoryService. Legacy tree events are also
+        # accepted when the manager is used directly with old scenario files.
+        event_fields = ("id", "magnitude", "depth", "epicenter_x", "epicenter_y", "datetime", "station")
+        for event in data["events"]:
+            if not isinstance(event, dict):
+                self.errors.append("each event must be an object")
+                return False
+            if "key" not in event and any(field not in event for field in event_fields):
+                self.errors.append("an insertion event has missing required fields")
+                return False
+
         return True
     
     # Method to comprobate if json is usable
