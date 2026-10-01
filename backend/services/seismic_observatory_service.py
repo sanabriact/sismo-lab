@@ -240,8 +240,13 @@ class SeismicObservatoryService:
 
         seen_ids = set()
         required = ("id", "magnitude", "depth", "epicenter_x", "epicenter_y", "datetime", "station")
-        for i, item in enumerate(events):
+        for i, raw_item in enumerate(events):
             label = f"Evento #{i + 1}"
+            try:
+                item = self._normalizeInsertionEvent(raw_item, station_ids)
+            except (KeyError, TypeError, ValueError) as error:
+                issues.append(f"{label}: {error}")
+                continue
             if not isinstance(item, dict):
                 issues.append(f"{label}: debe ser un objeto")
                 continue
@@ -310,6 +315,17 @@ class SeismicObservatoryService:
     def _buildFromTopology(self, data, mode):
         issues = []
 
+        # LoadScenarioManager validates the compact topology format used by
+        # scenario files. The observatory model stores equivalent nodes with
+        # the serialized Node field names, so normalize them before loading.
+        if "tree" in data and "avl_tree" in data:
+            root = data["avl_tree"].get("root") if isinstance(data["avl_tree"], dict) else None
+            if isinstance(root, dict) and "event" in root:
+                try:
+                    data = {**data, "avl_tree": self._normalizeScenarioTree(data["tree"])}
+                except (AttributeError, KeyError, TypeError, ValueError) as error:
+                    raise ScenarioValidationError([f"Topología inválida: {error}"])
+
         # Se completa lo que falte con los valores por defecto de un
         # observatorio vacío, para aceptar exportaciones parciales.
         base = SeismicObservatory().toDict()
@@ -349,6 +365,58 @@ class SeismicObservatoryService:
         # A topology loaded in stress mode must keep accepting unbalanced inserts.
         observatory.getAVLTree().balance = mode == "normal"
         return observatory
+
+    def _normalizeInsertionEvent(self, item, station_ids):
+        """Accept both the legacy key-based event format and the API format."""
+        if not isinstance(item, dict) or "key" not in item:
+            return item
+
+        key = item["key"]
+        if not isinstance(key, (list, tuple)) or len(key) != 3:
+            raise ValueError("'key' debe contener prioridad, magnitud e id")
+
+        reporting_stations = item.get("reporting_stations", [])
+        if not isinstance(reporting_stations, list):
+            raise TypeError("'reporting_stations' debe ser una lista")
+
+        station = reporting_stations[0] if reporting_stations else next(iter(station_ids), None)
+        if station is None:
+            raise ValueError("el evento debe referenciar una estación")
+
+        return {
+            "id": key[2],
+            "magnitude": key[1],
+            "depth": item.get("depth"),
+            "epicenter_x": item.get("epicenter_x"),
+            "epicenter_y": item.get("epicenter_y"),
+            "datetime": item.get("datetime"),
+            "revision": item.get("revision", 1),
+            "station": station,
+        }
+
+    def _normalizeScenarioTree(self, tree):
+        if not isinstance(tree, dict) or "root" not in tree:
+            raise ValueError("la topología debe contener un root")
+
+        def normalize_node(node):
+            if node is None:
+                return None, -1
+            if not isinstance(node, dict) or "event" not in node:
+                raise ValueError("cada nodo debe contener un event")
+
+            left, left_height = normalize_node(node.get("left_child"))
+            right, right_height = normalize_node(node.get("right_child"))
+            height = 1 + max(left_height, right_height)
+            return {
+                "value": node["event"],
+                "height": height,
+                "left_child": left,
+                "right_child": right,
+                "node_creation_time": None,
+            }, height
+
+        root, _ = normalize_node(tree["root"])
+        return {"root": root}
 
     # ===================== Métodos para el EventEngine =====================
     # El EventEngine trabaja con el observatorio que tiene en memoria
