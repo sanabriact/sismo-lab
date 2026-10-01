@@ -291,6 +291,7 @@ class SeismicObservatoryService:
                 continue
 
             try:
+                observatory.begin_visual_operation()
                 result = observatory.createEvent(
                     id=item["id"],
                     magnitude=item["magnitude"],
@@ -300,6 +301,17 @@ class SeismicObservatoryService:
                     datetime=event_time,
                     revision=item.get("revision", 1),
                     station=item["station"],
+                )
+
+                steps = observatory.finish_visual_operation()
+
+                if result is False or not all(result):
+                    issues.append(f"{label}: ya existe un evento con esa clave")
+                    continue
+
+                self.metrics_service.register_rotation_steps(
+                    observatory.getMetrics(),
+                    steps,
                 )
             except (ValueError, TypeError) as error:
                 issues.append(f"{label}: {error}")
@@ -491,6 +503,74 @@ class SeismicObservatoryService:
         return {
             "mode": mode,
             "stationId": station.getId(),
+            "event": event.toDict(),
+            "steps": steps,
+        }
+
+    def createManualEvent(self, observatory, data):
+        """Inserta un evento manual y produce los parches para AVL y BST."""
+        required = ("id", "magnitude", "depth", "epicenter_x", "epicenter_y", "datetime", "station")
+        if not isinstance(data, dict) or any(field not in data for field in required):
+            raise ValueError("Faltan datos obligatorios para crear el evento")
+
+        event_id = data["id"]
+        station_id = data["station"]
+        if isinstance(event_id, bool) or not isinstance(event_id, int):
+            raise ValueError("El id debe ser numérico entero")
+        if isinstance(station_id, bool) or not isinstance(station_id, int):
+            raise ValueError("La estación seleccionada no es válida")
+        if station_id not in {station.getId() for station in observatory.getStations()}:
+            raise ValueError("La estación seleccionada no pertenece al escenario")
+
+        for field in ("magnitude", "depth", "epicenter_x", "epicenter_y"):
+            value = data[field]
+            if isinstance(value, bool) or not isinstance(value, (int, float)):
+                raise ValueError(f"{field} debe ser numérico")
+        if not hasAtMostOneDecimal(data["depth"]):
+            raise ValueError("La profundidad admite máximo un decimal")
+
+        try:
+            event_datetime = parseDatetime(data["datetime"])
+        except (TypeError, ValueError, AttributeError) as error:
+            raise ValueError("La fecha del evento no es válida") from error
+
+        before_version = observatory.toVersion()
+        before_indicators = self.metrics_service.capture_display(observatory)
+        observatory.begin_visual_operation()
+        try:
+            result = observatory.createEvent(
+                id=event_id,
+                magnitude=data["magnitude"],
+                depth=data["depth"],
+                epicenter_x=data["epicenter_x"],
+                epicenter_y=data["epicenter_y"],
+                datetime=event_datetime,
+                revision=1,
+                station=station_id,
+            )
+            steps = observatory.finish_visual_operation()
+        except Exception:
+            observatory.finish_visual_operation()
+            raise
+
+        if result is False or not all(result):
+            raise ValueError("El id ya pertenece a un evento activo, eliminado o archivado")
+
+        event = observatory.searchEventById(event_id)
+        self.metrics_service.refresh_derived_metrics(observatory)
+        self.metrics_service.register_rotation_steps(observatory.getMetrics(), steps)
+        self.metrics_service.record_operation(
+            observatory=observatory,
+            action_type="create_manual_event",
+            before_version=before_version,
+            before_indicators=before_indicators,
+            details={"event_id": event_id, "source": "manual"},
+        )
+        self.repository.save(observatory)
+
+        return {
+            "mode": observatory.getExecutionMode(),
+            "stationId": station_id,
             "event": event.toDict(),
             "steps": steps,
         }

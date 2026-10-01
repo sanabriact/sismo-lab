@@ -87,7 +87,8 @@ const VerifyStructure = () => {
                     : "Se encontraron inconsistencias estructurales."}
                 <p className="mt-1 text-sm">
                     Desbalance máximo: {audit.max_imbalance}
-                    {" · "}
+                </p>
+                <p className="mt-1 text-sm">
                     Estado AVL: {audit.balanced ? "Balanceado" : "Desbalanceado"}
                 </p>
             </div>

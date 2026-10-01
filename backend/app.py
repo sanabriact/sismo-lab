@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from flask_socketio import SocketIO
@@ -30,6 +30,7 @@ ai_client = AIEventClient()
 load_scenario_manager = LoadScenarioManager()
 
 generator_manager = ScenarioGeneratorManager( ai_client=ai_client, engine=event_engine)
+manual_event_minimums = {}
 
 """ Rutas de FLASK (API rest) """
 @app.route("/api/seismic-observatory", methods=["GET"])
@@ -112,7 +113,42 @@ def handle_connect():
 
 @socketio.on("disconnect")
 def handle_disconnect():
+    manual_event_minimums.pop(request.sid, None)
     print("Cliente desconectado del WebSocket")
+
+@socketio.on("manual-event:begin")
+def handle_manual_event_begin(_data=None):
+    if event_engine.get_observatory() is None:
+        return {"ok": False, "reason": "no_scenario"}
+
+    minimum = datetime.now(timezone.utc).replace(microsecond=0)
+    manual_event_minimums[request.sid] = minimum
+    return {"ok": True, "minimumDatetime": minimum.isoformat()}
+
+@socketio.on("manual-event:create")
+def handle_manual_event_create(data):
+    minimum = manual_event_minimums.get(request.sid)
+    if minimum is None:
+        return {"ok": False, "reason": "manual_session_required"}
+
+    try:
+        event_datetime = datetime.fromisoformat(str(data.get("datetime", "")).replace("Z", "+00:00"))
+        if event_datetime.tzinfo is None:
+            event_datetime = event_datetime.replace(tzinfo=timezone.utc)
+        if event_datetime.astimezone(timezone.utc) < minimum:
+            return {"ok": False, "reason": "datetime_before_form"}
+        operation = event_engine.create_manual_event(data)
+    except (AttributeError, TypeError, ValueError) as error:
+        return {"ok": False, "reason": str(error)}
+
+    return {"ok": True, "operation": operation}
+
+@socketio.on("generation:start")
+def handle_generation_start(_data=None):
+    if event_engine.get_observatory() is None:
+        return {"ok": False, "reason": "no_scenario"}
+    ok, reason = generator_manager.start()
+    return {"ok": ok, "reason": reason}
 
 @socketio.on("mode:set")
 def handle_mode_set(data):

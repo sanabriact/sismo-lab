@@ -1,7 +1,10 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ObservatoryService } from "../../../services/seismicObservatory/seismicObservatoryService";
 import type { SeismicObservatory } from "../../../models/interfaces/observatory/SeismicObservatory";
 import { TreeView } from "../../../components/tree/TreeView";
+import { useObservatorySocket } from "../../../hooks/socket/useObservatorySocket";
+import { applyTreePatch } from "../../../utils/tree/applyTreePatch";
+import type { TreeOperation } from "../../../models/interfaces/realTime/TreeOperation";
 
 const VisualizeTrees = () => {
     /* 
@@ -18,6 +21,21 @@ const VisualizeTrees = () => {
     useEffect(() => {
         fetchData();
     }, []);
+
+    const applyOperation = useCallback((operation: TreeOperation) => {
+        setData((current) => {
+            if (!current || current.scenario_id !== operation.scenarioId) return current;
+            return operation.steps.reduce((next, step) => ({
+                ...next,
+                avl_tree: applyTreePatch(next.avl_tree, step.avlPatch, operation.event),
+                bst_tree: step.bstPatch
+                    ? applyTreePatch(next.bst_tree, step.bstPatch, operation.event)
+                    : next.bst_tree,
+            }), current);
+        });
+    }, []);
+
+    useObservatorySocket(applyOperation);
 
     /* 
         Here we use a asynchronous function for calling the observatoryService and get the observatory state.
