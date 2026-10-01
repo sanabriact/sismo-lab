@@ -1,6 +1,6 @@
 from backend.structures.node import Node
 from backend.utils.json_utils import objectToDict
-from backend.services.structure_audit_service import StructureAuditService
+from backend.services.audit.structure_audit_service import StructureAuditService
 
 class AVL:
     def __init__(self):

@@ -1,7 +1,7 @@
 import queue
 import threading
-from backend.services.report_processor import ReportProcessor
-from backend.services.report_queue_service import ReportQueueService
+from backend.services.reports.report_processor import ReportProcessor
+from backend.services.reports.report_queue_service import ReportQueueService
 from backend.services.seismic_observatory_service import ScenarioValidationError
 
 class EventEngine:

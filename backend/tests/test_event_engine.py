@@ -7,7 +7,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from backend.models.seismic_observatory import SeismicObservatory
 from backend.services.event_engine import EventEngine
-from backend.services.report_queue_runner import ReportQueueRunner
+from backend.services.reports.report_queue_runner import ReportQueueRunner
 from backend.services.seismic_observatory_service import ScenarioValidationError
 
 

@@ -8,9 +8,9 @@ from backend.models.seismic_observatory import SeismicObservatory
 from backend.models.station import Station
 from backend.models.report import Report
 from backend.services.metrics_service import MetricsService
-from backend.services.report_processor import ReportProcessor
-from backend.services.report_queue_runner import ReportQueueRunner
-from backend.services.report_queue_service import ReportQueueService
+from backend.services.reports.report_processor import ReportProcessor
+from backend.services.reports.report_queue_runner import ReportQueueRunner
+from backend.services.reports.report_queue_service import ReportQueueService
 from backend.services.event_engine import EventEngine
 from backend.utils.quantities import parseDatetime
 
