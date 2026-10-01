@@ -1,5 +1,6 @@
 from backend.structures.node import Node
 from backend.utils.json_utils import objectToDict
+from backend.services.structure_audit_service import StructureAuditService
 
 class AVL:
     def __init__(self):
@@ -582,46 +583,9 @@ class AVL:
         
         return self.findArchiveSubTree(listToArchivate, index+1, best)
     
-    def audit(self):
-        issues = []
-        seen = set()
-        max_imbalance = 0
-
-        def walk(node, low, high, parent):
-            nonlocal max_imbalance
-            if node is None:
-                return -1
-            key = node.getValue().getKey()
-            event_id = key[2]
-
-            if event_id in seen:
-                issues.append({"id": event_id, "type": "duplicate_id"})
-            seen.add(event_id)
-            if node.getParent() is not parent:
-                issues.append({"id": event_id, "type": "parent_link"})
-            if self.index.get(event_id) is not node:
-                issues.append({"id": event_id, "type": "index"})
-            if (low is not None and not key > low) or (high is not None and not key < high):
-                issues.append({"id": event_id, "type": "order"})
-
-            left_h = walk(node.getLeftChild(), low, key, node)
-            right_h = walk(node.getRightChild(), key, high, node)
-            real_h = 1 + max(left_h, right_h)
-
-            if node.getHeight() != real_h:
-                issues.append({"id": event_id, "type": "height",
-                            "stored": node.getHeight(), "real": real_h})
-            max_imbalance = max(max_imbalance, abs(left_h - right_h))
-            return real_h
-
-        walk(self.root, None, None, None)
-        balanced = max_imbalance <= 1
-        return {
-            "ok": not issues and balanced,
-            "issues": issues,
-            "balanced": balanced,
-            "max_imbalance": max_imbalance,
-        }
+    def audit(self, mode="normal"):
+        audit_service = StructureAuditService()
+        return audit_service.audit_avl(self, mode)
     
     # Public method for drawing a tree
     def draw(self):

@@ -1,9 +1,9 @@
 import json
 import os
-from datetime import datetime, timezone
 from pathlib import Path
 from dotenv import load_dotenv
 from groq import Groq
+from backend.utils.quantities import parseDatetime
 
 env_path = Path(__file__).resolve().parent.parent.parent / ".env"
 load_dotenv(env_path)
@@ -42,8 +42,7 @@ def validate_ai_response(data, clock):
     x = round(float(data["epicenter_x"]), 1)
     y = round(float(data["epicenter_y"]), 1)
 
-    date = datetime.fromisoformat(data["datetime"].replace("Z", "+00:00"))
-    date = date.astimezone(timezone.utc)
+    date = parseDatetime(data["datetime"])
 
     if not -2 <= magnitude <= 10:
         raise ValueError("Magnitud inválida")

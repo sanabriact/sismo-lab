@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 from groq import Groq
+from backend.utils.quantities import parseDatetime
 
 env_path = Path(__file__).resolve().parent.parent / ".env"
 load_dotenv(env_path)
@@ -40,6 +41,8 @@ def validate_ai_response(data, clock):
     depth = round(float(data["depth"]), 1)
     x = round(float(data["epicenter_x"]), 1)
     y = round(float(data["epicenter_y"]), 1)
+
+    date = parseDatetime(data["datetime"])
 
     if not -2 <= magnitude <= 10:
         raise ValueError("Magnitud inválida")
