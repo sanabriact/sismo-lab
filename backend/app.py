@@ -147,8 +147,30 @@ def handle_scenario_status():
     observatory = event_engine.get_observatory()
     return {
         "loaded": observatory is not None,
-        "scenarioId": observatory.getScenarioId() if observatory is not None else None
+        "scenarioId": observatory.getScenarioId() if observatory is not None else None,
+        "currentTime": (
+            observatory.getClock().getCurrentTimeText()
+            if observatory is not None else None
+        ),
     }
+
+@socketio.on("clock:advance")
+def handle_clock_advance(data=None):
+    """Advance the simulation clock through the engine-owned API."""
+    data = data if isinstance(data, dict) else {}
+    if "hours" in data:
+        try:
+            return event_engine.advance_clock_hours(data["hours"])
+        except (TypeError, ValueError) as error:
+            return {"ok": False, "reason": str(error)}
+
+    if "datetime" in data:
+        try:
+            return event_engine.advance_clock_to(data["datetime"])
+        except (TypeError, ValueError) as error:
+            return {"ok": False, "reason": str(error)}
+
+    return {"ok": False, "reason": "missing_clock_advance_value"}
     
 @socketio.on("structure:audit")
 def handle_structure_audit(_data=None):
@@ -188,7 +210,8 @@ def handle_scenario_load(data):
         "scenarioId": observatory.scenario_id,
         "mode": observatory.getExecutionMode(),
         "stations": len(observatory.getStations()),
-        "events": len(observatory.getAVLTree().index)
+        "events": len(observatory.getAVLTree().index),
+        "currentTime": observatory.getClock().getCurrentTimeText(),
     }
     print(f"Escenario cargado: {payload}")
     return {"ok": True, "scenario": payload}

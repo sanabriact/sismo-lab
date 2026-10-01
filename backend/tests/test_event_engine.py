@@ -6,9 +6,12 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from backend.models.seismic_observatory import SeismicObservatory
+from backend.models.station import Station
 from backend.services.event_engine import EventEngine
 from backend.services.reports.report_queue_runner import ReportQueueRunner
 from backend.services.seismic_observatory_service import ScenarioValidationError
+from backend.services.audit.structure_audit_service import StructureAuditService
+from backend.utils.quantities import parseDatetime
 
 
 class FakeSocket:
@@ -190,6 +193,22 @@ def test_engine_pause_and_resume_are_the_single_queue_lifecycle():
     assert len(socketio.started) == 1
     assert runner.pause_for_recovery() == {"ok": True, "reason": "recovering"}
     assert engine.report_queue_paused is True
+
+
+def test_audit_accepts_a_balanced_tree_from_topology():
+    observatory = SeismicObservatory()
+    observatory.addStation(Station(1, "Station", 0, 0))
+    event_time = parseDatetime("2026-09-07T09:00:00Z")
+    for event_id, magnitude in ((4, 4.0), (2, 4.1), (6, 4.2), (1, 4.3), (3, 4.4), (5, 4.5), (7, 4.6)):
+        observatory.createEvent(
+            event_id, magnitude, 10, 10, 10, event_time, 1, 1
+        )
+
+    report = StructureAuditService().audit_avl(observatory.getAVLTree(), "normal")
+
+    assert report["balanced"] is True
+    assert report["max_imbalance"] <= 1
+    assert not any(issue["type"] == "balance" for issue in report["issues"])
 
 
 def test_main():

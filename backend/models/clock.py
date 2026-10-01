@@ -66,6 +66,17 @@ class SimulationClock:
     def getCurrentTime(self):
         return self._current_time
 
+    @property
+    def current_time(self):
+        """Expose the current instant without allowing direct reassignment."""
+        return self._current_time
+
+    def __eq__(self, other):
+        """Compare clocks by their normalized simulation instant."""
+        if not isinstance(other, SimulationClock):
+            return NotImplemented
+        return self._current_time == other._current_time
+
     def getCurrentTimeText(self):
         return self._toText(self._current_time)
 
@@ -181,7 +192,7 @@ class SimulationClock:
         second = self._validate(second)
         return abs((second - first).total_seconds()) / SECONDS_PER_HOUR
 
-    
+
     def toDict(self):
         """Serialize the clock; round-trips exactly through fromDict()."""
         return {"current_time": self.getCurrentTimeText()}
@@ -201,4 +212,3 @@ class SimulationClock:
             return cls(data["current_time"])
         return cls(data)
 
-    

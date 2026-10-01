@@ -191,7 +191,6 @@ class SeismicObservatoryService:
                 observatory.getClock().setCurrentTime(parseDatetime(clock_text))
             except (ValueError, TypeError, AttributeError):
                 issues.append("El reloj (datetime) no es una fecha ISO 8601 válida")
-        clock_time = observatory.getClock().getCurrentTime()
 
         # ---- estaciones ----
         stations = data.get("stations")
@@ -286,7 +285,7 @@ class SeismicObservatoryService:
             except (ValueError, TypeError, AttributeError):
                 issues.append(f"{label}: 'datetime' no es una fecha ISO 8601 válida")
                 continue
-            if event_time > clock_time:
+            if not observatory.getClock().canOccurAt(event_time):
                 issues.append(f"{label}: la fecha supera el reloj del escenario")
                 continue
 
@@ -356,6 +355,13 @@ class SeismicObservatoryService:
 
         if len(observatory.getStations()) == 0:
             issues.append("El escenario debe tener al menos una estación")
+
+        # A topology must not contain an event that occurs after its restored clock.
+        for event in observatory.getAVLTree().preorder() or []:
+            if not observatory.getClock().canOccurAt(event.getDateTime()):
+                issues.append(
+                    f"El evento {event.getKey()[2]}: la fecha supera el reloj del escenario"
+                )
 
         # Si el archivo no trae BST, se reconstruye insertando los eventos.
         if "bst_tree" not in data:
@@ -458,6 +464,8 @@ class SeismicObservatoryService:
         guarda y devuelve la operación visual que se enviará al frontend.
         En modo normal el AVL se balancea; en modo estrés no.
         """
+        if not observatory.getClock().canOccurAt(data["datetime"]):
+            raise ValueError("La fecha del evento supera el reloj del escenario")
         event_id = self.nextAvailableEventId(observatory)
         mode = observatory.getExecutionMode()
         before_version = observatory.toVersion()
@@ -533,6 +541,8 @@ class SeismicObservatoryService:
             event_datetime = parseDatetime(data["datetime"])
         except (TypeError, ValueError, AttributeError) as error:
             raise ValueError("La fecha del evento no es válida") from error
+        if not observatory.getClock().canOccurAt(event_datetime):
+            raise ValueError("La fecha del evento supera el reloj del escenario")
 
         before_version = observatory.toVersion()
         before_indicators = self.metrics_service.capture_display(observatory)

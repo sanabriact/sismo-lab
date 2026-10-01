@@ -67,6 +67,75 @@ class EventEngine:
                 self.scenario_id = self.observatory.scenario_id
             return self.observatory
 
+    def clock_snapshot(self):
+        """Return the active simulation clock in the public UTC format."""
+        if self.observatory is None:
+            return None
+        return {
+            "scenarioId": self.scenario_id,
+            "currentTime": self.observatory.getClock().getCurrentTimeText(),
+        }
+
+    def advance_clock_hours(self, hours):
+        """Advance the simulation clock and persist the resulting action."""
+        with self.lock:
+            if self.observatory is None:
+                return {"ok": False, "reason": "no_scenario"}
+            if self.recovering:
+                return {"ok": False, "reason": "busy"}
+
+            before_version = self.observatory.toVersion()
+            before_indicators = self.service.metrics_service.capture_display(
+                self.observatory
+            )
+            current_time = self.observatory.getClock().advanceHours(hours)
+            self.service.metrics_service.refresh_derived_metrics(self.observatory)
+            self.service.metrics_service.record_operation(
+                observatory=self.observatory,
+                action_type="advance_clock",
+                before_version=before_version,
+                before_indicators=before_indicators,
+                details={"hours": float(hours)},
+            )
+            self.service.saveObservatory(self.observatory)
+            payload = {
+                "scenarioId": self.scenario_id,
+                "currentTime": self.observatory.getClock().getCurrentTimeText(),
+            }
+
+        self.socketio.emit("clock:updated", payload)
+        return {"ok": True, "clock": payload, "currentTime": current_time.isoformat()}
+
+    def advance_clock_to(self, moment):
+        """Advance the simulation clock to a later absolute UTC instant."""
+        with self.lock:
+            if self.observatory is None:
+                return {"ok": False, "reason": "no_scenario"}
+            if self.recovering:
+                return {"ok": False, "reason": "busy"}
+
+            before_version = self.observatory.toVersion()
+            before_indicators = self.service.metrics_service.capture_display(
+                self.observatory
+            )
+            current_time = self.observatory.getClock().advanceTo(moment)
+            self.service.metrics_service.refresh_derived_metrics(self.observatory)
+            self.service.metrics_service.record_operation(
+                observatory=self.observatory,
+                action_type="advance_clock_to",
+                before_version=before_version,
+                before_indicators=before_indicators,
+                details={"target": self.observatory.getClock().getCurrentTimeText()},
+            )
+            self.service.saveObservatory(self.observatory)
+            payload = {
+                "scenarioId": self.scenario_id,
+                "currentTime": self.observatory.getClock().getCurrentTimeText(),
+            }
+
+        self.socketio.emit("clock:updated", payload)
+        return {"ok": True, "clock": payload, "currentTime": current_time.isoformat()}
+
     def load_scenario_from_text(self, content):
         """Validate, build, activate and persist a text-based scenario."""
         with self.lock:
@@ -445,6 +514,7 @@ class EventEngine:
             "mode": observatory.getExecutionMode(),
             "stations": len(observatory.getStations()),
             "events": len(observatory.getAVLTree().index),
+            "currentTime": observatory.getClock().getCurrentTimeText(),
         }
         if self.scenario_loaded is not None:
             self.scenario_loaded.notify(payload)
