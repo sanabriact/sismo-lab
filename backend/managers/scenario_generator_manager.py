@@ -23,12 +23,22 @@ class ScenarioGeneratorManager:
         self.current_index = 0
         self.event_count = 0
         
+        # La generación se inicia de forma explícita desde la interfaz.
+        # Cargar un escenario no debe consumir la IA por sí solo.
+        self.thread = None
+
+    def start(self):
+        """Inicia una única generación automática para el escenario activo."""
         if len(self.stations) == 0:
-            return
-        
+            return False, "no_stations"
+
+        if self.thread is not None and self.thread.is_alive():
+            return True, "already_running"
+
         self.stop_event = threading.Event()
         self.thread = threading.Thread(target=self.run, daemon=True)
         self.thread.start()
+        return True, "started"
     
     def stop(self):
         if self.stop_event:

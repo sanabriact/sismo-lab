@@ -78,6 +78,22 @@ class EventEngine:
             "message": message,
         })
 
+    def create_manual_event(self, data):
+        """Crea un evento manual de forma atómica y publica sus parches."""
+        with self.lock:
+            if self.observatory is None:
+                raise ValueError("No hay un escenario cargado")
+            if self.recovering:
+                raise ValueError("La estructura se está recuperando; inténtalo de nuevo")
+
+            operation = self.service.createManualEvent(self.observatory, data)
+            self.sequence += 1
+            operation["scenarioId"] = self.scenario_id
+            operation["sequence"] = self.sequence
+
+        self.socketio.emit("tree:operation", operation)
+        return operation
+
     # ===================== Modo de ejecución (normal / estrés) =====================
 
     def announce_mode(self):
