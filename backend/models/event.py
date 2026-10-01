@@ -1,5 +1,5 @@
 from datetime import datetime
-from backend.utils.quantities import normalizeDatetime
+from backend.utils.quantities import normalizeDatetime, parseDatetime
 class Event:
 
     def __init__(self, id, magnitude, depth, epicenter_x, epicenter_y, datetime: datetime, revision, station, zones = None):
@@ -144,7 +144,7 @@ class Event:
         event.depth = data["depth"]
         event.epicenter_x = data["epicenter_x"]
         event.epicenter_y = data["epicenter_y"]
-        event.datetime = normalizeDatetime(datetime.fromisoformat(data["datetime"]))
+        event.datetime = parseDatetime(data["datetime"])
         event.revision = data["revision"]
         event.reporting_stations = set(data["reporting_stations"])
         event.attention_status = data["attention_status"]

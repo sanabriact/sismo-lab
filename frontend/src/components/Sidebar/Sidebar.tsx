@@ -8,6 +8,7 @@ import routes from "../../routes";
 import { NavLink } from "react-router-dom";
 import { sidebarGroups } from "../../routes/sidebarGroups";
 import RouteGroupMenu from "./events/RouteGroupMenu";
+import AdvanceClock from "../clock/AdvanceClock";
 
 const Sidebar = () => {
   /* 
@@ -73,6 +74,7 @@ const Sidebar = () => {
         */}
 
         {scenarioLoaded && (<div className="p-4 border-t border-white/20 space-y-6">
+          <AdvanceClock />
           {
             /* Label that contains that shows "Verificar estructura" and button type input.*/
           }

@@ -1,5 +1,6 @@
 from backend.utils.json_utils import objectToDict
 from datetime import datetime
+from backend.utils.quantities import normalizeDatetime, parseDatetime
 
 
 class Node:
@@ -65,7 +66,7 @@ class Node:
 
     # Se asigna un tiempo de creacion
     def setNodeCreationTime(self, time):
-        self.nodeCreationTime = time
+        self.nodeCreationTime = normalizeDatetime(time)
     
      # Se calcula el tiempo desde creacion
     def calculateTime(self, actualTime):
@@ -149,9 +150,7 @@ class Node:
             node.rightChild.parent = node
 
         if data["node_creation_time"] is not None:
-            node.nodeCreationTime = datetime.fromisoformat(
-                data["node_creation_time"]
-            )
+            node.nodeCreationTime = parseDatetime(data["node_creation_time"])
         else:
             node.nodeCreationTime = None
 

@@ -1,4 +1,4 @@
-from backend.services.audit_state import AuditState
+from backend.services.audit.audit_state import AuditState
 
 class StructureAuditService:
     def audit_avl(self, tree, mode="normal"):

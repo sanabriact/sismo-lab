@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 from groq import Groq
+from backend.utils.quantities import parseDatetime
 
 env_path = Path(__file__).resolve().parent.parent / ".env"
 load_dotenv(env_path)
@@ -41,6 +42,8 @@ def validate_ai_response(data, clock):
     x = round(float(data["epicenter_x"]), 1)
     y = round(float(data["epicenter_y"]), 1)
 
+    date = parseDatetime(data["datetime"])
+
     if not -2 <= magnitude <= 10:
         raise ValueError("Magnitud inválida")
 
@@ -50,7 +53,7 @@ def validate_ai_response(data, clock):
     if not 0 <= x <= 1000 or not 0 <= y <= 1000:
         raise ValueError("Epicentro inválido")
 
-    if date > clock.current_time:
+    if not clock.canOccurAt(date):
         raise ValueError("La fecha supera el reloj del escenario")
 
     return {
@@ -70,7 +73,7 @@ class AIEventClient:
         self.model = model
 
     def generate(self, station, clock):
-        current_time = clock.current_time.isoformat()
+        current_time = clock.getCurrentTimeText()
 
         prompt = f"""
                     Generate one fictional seismic event for this station.

@@ -5,6 +5,7 @@ import type { ScenarioSource } from "../../models/types/scenario/ScenarioSource"
 import { ObservatoryService } from "../../services/seismicObservatory/seismicObservatoryService";
 import type { TreeOperation } from "../../models/interfaces/realTime/TreeOperation";
 import { toScenarioMap } from "./toScenarioMap";
+import { clockService } from "../../services/socket/clockService";
 
 async function hydrateScenarioMap(scenarioId: string): Promise<void> {
     const observatory = await ObservatoryService.getObservatory();
@@ -44,6 +45,7 @@ export async function applyScenarioPayload(payload: ScenarioLoadedPayload): Prom
             events: payload.events
         }
     });
+    clockService.setCurrentTime(payload.currentTime);
 
     await hydrateScenarioMap(payload.scenarioId);
 }

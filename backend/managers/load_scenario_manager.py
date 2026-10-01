@@ -3,6 +3,7 @@ from datetime import datetime
 from backend.services.seismic_observatory_service import SeismicObservatoryService
 from backend.repositories.json_scenario_repository import JsonScenarioRepository
 from backend.models.event import Event
+from backend.utils.quantities import parseDatetime
 class LoadScenarioManager:
     
     def __init__(self):
@@ -225,9 +226,8 @@ class LoadScenarioManager:
                 depth = event["depth"]
                 epicenter_x =  event["epicenter_x"]
                 epicenter_y = event["epicenter_y"]
-                date = event["datetime"]
                 try:
-                    date = datetime.strptime(event["datetime"], "%Y-%m-%dT%H:%M:%SZ")
+                    date = parseDatetime(event["datetime"])
                     self._validateData(id, magnitude, depth, epicenter_x, epicenter_y, date)
                 except (ValueError, TypeError) as e:
                     self.errors.append("the data are invalid")

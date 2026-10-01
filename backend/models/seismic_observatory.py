@@ -179,8 +179,8 @@ class SeismicObservatory:
             event.setAttentionStatus("revised")
     
     # Méthod to archivate a sub tree , por hacer
-    def archivateSubTree(self, actualTime):
-        rootToArchivate = self.avl_tree.archiveSubTree(actualTime)
+    def archivateSubTree(self, actualTime, T):
+        return self.avl_tree.archiveSubTree(actualTime, T)
 
     def enqueueReport(self, report):
         self.report_queue.enqueue(report)
@@ -243,5 +243,3 @@ class SeismicObservatory:
         observatory.saved_versions = data["saved_versions"]
         observatory.execution_mode = data.get("execution_mode", "normal")
         return observatory
-
-

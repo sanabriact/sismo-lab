@@ -1,6 +1,6 @@
 from backend.structures.node import Node
 from backend.utils.json_utils import objectToDict
-from backend.services.structure_audit_service import StructureAuditService
+from backend.services.audit.structure_audit_service import StructureAuditService
 
 class AVL:
     def __init__(self):
@@ -546,8 +546,8 @@ class AVL:
                 return archivateRoot
             else:
                 rootToArchivate = self.findArchiveSubTree(listToArchivate, 1, listToArchivate[0])
-                self.removeSubTree(rootToArchivate)
-                return rootToArchivate
+                ObjectToPaintTree = self.objectToSend(rootToArchivate, [])
+                return rootToArchivate, ObjectToPaintTree
 
     # Private method for archivating a sub-tree
     def _archiveSubTree(self, node, actualTime, time, listToArchivate):
@@ -598,7 +598,25 @@ class AVL:
         lines.append(self._label(self.root))
         self._draw(self.root.getLeftChild(), "", True, lines)
         print("\n".join(lines))
+        
+    def objectToSend(self, currentRoot, listIds):
+        list = self.getIdsToPaint(currentRoot, listIds) 
+        nodes = len(list)
+        message = "This subtree was selected for archiving because all of its events have low priority and are older than T hours (strictly), making it eligible. Among all eligible subtrees, it contains the largest number of nodes."
+        object = {
+            "afect_ids": list,
+            "number_nodes": nodes,
+            "message": message
+        }
+        return object
 
+    def getIdsToPaint(self, currentRoot, listIds):
+        if currentRoot is not None:
+            listIds.append(currentRoot.getValue()[2])
+            self.getIdsToPaint(currentRoot.getLeftChild(), listIds)
+            self.getIdsToPaint(currentRoot.getRightChild(), listIds)
+            return listIds
+    
     # Private method for drawing a tree
     def _draw(self, node, prefix, isLeft, lines):
         if node is None:

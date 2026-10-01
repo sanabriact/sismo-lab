@@ -1,10 +1,11 @@
 from datetime import datetime
-
+from backend.utils.json_utils import objectToDict
+from backend.utils.quantities import normalizeDatetime, parseDatetime
 
 class Action:
     def __init__(self,action_type,datetime_value,before_snapshot,metadata=None,):
         self.action_type = action_type
-        self.datetime = datetime_value
+        self.datetime = normalizeDatetime(datetime_value)
         self.before_snapshot = before_snapshot
 
         if metadata is None:
@@ -20,9 +21,8 @@ class Action:
 
     def getDateTime(self):
         return self.datetime
-
-    def setDateTime(self, datetime_value):
-        self.datetime = datetime_value
+    def setDateTime(self, date):
+        self.datetime = normalizeDatetime(date)
 
     def getBeforeSnapshot(self):
         return self.before_snapshot
@@ -51,7 +51,7 @@ class Action:
     @classmethod
     def fromDict(cls, data):
         action_type = data["action_type"]
-        datetime_value = datetime.fromisoformat(data["datetime"])
+        datetime_value = parseDatetime(data["datetime"])
         before_snapshot = data["before_snapshot"]
         metadata = data.get("metadata", {})
 
