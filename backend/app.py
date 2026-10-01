@@ -12,6 +12,7 @@ from backend.managers.scenario_generator_manager import ScenarioGeneratorManager
 from backend.managers.load_scenario_manager import LoadScenarioManager
 from backend.services.socket.socket_broadcaster import SocketBroadcaster
 from backend.services.ai_client.event_bus import mode_changed, scenario_loaded
+from backend.utils.quantities import parseDatetime
 
 app = Flask(__name__)
 CORS(app)
@@ -65,7 +66,7 @@ def createEvent():
             }), 400
 
     try:
-        event_datetime = datetime.fromisoformat(data["datetime"])
+        event_datetime = parseDatetime(data["datetime"])
         
     except ValueError:
         return jsonify({
@@ -239,9 +240,53 @@ def handle_scenario_load(data):
     print(f"Escenario cargado: {payload}")
     return {"ok": True, "scenario": payload}
 
-@socketio.on("paint: tree")
-def handle_paint_tree():
-    a = 0
+pending_archive = {}
+
+@socketio.on("paint:tree")
+def handle_paint_tree(data=None):
+    data = data if isinstance(data, dict) else {}
+    actual_time = data.get("actualTime")
+    T = data.get("T")
+    if actual_time is None or T is None:
+        return {"ok": False, "reason": "missing_params"}
+
+    try:
+        actual_time = datetime.fromisoformat(actual_time)
+    except (ValueError, TypeError):
+        return {"ok": False, "reason": "invalid_time"}
+
+    with event_engine.lock:
+        observatory = event_engine.get_observatory()
+        if observatory is None:
+            return {"ok": False, "reason": "no_scenario"}
+        try:
+            root, tree = obs_service.archiveAndGetTree(observatory, actual_time, T)
+        except Exception as error:
+            print(f"Error preparando el subárbol: {error}")
+            return {"ok": False, "reason": "server_error"}
+
+    if root is None:
+        return {"ok": False, "reason": "nothing_to_archive"}
+
+    pending_archive["root"] = root
+    return {"ok": True, "tree": tree}
+
+
+@socketio.on("archive:decision")
+def handle_archive_decision(data=None):
+    data = data if isinstance(data, dict) else {}
+    archive = data.get("archive") is True
+
+    root = pending_archive.pop("root", None)
+    if root is None:
+        return {"ok": False, "reason": "no_pending_archive"}
+
+    if not archive:
+        return {"ok": True, "archived": False}
+
+    subtree_json = obs_service.buildArchivedJson(root)
+    return {"ok": True, "archived": True, "subtree": subtree_json}
+    
 if __name__ == "__main__":
     
     event_engine.start()

@@ -21,5 +21,13 @@ def normalizeDatetime(value):
 
 
 def parseDatetime(text):
-    # Accepts ISO 8601 with a trailing Z
-    return normalizeDatetime(datetime.fromisoformat(text.replace("Z", "+00:00")))
+    # Accepts ISO 8601, including the trailing Z shown in the specification.
+    # The Z is removed only when it is the last character: a blind replace would
+    # corrupt any other Z in the string.
+    if not isinstance(text, str):
+        raise TypeError(
+            f"Expected an ISO 8601 string, not {type(text).__name__}"
+        )
+    if text.endswith("Z"):
+        text = text[:-1] + "+00:00"
+    return normalizeDatetime(datetime.fromisoformat(text))

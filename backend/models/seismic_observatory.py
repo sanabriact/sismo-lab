@@ -243,5 +243,3 @@ class SeismicObservatory:
         observatory.saved_versions = data["saved_versions"]
         observatory.execution_mode = data.get("execution_mode", "normal")
         return observatory
-
-
