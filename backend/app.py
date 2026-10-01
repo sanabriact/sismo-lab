@@ -2,6 +2,9 @@ from datetime import datetime, timezone
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from flask_socketio import SocketIO
+from backend.services.report_processor import ReportProcessor
+from backend.services.report_queue_runner import ReportQueueRunner
+from backend.services.report_queue_service import ReportQueueService
 from backend.utils.json_utils import objectToDict
 from backend.services.seismic_observatory_service import SeismicObservatoryService, ScenarioValidationError
 from backend.services.realtime_service import init_realtime
@@ -31,6 +34,15 @@ ai_client = AIEventClient()
 load_scenario_manager = LoadScenarioManager()
 
 generator_manager = ScenarioGeneratorManager( ai_client=ai_client, engine=event_engine)
+
+# Keep one queue runner attached to the active EventEngine.
+report_queue_service = ReportQueueService()
+report_processor = ReportProcessor()
+report_queue_runner = ReportQueueRunner(
+    event_engine,
+    report_queue_service,
+    report_processor,
+)
 manual_event_minimums = {}
 
 """ Rutas de FLASK (API rest) """
@@ -239,6 +251,41 @@ def handle_scenario_load(data):
 
     print(f"Escenario cargado: {payload}")
     return {"ok": True, "scenario": payload}
+
+
+@socketio.on("reports:prepare")
+def prepare_reports(data):
+    # Validate the complete batch before adding any report to the FIFO queue.
+    reports = data.get("reports", []) if isinstance(data, dict) else data
+    return report_queue_runner.prepare_reports(reports)
+
+
+@socketio.on("reports:step")
+def process_report_step():
+    # Process exactly one report and let the runner publish its events.
+    return report_queue_runner.process_next()
+
+
+@socketio.on("reports:start")
+def start_report_processing():
+    # Start the background loop; it stops automatically when the queue is empty.
+    return report_queue_runner.start_continuous()
+
+
+@socketio.on("reports:pause")
+def pause_report_processing():
+    # Pause continuous processing without removing pending reports.
+    return report_queue_runner.pause()
+
+
+@socketio.on("reports:snapshot")
+def report_queue_snapshot():
+    # Read the queue under the same lock used by report processing.
+    observatory = event_engine.get_observatory()
+    if observatory is None:
+        return {"ok": False, "reason": "no_scenario"}
+    with event_engine.lock:
+        return report_queue_service.snapshot(observatory)
 
 if __name__ == "__main__":
     event_engine.start()
