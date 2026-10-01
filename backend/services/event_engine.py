@@ -78,6 +78,22 @@ class EventEngine:
             "message": message,
         })
 
+    def create_manual_event(self, data):
+        """Crea un evento manual de forma atómica y publica sus parches."""
+        with self.lock:
+            if self.observatory is None:
+                raise ValueError("No hay un escenario cargado")
+            if self.recovering:
+                raise ValueError("La estructura se está recuperando; inténtalo de nuevo")
+
+            operation = self.service.createManualEvent(self.observatory, data)
+            self.sequence += 1
+            operation["scenarioId"] = self.scenario_id
+            operation["sequence"] = self.sequence
+
+        self.socketio.emit("tree:operation", operation)
+        return operation
+
     # ===================== Modo de ejecución (normal / estrés) =====================
 
     def announce_mode(self):
@@ -113,6 +129,10 @@ class EventEngine:
                 return {"ok": True, "mode": current}
 
             if mode == "stress":
+                before_version = self.observatory.toVersion()
+                before_indicators = self.service.metrics_service.capture_display(
+                    self.observatory
+                )
                 report = self.stress_mode_manager.activateStressMode(
                     self.observatory
                 )
@@ -134,6 +154,23 @@ class EventEngine:
             with self.lock:
                 report = self.stress_mode_manager.deactivateStressMode(
                     self.observatory
+                )
+                self.service.metrics_service.refresh_derived_metrics(
+                    self.observatory
+                )
+                self.service.metrics_service.register_rotation_steps(
+                    self.observatory.getMetrics(),
+                    report["steps"],
+                )
+                self.service.metrics_service.record_operation(
+                    observatory=self.observatory,
+                    action_type="recover_avl_balance",
+                    before_version=before_version,
+                    before_indicators=before_indicators,
+                    details={
+                        "mode_before": "stress",
+                        "mode_after": self.observatory.getExecutionMode(),
+                    },
                 )
                 self.service.saveObservatory(self.observatory)
                 steps = report["steps"]

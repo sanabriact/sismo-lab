@@ -11,6 +11,7 @@ const CreateEvent = lazy(() => import ('../pages/events/create/CreateEvent'));
 const DeleteEvent = lazy (() => import ('../pages/events/delete/DeleteEvent'));
 const Scenario = lazy(() => import ('../pages/scenery/Scenery'));
 const LoadScenario = lazy(() => import ('../pages/load/loadScenario'));
+const VerifyStructure = lazy(() => import('../pages/events/verify/VerifyStructure'));
 
 /* Adding components to each route */
 const coreRoutes: AppRoute[] = [
@@ -70,6 +71,13 @@ const coreRoutes: AppRoute[] = [
         path: "/events/delete-events",
         title: "Eliminar eventos",
         component: DeleteEvent,
+        group: "events",
+        requiresScenario: true
+    },
+    {
+        path: "/events/verify-structure",
+        title: "Verificar estructura",
+        component: VerifyStructure,
         group: "events",
         requiresScenario: true
     }
