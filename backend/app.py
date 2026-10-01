@@ -127,7 +127,29 @@ def handle_scenario_status():
         "loaded": observatory is not None,
         "scenarioId": observatory.getScenarioId() if observatory is not None else None
     }
+    
+@socketio.on("structure:audit")
+def handle_structure_audit(_data=None):
+    """
+    Auditoría de solo lectura por WebSocket.
+    El lock evita que se inspeccione un árbol mientras el motor lo modifica.
+    """
+    print("Solicitud de auditar estructura")
+    with event_engine.lock:
+        observatory = event_engine.get_observatory()
 
+        if observatory is None:
+            return {
+                "ok": False,
+                "reason": "no_scenario",
+            }
+
+        report = obs_service.auditStructure(observatory)
+
+    return {
+        "ok": True,
+        "report": report,
+    }
 @socketio.on("scenario:load")
 def handle_scenario_load(data):
     if not isinstance(data, dict):
@@ -144,6 +166,16 @@ def handle_scenario_load(data):
 
     try:
         if source == "file":
+            validation_data = load_scenario_manager.loadFromText(
+                data.get("content"),
+                stress_mode=False,
+            )
+            if validation_data is None:
+                return {
+                    "ok": False,
+                    "reason": "invalid_scenario",
+                    "issues": load_scenario_manager.errors,
+                }
             observatory = obs_service.loadScenarioFromText(data.get("content"))
         else:
             # El frontend envía el modo en "aiMode" (o en "content").

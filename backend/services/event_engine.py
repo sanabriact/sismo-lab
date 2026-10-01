@@ -113,6 +113,10 @@ class EventEngine:
                 return {"ok": True, "mode": current}
 
             if mode == "stress":
+                before_version = self.observatory.toVersion()
+                before_indicators = self.service.metrics_service.capture_display(
+                    self.observatory
+                )
                 report = self.stress_mode_manager.activateStressMode(
                     self.observatory
                 )
@@ -134,6 +138,23 @@ class EventEngine:
             with self.lock:
                 report = self.stress_mode_manager.deactivateStressMode(
                     self.observatory
+                )
+                self.service.metrics_service.refresh_derived_metrics(
+                    self.observatory
+                )
+                self.service.metrics_service.register_rotation_steps(
+                    self.observatory.getMetrics(),
+                    report["steps"],
+                )
+                self.service.metrics_service.record_operation(
+                    observatory=self.observatory,
+                    action_type="recover_avl_balance",
+                    before_version=before_version,
+                    before_indicators=before_indicators,
+                    details={
+                        "mode_before": "stress",
+                        "mode_after": self.observatory.getExecutionMode(),
+                    },
                 )
                 self.service.saveObservatory(self.observatory)
                 steps = report["steps"]

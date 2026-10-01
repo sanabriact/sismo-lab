@@ -73,18 +73,28 @@ const Sidebar = () => {
         */}
 
         {scenarioLoaded && (<div className="p-4 border-t border-white/20 space-y-6">
-        {
-          /* Label that contains that shows "Deshacer" and button type input */
-        }
+          {
+            /* Label that contains that shows "Verificar estructura" and button type input.*/
+          }
+          <NavLink
+            to="/events/verify-structure"
+            className="w-full flex items-center justify-between gap-2 p-2 rounded-lg hover:bg-white/20 transition-colors"
+          >
+            <span>Verificar estructura</span>
+            <span aria-hidden="true">→</span>
+          </NavLink>
+          {
+            /* Label that contains that shows "Deshacer" and button type input */
+          }
           <label className="w-full flex items-center justify-between gap-2 p-2 rounded-lg hover:bg-white/20 transition-colors cursor-pointer">
             <span>Deshacer</span>
             {
               /* Div that contains the go-back button */
             }
             <div className="relative">
-              <input 
+              <input
                 type="button"
-                />
+              />
             </div>
           </label>
           {/* 
