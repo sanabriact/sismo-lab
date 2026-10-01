@@ -272,6 +272,5 @@ def report_queue_snapshot():
     return report_queue_runner.snapshot()
 
 if __name__ == "__main__":
-    
     event_engine.start()
     socketio.run(app, debug = True, use_reloader=False)

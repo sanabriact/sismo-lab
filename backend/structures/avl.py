@@ -583,6 +583,16 @@ class AVL:
         
         return self.findArchiveSubTree(listToArchivate, index+1, best)
     
+    def eliminateReferences(self, root):
+        parent = root.getParent()
+        if root.hasLeftChild():
+            root.setParent(None)
+            parent.setLeftChild(None)
+        else:
+            root.setParent(None)
+            parent.setRightChild(None)
+            parent.setRightChild()
+    
     def audit(self, mode="normal"):
         audit_service = StructureAuditService()
         return audit_service.audit_avl(self, mode)
