@@ -615,3 +615,13 @@ class SeismicObservatoryService:
         nodeToDict = node.toDict()
         avl.eliminateReferences(node)
         return nodeToDict
+    
+    def getActiveEvents(self, observatory):
+        events = []
+        for event_id, node in observatory.getAVLTree().index.items():
+            event = node.getValue()
+            data = event.toDict()
+            data["priority"] = event.getKey()[0]
+            data["magnitude"] = event.getKey()[1]
+            events.append(data)
+        return events

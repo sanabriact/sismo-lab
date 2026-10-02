@@ -95,7 +95,7 @@ def load_scenario():
 
 @app.route("/api/events-list", methods=["GET"])
 def getEvents():
-    return jsonify(event_engine.get_events().toDict())
+    return jsonify(event_engine.get_active_events())
 
 @socketio.on("connect")
 def handle_connect():
