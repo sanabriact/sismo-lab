@@ -104,10 +104,12 @@ def handle_disconnect():
 
 @socketio.on("manual-event:begin")
 def handle_manual_event_begin(_data=None):
-    if event_engine.get_observatory() is None:
+    observatory = event_engine.get_observatory()
+    if observatory is None:
         return {"ok": False, "reason": "no_scenario"}
 
-    minimum = datetime.now(timezone.utc).replace(microsecond=0)
+    # Manual events must start from the active simulation clock, not wall time.
+    minimum = observatory.getClock().getCurrentTime().replace(microsecond=0)
     manual_event_minimums[request.sid] = minimum
     return {"ok": True, "minimumDatetime": minimum.isoformat()}
 

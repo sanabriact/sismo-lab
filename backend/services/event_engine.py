@@ -1,5 +1,7 @@
 import queue
 import threading
+import time
+from datetime import timedelta
 from backend.services.reports.report_processor import ReportProcessor
 from backend.services.reports.report_queue_service import ReportQueueService
 from backend.services.seismic_observatory_service import ScenarioValidationError
@@ -37,6 +39,10 @@ class EventEngine:
         self.scenario_loaded = None
         self._recovery_before_version = 0
         self._recovery_before_indicators = {}
+        self.clock_realtime_interval = 1.0
+        self.clock_realtime_running = False
+        self._clock_realtime_anchor_monotonic = None
+        self._clock_realtime_anchor_time = None
 
     def set_scenario_manager(self, manager):
         """Register the manager that prepares the generator after a load."""
@@ -53,6 +59,7 @@ class EventEngine:
     def set_observatory(self, observatory):
         """Replace the active scenario and reset its event sequence."""
         with self.lock:
+            self._stop_realtime_clock_locked()
             self.observatory = observatory
             self.sequence = 0
             self.scenario_id = observatory.scenario_id
@@ -67,6 +74,7 @@ class EventEngine:
             if self.observatory is None:
                 self.observatory = self.service.getObservatory()
                 self.scenario_id = self.observatory.scenario_id
+                self._start_realtime_clock_locked()
             return self.observatory
 
     def prepare_archive_tree(self, threshold_hours=None, client_id=None):
@@ -135,6 +143,7 @@ class EventEngine:
                 self.observatory
             )
             current_time = self.observatory.getClock().advanceHours(hours)
+            self._reset_realtime_anchor_locked(current_time)
             self.service.metrics_service.refresh_derived_metrics(self.observatory)
             self.service.metrics_service.record_operation(
                 observatory=self.observatory,
@@ -165,6 +174,7 @@ class EventEngine:
                 self.observatory
             )
             current_time = self.observatory.getClock().advanceTo(moment)
+            self._reset_realtime_anchor_locked(current_time)
             self.service.metrics_service.refresh_derived_metrics(self.observatory)
             self.service.metrics_service.record_operation(
                 observatory=self.observatory,
@@ -555,6 +565,8 @@ class EventEngine:
 
     def _announce_scenario_loaded(self, observatory):
         """Publish scenario activation from the engine, after all state is ready."""
+        with self.lock:
+            self._start_realtime_clock_locked()
         payload = {
             "scenarioId": observatory.scenario_id,
             "mode": observatory.getExecutionMode(),
@@ -565,3 +577,58 @@ class EventEngine:
         if self.scenario_loaded is not None:
             self.scenario_loaded.notify(payload)
         self.announce_mode()
+
+    # ------------------------------------------------------------------
+    # Real-time simulation clock
+    # ------------------------------------------------------------------
+
+    def _start_realtime_clock_locked(self):
+        """Start the authoritative clock loop after a scenario is available."""
+        if self.observatory is None or self.clock_realtime_running:
+            return
+
+        self.clock_realtime_running = True
+        self._clock_realtime_anchor_monotonic = time.monotonic()
+        self._clock_realtime_anchor_time = self.observatory.getClock().getCurrentTime()
+        self.socketio.start_background_task(self._run_realtime_clock)
+
+    def _stop_realtime_clock_locked(self):
+        """Stop the clock loop before replacing the active scenario."""
+        self.clock_realtime_running = False
+        self._clock_realtime_anchor_monotonic = None
+        self._clock_realtime_anchor_time = None
+
+    def _reset_realtime_anchor_locked(self, current_time):
+        """Continue real-time progression from a manually selected instant."""
+        self._clock_realtime_anchor_monotonic = time.monotonic()
+        self._clock_realtime_anchor_time = current_time
+
+    def _run_realtime_clock(self):
+        """Advance and broadcast the simulation clock once per real second."""
+        while True:
+            self.socketio.sleep(self.clock_realtime_interval)
+
+            with self.lock:
+                if not self.clock_realtime_running or self.observatory is None:
+                    return
+
+                elapsed_seconds = int(
+                    time.monotonic() - self._clock_realtime_anchor_monotonic
+                )
+                target_time = self._clock_realtime_anchor_time + timedelta(
+                    seconds=elapsed_seconds
+                )
+                clock = self.observatory.getClock()
+
+                if target_time <= clock.getCurrentTime():
+                    continue
+
+                clock.advanceTo(target_time)
+                self.service.metrics_service.refresh_derived_metrics(self.observatory)
+                self.service.saveObservatory(self.observatory)
+                payload = {
+                    "scenarioId": self.scenario_id,
+                    "currentTime": clock.getCurrentTimeText(),
+                }
+
+            self.socketio.emit("clock:updated", payload)
