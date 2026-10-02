@@ -14,6 +14,7 @@ class MetricsService:
         self._preorder = []
         self._postorder = []
         self._leaves = 0
+        self.action_stack_service = None
 
     def capture_display(self, observatory):
         self._reset_traversals()
@@ -113,7 +114,11 @@ class MetricsService:
             metadata=metadata,
         )
 
-        observatory.getActionStack().push(action)
+        if self.action_stack_service is not None:
+            self.action_stack_service.push_action(observatory, action)
+        else:
+            # Keep direct service usage compatible with existing callers.
+            observatory.getActionStack().push(action)
 
     def calculate_delta(self, before_indicators, after_indicators):
         return {

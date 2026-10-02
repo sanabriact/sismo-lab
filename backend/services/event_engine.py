@@ -5,7 +5,8 @@ from datetime import timedelta
 from backend.services.reports.report_processor import ReportProcessor
 from backend.services.reports.report_queue_service import ReportQueueService
 from backend.services.seismic_observatory_service import ScenarioValidationError
-from backend.services.archive_tree_service import ArchiveTreeService
+from backend.services.archive.archive_tree_service import ArchiveTreeService
+from backend.services.actions.action_stack_service import ActionStackError, ActionStackService
 
 class EventEngine:
     """
@@ -31,6 +32,9 @@ class EventEngine:
         self.report_queue_service = ReportQueueService()
         self.report_processor = ReportProcessor()
         self.archive_tree_service = ArchiveTreeService()
+        self.action_stack_service = ActionStackService()
+        if hasattr(self.service, "metrics_service"):
+            self.service.metrics_service.action_stack_service = self.action_stack_service
         self.report_queue_interval = 1.5
         self.report_queue_running = False
         self.report_queue_paused = False
@@ -194,6 +198,8 @@ class EventEngine:
 
     def load_scenario_from_text(self, content):
         """Validate, build, activate and persist a text-based scenario."""
+        previous = self.observatory
+        previous_snapshot = self._snapshot_for_load(previous)
         with self.lock:
             if self.scenario_validator is not None:
                 validated = self.scenario_validator.loadFromText(content, stress_mode=False)
@@ -206,6 +212,7 @@ class EventEngine:
         else:
             self.set_observatory(observatory)
         self._announce_scenario_loaded(observatory)
+        self._record_loaded_scenario(observatory, previous_snapshot)
         return observatory
 
     def create_event_from_api(self, data):
@@ -218,6 +225,8 @@ class EventEngine:
 
     def load_scenario_from_ai(self, ai_mode):
         """Build, activate and persist an AI-provided scenario."""
+        previous = self.observatory
+        previous_snapshot = self._snapshot_for_load(previous)
         with self.lock:
             observatory = self.service.loadScenarioFromAI(ai_mode)
         if self.scenario_manager is not None:
@@ -225,7 +234,38 @@ class EventEngine:
         else:
             self.set_observatory(observatory)
         self._announce_scenario_loaded(observatory)
+        self._record_loaded_scenario(observatory, previous_snapshot)
         return observatory
+
+    def undo_action(self):
+        """Undo the latest completed operation through the action service."""
+        with self.lock:
+            if self.observatory is None:
+                return {"ok": False, "reason": "no_scenario"}
+            if self.recovering:
+                return {"ok": False, "reason": "busy"}
+
+            try:
+                restored, action = self.action_stack_service.undo(self.observatory)
+            except ActionStackError as error:
+                return {"ok": False, "reason": str(error)}
+
+            self.observatory = restored
+            self.scenario_id = restored.scenario_id
+            self._reset_realtime_anchor_locked(restored.getClock().getCurrentTime())
+            self.service.metrics_service.refresh_derived_metrics(restored)
+            self.service.saveObservatory(restored)
+            payload = {
+                "scenarioId": self.scenario_id,
+                "actionType": action.getActionType(),
+                "currentTime": restored.getClock().getCurrentTimeText(),
+                "events": len(restored.getAVLTree().index),
+                "remaining": self.action_stack_service.size(restored),
+            }
+
+        self.socketio.emit("action:undone", payload)
+        self.socketio.emit("queue:updated", self.report_queue_service.snapshot(restored))
+        return {"ok": True, "action": action.toDict(), "snapshot": payload}
 
     def audit_structure(self):
         """Audit the active scenario through the engine lock."""
@@ -562,6 +602,34 @@ class EventEngine:
             "rotations": report.get("rotations", 0),
             "issues": report["issues"],
         })
+
+    def _snapshot_for_load(self, observatory):
+        """Capture the previous scenario when a load can be undone."""
+        if observatory is None:
+            return None
+
+        snapshot = observatory.toVersion()
+        snapshot["scenario_id"] = observatory.getScenarioId()
+        snapshot["action_stack"] = observatory.getActionStack().toDict()
+        snapshot["saved_versions"] = observatory.getSavedVersions()
+        return snapshot
+
+    def _record_loaded_scenario(self, observatory, previous_snapshot):
+        """Record a successful scenario replacement as one atomic action."""
+        if previous_snapshot is None:
+            if hasattr(self.service, "saveObservatory"):
+                self.service.saveObservatory(observatory)
+            return
+
+        with self.lock:
+            self.action_stack_service.record_action(
+                observatory,
+                "LOAD_SCENARIO",
+                previous_snapshot,
+                {"source": "scenario_load"},
+            )
+            if hasattr(self.service, "saveObservatory"):
+                self.service.saveObservatory(observatory)
 
     def _announce_scenario_loaded(self, observatory):
         """Publish scenario activation from the engine, after all state is ready."""
