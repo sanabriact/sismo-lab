@@ -97,8 +97,7 @@ def get_event_by_id(event_id):
 
 @app.route("/api/events/<int:event_id>/attention-status", methods=["PATCH"])
 def update_event_attention_status(event_id):
-    data = request.get_json()
-    result = event_engine.set_attention_status(event_id, data.get("attention_status"))
+    result = event_engine.mark_event_as_reviewed(event_id)
     
     if not result["ok"]:
         if result["reason"] == "no_event":

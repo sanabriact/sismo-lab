@@ -1,5 +1,6 @@
 /* Search, Plus, Pencil, Check and Trash2 are SVG icons imported from the library lucide-react */
 import { Search, Plus, Pencil, Check, Trash2 } from "lucide-react";
+import Swal from "sweetalert2";
 import type { EventsTableProps } from "../../../models/interfaces/table/EventsTableProps";
 import { useNavigate } from "react-router-dom";
 import type { SeismicEvent } from "../../../models/interfaces/tree/SeismicEvent";
@@ -14,6 +15,7 @@ const HEADERS = [
     "Fecha y hora",
     "Estaciones",
     "Revisión",
+    "Estado de atención",
     "Acciones",
 ];
 
@@ -43,14 +45,41 @@ function EventsTable({
     const handleEdit = (event: SeismicEvent) => {
         navigate(`/events/correct-event/${event.key[2]}`);
     };
-    const handleMarkChecked = async (eventId: number) => {
-        try {
-            const response = await eventService.setAttentionStatus(eventId, "reviewed"); 
-            onMarkChecked?.(response);
-        } catch (error) {
-            console.log("Hubo un error al mandar la petición de revisión: " + error);
-        }
-    }
+    const handleMarkChecked = async (event: SeismicEvent) => {
+        const result = await Swal.fire({
+            title: "¿Quieres marcar el siguiente evento como revisado?",
+            icon: "question",
+            showCancelButton: true,
+            confirmButtonText: "Sí, marcar como revisado",
+            cancelButtonText: "Cancelar",
+            html: `
+                <div style="text-align: left">
+                    <p><b>Evento:</b> ${event.key[2]}</p>
+                    <p><b>Magnitud:</b> ${event.key[1].toFixed(1)}</p>
+                    <p><b>Profundidad:</b> ${event.depth.toFixed(1)} km</p>
+                    <p><b>Coordenadas:</b> (${event.epicenter_x.toFixed(1)}, ${event.epicenter_y.toFixed(1)})</p>
+                    <p><b>Fecha y hora:</b> ${formatDateTime(event.datetime)}</p>
+                    <p><b>Estaciones:</b> ${event.reporting_stations.join(", ")}</p>
+                    <p><b>Revisión:</b> ${event.revision}</p>
+                </div>
+                `,
+        });
+
+        if (!result.isConfirmed) return;
+
+        // Aquí recién envías la petición al backend.
+        const updatedEvent = await eventService.setAttentionStatus(event.key[2], "reviewed");
+
+        // Avisar a EventList para actualizar el estado local.
+        onMarkChecked?.(updatedEvent);
+
+        await Swal.fire({
+            title: "Evento marcado como revisado",
+            icon: "success",
+            confirmButtonText: "Aceptar",
+        });
+        window.location.reload();
+    };
 
     return (
         <div className="w-full rounded-lg border border-gray-200 bg-white shadow-sm">
@@ -113,6 +142,7 @@ function EventsTable({
                                     <td className="px-4 py-3">{formatDateTime(event.datetime)}</td>
                                     <td className="px-4 py-3">ST-00{event.reporting_stations}</td>
                                     <td className="px-4 py-3">{event.revision}</td>
+                                    <td className="px-4 py-3">{event.attention_status.toLocaleUpperCase()}</td>
                                     <td className="px-4 py-3">
                                         <div className="flex items-center gap-1">
                                             {/* Here is the edit button with its handler. */}
@@ -126,7 +156,7 @@ function EventsTable({
                                             </button>
                                             <button
                                                 type="button"
-                                                onClick={() => handleMarkChecked(event.key[2])}
+                                                onClick={() => handleMarkChecked(event)}
                                                 aria-label={`Marcar evento ${event.key[2]} como revisado`}
                                                 className={`${iconButton} hover:text-green-600`}
                                             >

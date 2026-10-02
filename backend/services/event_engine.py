@@ -659,26 +659,66 @@ class EventEngine:
 
         return response
     
-    def set_attention_status(self, id, status):
-        if status not in ["pending", "reviewed"]:
-            return {
-                "ok": False,
-                "reason": "invalid_status"
-            }
-        observatory = self.get_or_load_observatory()
+    def mark_event_as_reviewed(self, event_id):
         with self.lock:
-            event = observatory.searchEventById(id)
+            if self.observatory is None:
+                return {
+                    "ok": False, 
+                    "reason": "no_scenario"
+                }
+
+            if self.recovering:
+                return {
+                    "ok": False, 
+                    "reason": "busy"
+                }
+
+            event = self.observatory.searchEventById(event_id)
             if event is None:
                 return {
-                    "ok": False,
-                    "reason": "no_event"
+                    "ok": False, 
+                    "reason": "event_not_found"
                 }
-            event.setAttentionStatus(status)
-            self.service.repository.save(observatory)
-            
+
+            # No registrar una acción si no hay cambio real.
+            if event.getAttentionStatus() == "reviewed":
+                return {
+                    "ok": True,
+                    "changed": False,
+                    "event": event.toDict(),
+                }
+
+            # 1. Guardar el estado ANTES del cambio.
+            before_version = self.observatory.toVersion()
+            before_indicators = self.service.metrics_service.capture_display(
+                self.observatory
+            )
+            previous_status = event.getAttentionStatus()
+
+            # 2. Ejecutar la operación.
+            event.setAttentionStatus("reviewed")
+
+            # 3. Recalcular indicadores y registrar la acción exitosa.
+            self.service.metrics_service.refresh_derived_metrics(self.observatory)
+            self.service.metrics_service.record_operation(
+                observatory=self.observatory,
+                action_type="mark_reviewed",
+                before_version=before_version,
+                before_indicators=before_indicators,
+                details={
+                    "event_id": event_id,
+                    "previous_attention_status": previous_status,
+                    "new_attention_status": "reviewed",
+                },
+            )
+
+            # 4. Persistir tanto el cambio como la pila de acciones.
+            self.service.saveObservatory(self.observatory)
+
             return {
                 "ok": True,
-                "event": event.toDict()
+                "changed": True,
+                "event": event.toDict(),
             }
             
     # ===================== Execution mode (normal / stress) =====================
