@@ -18,6 +18,7 @@ venv/
 .venv/
 __pycache__/
 *.pyc
+backend/data/
 
 # Variables de entorno
 .env
