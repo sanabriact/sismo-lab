@@ -1,9 +1,13 @@
 import queue
 import threading
+import time
+from datetime import timedelta
+from backend.models.seismic_observatory import SeismicObservatory
 from backend.services.reports.report_processor import ReportProcessor
 from backend.services.reports.report_queue_service import ReportQueueService
 from backend.services.seismic_observatory_service import ScenarioValidationError
-from backend.services.archive_tree_service import ArchiveTreeService
+from backend.services.archive.archive_tree_service import ArchiveTreeService
+from backend.services.actions.action_stack_service import ActionStackError, ActionStackService
 
 class EventEngine:
     """
@@ -29,6 +33,9 @@ class EventEngine:
         self.report_queue_service = ReportQueueService()
         self.report_processor = ReportProcessor()
         self.archive_tree_service = ArchiveTreeService()
+        self.action_stack_service = ActionStackService()
+        if hasattr(self.service, "metrics_service"):
+            self.service.metrics_service.action_stack_service = self.action_stack_service
         self.report_queue_interval = 1.5
         self.report_queue_running = False
         self.report_queue_paused = False
@@ -37,6 +44,10 @@ class EventEngine:
         self.scenario_loaded = None
         self._recovery_before_version = 0
         self._recovery_before_indicators = {}
+        self.clock_realtime_interval = 1.0
+        self.clock_realtime_running = False
+        self._clock_realtime_anchor_monotonic = None
+        self._clock_realtime_anchor_time = None
 
     def set_scenario_manager(self, manager):
         """Register the manager that prepares the generator after a load."""
@@ -53,6 +64,7 @@ class EventEngine:
     def set_observatory(self, observatory):
         """Replace the active scenario and reset its event sequence."""
         with self.lock:
+            self._stop_realtime_clock_locked()
             self.observatory = observatory
             self.sequence = 0
             self.scenario_id = observatory.scenario_id
@@ -67,6 +79,7 @@ class EventEngine:
             if self.observatory is None:
                 self.observatory = self.service.getObservatory()
                 self.scenario_id = self.observatory.scenario_id
+                self._start_realtime_clock_locked()
             return self.observatory
 
     def prepare_archive_tree(self, threshold_hours=None, client_id=None):
@@ -135,6 +148,7 @@ class EventEngine:
                 self.observatory
             )
             current_time = self.observatory.getClock().advanceHours(hours)
+            self._reset_realtime_anchor_locked(current_time)
             self.service.metrics_service.refresh_derived_metrics(self.observatory)
             self.service.metrics_service.record_operation(
                 observatory=self.observatory,
@@ -165,6 +179,7 @@ class EventEngine:
                 self.observatory
             )
             current_time = self.observatory.getClock().advanceTo(moment)
+            self._reset_realtime_anchor_locked(current_time)
             self.service.metrics_service.refresh_derived_metrics(self.observatory)
             self.service.metrics_service.record_operation(
                 observatory=self.observatory,
@@ -184,6 +199,8 @@ class EventEngine:
 
     def load_scenario_from_text(self, content):
         """Validate, build, activate and persist a text-based scenario."""
+        previous = self.observatory
+        previous_snapshot = self._snapshot_for_load(previous)
         with self.lock:
             if self.scenario_validator is not None:
                 validated = self.scenario_validator.loadFromText(content, stress_mode=False)
@@ -196,6 +213,7 @@ class EventEngine:
         else:
             self.set_observatory(observatory)
         self._announce_scenario_loaded(observatory)
+        self._record_loaded_scenario(observatory, previous_snapshot)
         return observatory
 
     def create_event_from_api(self, data):
@@ -208,6 +226,8 @@ class EventEngine:
 
     def load_scenario_from_ai(self, ai_mode):
         """Build, activate and persist an AI-provided scenario."""
+        previous = self.observatory
+        previous_snapshot = self._snapshot_for_load(previous)
         with self.lock:
             observatory = self.service.loadScenarioFromAI(ai_mode)
         if self.scenario_manager is not None:
@@ -215,7 +235,46 @@ class EventEngine:
         else:
             self.set_observatory(observatory)
         self._announce_scenario_loaded(observatory)
+        self._record_loaded_scenario(observatory, previous_snapshot)
         return observatory
+
+    def undo_action(self):
+        """Undo the latest completed operation through the action service."""
+        with self.lock:
+            if self.observatory is None:
+                return {"ok": False, "reason": "no_scenario"}
+            if self.recovering:
+                return {"ok": False, "reason": "busy"}
+
+            try:
+                restored, action = self.action_stack_service.undo(self.observatory)
+            except ActionStackError as error:
+                return {"ok": False, "reason": str(error)}
+
+            self.observatory = restored
+            self.scenario_id = restored.scenario_id
+            if self.scenario_id is None:
+                self._stop_realtime_clock_locked()
+            else:
+                self._reset_realtime_anchor_locked(restored.getClock().getCurrentTime())
+            if self.scenario_manager is not None:
+                self.scenario_manager.stop()
+                self.scenario_manager.stations = restored.getStations()
+                self.scenario_manager.current_index = 0
+                self.scenario_manager.event_count = 0
+            self.service.metrics_service.refresh_derived_metrics(restored)
+            self.service.saveObservatory(restored)
+            payload = {
+                "scenarioId": self.scenario_id,
+                "actionType": action.getActionType(),
+                "currentTime": restored.getClock().getCurrentTimeText(),
+                "events": len(restored.getAVLTree().index),
+                "remaining": self.action_stack_service.size(restored),
+            }
+
+        self.socketio.emit("action:undone", payload)
+        self.socketio.emit("queue:updated", self.report_queue_service.snapshot(restored))
+        return {"ok": True, "action": action.toDict(), "snapshot": payload}
 
     def audit_structure(self):
         """Audit the active scenario through the engine lock."""
@@ -553,8 +612,38 @@ class EventEngine:
             "issues": report["issues"],
         })
 
+    def _snapshot_for_load(self, observatory):
+        """Capture the previous scenario when a load can be undone."""
+        if observatory is None:
+            empty = SeismicObservatory()
+            snapshot = empty.toVersion()
+            snapshot["scenario_id"] = None
+            snapshot["action_stack"] = empty.getActionStack().toDict()
+            snapshot["saved_versions"] = empty.getSavedVersions()
+            return snapshot
+
+        snapshot = observatory.toVersion()
+        snapshot["scenario_id"] = observatory.getScenarioId()
+        snapshot["action_stack"] = observatory.getActionStack().toDict()
+        snapshot["saved_versions"] = observatory.getSavedVersions()
+        return snapshot
+
+    def _record_loaded_scenario(self, observatory, previous_snapshot):
+        """Record a successful scenario replacement as one atomic action."""
+        with self.lock:
+            self.action_stack_service.record_action(
+                observatory,
+                "LOAD_SCENARIO",
+                previous_snapshot,
+                {"source": "scenario_load"},
+            )
+            if hasattr(self.service, "saveObservatory"):
+                self.service.saveObservatory(observatory)
+
     def _announce_scenario_loaded(self, observatory):
         """Publish scenario activation from the engine, after all state is ready."""
+        with self.lock:
+            self._start_realtime_clock_locked()
         payload = {
             "scenarioId": observatory.scenario_id,
             "mode": observatory.getExecutionMode(),
@@ -565,3 +654,58 @@ class EventEngine:
         if self.scenario_loaded is not None:
             self.scenario_loaded.notify(payload)
         self.announce_mode()
+
+    # ------------------------------------------------------------------
+    # Real-time simulation clock
+    # ------------------------------------------------------------------
+
+    def _start_realtime_clock_locked(self):
+        """Start the authoritative clock loop after a scenario is available."""
+        if self.observatory is None or self.clock_realtime_running:
+            return
+
+        self.clock_realtime_running = True
+        self._clock_realtime_anchor_monotonic = time.monotonic()
+        self._clock_realtime_anchor_time = self.observatory.getClock().getCurrentTime()
+        self.socketio.start_background_task(self._run_realtime_clock)
+
+    def _stop_realtime_clock_locked(self):
+        """Stop the clock loop before replacing the active scenario."""
+        self.clock_realtime_running = False
+        self._clock_realtime_anchor_monotonic = None
+        self._clock_realtime_anchor_time = None
+
+    def _reset_realtime_anchor_locked(self, current_time):
+        """Continue real-time progression from a manually selected instant."""
+        self._clock_realtime_anchor_monotonic = time.monotonic()
+        self._clock_realtime_anchor_time = current_time
+
+    def _run_realtime_clock(self):
+        """Advance and broadcast the simulation clock once per real second."""
+        while True:
+            self.socketio.sleep(self.clock_realtime_interval)
+
+            with self.lock:
+                if not self.clock_realtime_running or self.observatory is None:
+                    return
+
+                elapsed_seconds = int(
+                    time.monotonic() - self._clock_realtime_anchor_monotonic
+                )
+                target_time = self._clock_realtime_anchor_time + timedelta(
+                    seconds=elapsed_seconds
+                )
+                clock = self.observatory.getClock()
+
+                if target_time <= clock.getCurrentTime():
+                    continue
+
+                clock.advanceTo(target_time)
+                self.service.metrics_service.refresh_derived_metrics(self.observatory)
+                self.service.saveObservatory(self.observatory)
+                payload = {
+                    "scenarioId": self.scenario_id,
+                    "currentTime": clock.getCurrentTimeText(),
+                }
+
+            self.socketio.emit("clock:updated", payload)

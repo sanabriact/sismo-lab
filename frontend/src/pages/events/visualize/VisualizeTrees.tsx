@@ -6,6 +6,7 @@ import { ArchiveTreePanel } from "../../../components/tree/ArchiveTreePanel";
 import { useObservatorySocket } from "../../../hooks/socket/useObservatorySocket";
 import { applyTreePatch } from "../../../utils/tree/applyTreePatch";
 import type { TreeOperation } from "../../../models/interfaces/realTime/TreeOperation";
+import { actionStackService } from "../../../services/socket/actionStackService";
 
 const VisualizeTrees = () => {
     const [data, setData] = useState<SeismicObservatory | null>(null);
@@ -30,6 +31,12 @@ const VisualizeTrees = () => {
 
     useEffect(() => {
         void fetchData();
+    }, [fetchData]);
+
+    useEffect(() => {
+        return actionStackService.subscribeToUpdates((payload) => {
+            if (payload.actionType === "ARCHIVE_BRANCH") void fetchData();
+        });
     }, [fetchData]);
 
     const applyOperation = useCallback((operation: TreeOperation) => {

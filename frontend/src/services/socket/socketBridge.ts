@@ -8,6 +8,7 @@ import type { TreeOperation } from "../../models/interfaces/realTime/TreeOperati
 import { applyScenarioEvent } from "../../utils/scenario/ApplyScenario";
 import { clockService } from "./clockService";
 import type { ClockUpdatedPayload } from "../../models/interfaces/realTime/ClockUpdatedPayload";
+import { actionStackService } from "./actionStackService";
 
 let started = false;
 
@@ -22,6 +23,7 @@ export function startSocketBridge(): void {
     started = true;
 
     const socket = socketService.connect();
+    actionStackService.subscribeToUpdates();
     socket.on("mode:changed", (payload: ModeChangedPayload) => applyModeChanged(payload));
     socket.on("tree:operation", (operation: TreeOperation) => applyScenarioEvent(operation));
     socket.on("clock:updated", (payload: ClockUpdatedPayload) => clockService.applyUpdate(payload));

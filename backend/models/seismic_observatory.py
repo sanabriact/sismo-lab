@@ -121,10 +121,7 @@ class SeismicObservatory:
             return False
         if self.bst_tree.searchById(id) is not None:
             return False
-        #Validar que no este en historico
-        if id in self.history.getArchived():
-            return False
-        if id in self.history.getDeletedIds():
+        if not self.history.addIdEvent(id):
             return False
         event = Event(id, magnitude, depth, epicenter_x, epicenter_y, datetime, revision, station, self.zones)
         # AVL decides whether to rotate using its current balance attribute.

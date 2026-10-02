@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone
 
 from backend.models.event import Event
 from backend.models.seismic_observatory import SeismicObservatory
-from backend.services.archive_tree_service import ArchiveTreeService
+from backend.services.archive.archive_tree_service import ArchiveTreeService
 from backend.services.event_engine import EventEngine
 
 

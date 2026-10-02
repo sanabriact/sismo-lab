@@ -5,7 +5,7 @@ from flask_socketio import SocketIO
 from backend.services.reports.report_queue_runner import ReportQueueRunner
 from backend.utils.json_utils import objectToDict
 from backend.services.seismic_observatory_service import SeismicObservatoryService, ScenarioValidationError
-from backend.services.realtime_service import init_realtime
+from backend.services.socket.realtime_service import init_realtime
 from backend.services.event_engine import EventEngine
 from backend.services.ai_client.event_generator_client import AIEventClient 
 from backend.managers.stress_mode_manager import StressModeManager
@@ -104,10 +104,12 @@ def handle_disconnect():
 
 @socketio.on("manual-event:begin")
 def handle_manual_event_begin(_data=None):
-    if event_engine.get_observatory() is None:
+    observatory = event_engine.get_observatory()
+    if observatory is None:
         return {"ok": False, "reason": "no_scenario"}
 
-    minimum = datetime.now(timezone.utc).replace(microsecond=0)
+    # Manual events must start from the active simulation clock, not wall time.
+    minimum = observatory.getClock().getCurrentTime().replace(microsecond=0)
     manual_event_minimums[request.sid] = minimum
     return {"ok": True, "minimumDatetime": minimum.isoformat()}
 
@@ -171,6 +173,11 @@ def handle_clock_advance(data=None):
             return {"ok": False, "reason": str(error)}
 
     return {"ok": False, "reason": "missing_clock_advance_value"}
+
+@socketio.on("action:undo")
+def handle_action_undo(_data=None):
+    """Undo the latest completed action through the Event Engine."""
+    return event_engine.undo_action()
     
 @socketio.on("structure:audit")
 def handle_structure_audit(_data=None):

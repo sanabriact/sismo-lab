@@ -13,16 +13,17 @@ class SimulationClock:
 
     The project specification requires every instant in the system to be an
     aware UTC value with second precision, saved together with the scenario,
-    and advanced only by an explicit user action. This class is the single
-    place where that rule is enforced, so no other part of the backend has to
-    repeat it.
+    and advanced by the EventEngine in real time or by an explicit user
+    action. This class is the single place where that rule is enforced, so no
+    other part of the backend has to repeat it.
 
     Two kinds of change are deliberately separated:
 
     - setCurrentTime() restores a state (scenario load). Any valid instant is
       accepted, because the file being read is the source of truth.
-    - advanceHours() / advanceTo() model the user action. They are monotonic:
-      the simulation clock never travels backwards while the scenario runs.
+    - advanceHours() / advanceTo() model a forward clock action. They are
+      monotonic: the simulation clock never travels backwards while the
+      scenario runs.
 
     Comments in English, as required by the deliverables (spec section 18).
     """
@@ -107,8 +108,8 @@ class SimulationClock:
         """
         Advance the clock by a positive number of hours.
 
-        This is the "advance by user action" of spec section 3. It returns the
-        new instant and never moves the clock backwards.
+        This is the explicit duration-based clock action. It returns the new
+        instant and never moves the clock backwards.
         """
         hours = self._validate_hours(hours)
         target = self._current_time + timedelta(hours=hours)
@@ -211,4 +212,3 @@ class SimulationClock:
                 raise KeyError("clock object has no 'current_time' field")
             return cls(data["current_time"])
         return cls(data)
-

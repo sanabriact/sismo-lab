@@ -38,11 +38,9 @@ class LoadScenarioManager:
     def loadFromText(self, content, stress_mode=False):
         """Validate JSON content received from an uploaded scenario file."""
         self.errors = []
-
         if not isinstance(content, str) or not content.strip():
             self.errors.append("the json file is empty")
             return None
-
         try:
             data = json.loads(content, object_pairs_hook=self.repository._rejectDuplicateKeys)
         except json.JSONDecodeError as error:
@@ -53,19 +51,14 @@ class LoadScenarioManager:
         except ValueError as error:
             self.errors.append(str(error))
             return None
-
         if not isinstance(data, dict):
             self.errors.append("invalid format of the json")
             return None
-
-        # Older scenario files may omit load_type. Infer it from the payload
-        # so the same manager validation is applied to both supported layouts.
         if "load_type" not in data:
             data = {
                 **data,
                 "load_type": "topology" if "tree" in data else "insertion",
             }
-
         try:
             return self.load(
                 data,
@@ -136,10 +129,13 @@ class LoadScenarioManager:
     def addEvents(self, event_list):
         observatory_service = SeismicObservatoryService()
         observatory = observatory_service.getObservatory()
+        history = observatory.getHistory()
         avl = observatory.getAVLTree()
         bst = observatory.getBSTTree()
+        list_ids = []
         for e in event_list:
             event = Event.fromDict(e)
+            history.addIdEvent(e["key"][2])
             avl.insert(event)
             bst.insert(event)
     

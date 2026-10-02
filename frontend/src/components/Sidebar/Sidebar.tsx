@@ -1,3 +1,5 @@
+import { useState } from "react";
+import { Undo2 } from "lucide-react";
 import { useObservable } from "../../stores/useObservable";
 import { useScenarioLoaded } from "../../hooks/scenario/useScenarioLoaded";
 import { modeStore } from "../../stores/mode/modeStore";
@@ -6,9 +8,11 @@ import Logo from "../../assets/sidebar/svg/logo";
 
 import routes from "../../routes";
 import { NavLink } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { sidebarGroups } from "../../routes/sidebarGroups";
 import RouteGroupMenu from "./events/RouteGroupMenu";
 import AdvanceClock from "../clock/AdvanceClock";
+import { actionStackService } from "../../services/socket/actionStackService";
 
 const Sidebar = () => {
   /* 
@@ -28,13 +32,32 @@ const Sidebar = () => {
   const linkClass = `block p-2 rounded-lg hover:bg-white/10`;
 
   const scenarioLoaded = useScenarioLoaded();
+  const navigate = useNavigate();
+  const [undoPending, setUndoPending] = useState(false);
+  const [undoMessage, setUndoMessage] = useState<string | null>(null);
   const ungroupedRoutes = routes.filter((route) => !route.group && (scenarioLoaded || !route.requiresScenario));
+
+  const undoLastAction = async () => {
+    if (undoPending) return;
+
+    setUndoPending(true);
+    setUndoMessage(null);
+    const response = await actionStackService.undo();
+    setUndoPending(false);
+    if (response.ok && response.action?.action_type === "LOAD_SCENARIO") {
+      navigate("/load-scenario");
+    }
+    setUndoMessage(response.ok
+      ? `Deshecha: ${response.action?.action_type ?? "acción"}`
+      : response.reason ?? "No se pudo deshacer la acción.");
+  };
 
   return (
     <aside
       className={`
         fixed top-0 left-0 z-40
         h-screen w-64
+        overflow-y-auto
         bg-[#04172f] text-white
         shadow-lg
       `}
@@ -88,17 +111,18 @@ const Sidebar = () => {
           {
             /* Label that contains that shows "Deshacer" and button type input */
           }
-          <label className="w-full flex items-center justify-between gap-2 p-2 rounded-lg hover:bg-white/20 transition-colors cursor-pointer">
+          <button
+            type="button"
+            onClick={() => void undoLastAction()}
+            disabled={undoPending}
+            className="w-full flex items-center justify-between gap-2 p-2 rounded-lg hover:bg-white/20 transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
+            title="Deshacer última acción"
+            aria-label="Deshacer última acción"
+          >
             <span>Deshacer</span>
-            {
-              /* Div that contains the go-back button */
-            }
-            <div className="relative">
-              <input
-                type="button"
-              />
-            </div>
-          </label>
+            <Undo2 size={16} aria-hidden="true" />
+          </button>
+          {undoMessage && <p className="px-2 pt-1 text-xs text-blue-100">{undoMessage}</p>}
           {/* 
               Label with content that shows "Modo estrés" and toggle type button.
             */}

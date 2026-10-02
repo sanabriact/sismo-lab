@@ -2,7 +2,7 @@ import json
 from datetime import datetime
 from uuid import uuid4
 from backend.repositories.seismic_observatory_repository import SeismicObservatoryRepository
-from backend.services.metrics_service import MetricsService
+from backend.services.metrics.metrics_service import MetricsService
 from backend.models.seismic_observatory import SeismicObservatory
 from backend.models.station import Station
 from backend.models.zone import Zone

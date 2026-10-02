@@ -1,20 +1,20 @@
 {
-    "scenario_id": "ed782caa-341d-47d1-944c-cc7d63bfb8ce",
+    "scenario_id": "263a1dcb-6cc0-40b2-ab42-d0d2ce1913ec",
     "avl_tree": {
         "root": {
             "value": {
                 "key": [
                     3,
                     7.0,
-                    110
+                    6
                 ],
-                "depth": 30,
-                "epicenter_x": 500,
-                "epicenter_y": 500,
-                "datetime": "2026-10-01T16:00:00+00:00",
+                "depth": 10,
+                "epicenter_x": 20,
+                "epicenter_y": 30,
+                "datetime": "2024-06-01T12:00:00+00:00",
                 "revision": 1,
                 "reporting_stations": [
-                    "ST-001"
+                    "ST-002"
                 ],
                 "attention_status": "pending",
                 "event_status": "active",
@@ -26,16 +26,16 @@
                 "value": {
                     "key": [
                         3,
-                        6.0,
-                        100
+                        7.0,
+                        1
                     ],
-                    "depth": 20,
-                    "epicenter_x": 500,
-                    "epicenter_y": 500,
-                    "datetime": "2026-10-01T15:00:00+00:00",
+                    "depth": 10,
+                    "epicenter_x": 20,
+                    "epicenter_y": 30,
+                    "datetime": "2024-06-01T12:00:00+00:00",
                     "revision": 1,
                     "reporting_stations": [
-                        "ST-001"
+                        "ST-002"
                     ],
                     "attention_status": "pending",
                     "event_status": "active",
@@ -47,31 +47,7 @@
                 "right_child": null,
                 "node_creation_time": null
             },
-            "right_child": {
-                "value": {
-                    "key": [
-                        3,
-                        8.0,
-                        120
-                    ],
-                    "depth": 40,
-                    "epicenter_x": 500,
-                    "epicenter_y": 500,
-                    "datetime": "2026-10-01T17:00:00+00:00",
-                    "revision": 1,
-                    "reporting_stations": [
-                        "ST-001"
-                    ],
-                    "attention_status": "pending",
-                    "event_status": "active",
-                    "populated_zone": false,
-                    "expensive_access": false
-                },
-                "height": 0,
-                "left_child": null,
-                "right_child": null,
-                "node_creation_time": null
-            },
+            "right_child": null,
             "node_creation_time": null
         }
     },
@@ -80,16 +56,16 @@
             "value": {
                 "key": [
                     3,
-                    6.0,
-                    100
+                    7.0,
+                    6
                 ],
-                "depth": 20,
-                "epicenter_x": 500,
-                "epicenter_y": 500,
-                "datetime": "2026-10-01T15:00:00+00:00",
+                "depth": 10,
+                "epicenter_x": 20,
+                "epicenter_y": 30,
+                "datetime": "2024-06-01T12:00:00+00:00",
                 "revision": 1,
                 "reporting_stations": [
-                    "ST-001"
+                    "ST-002"
                 ],
                 "attention_status": "pending",
                 "event_status": "active",
@@ -97,21 +73,20 @@
                 "expensive_access": false
             },
             "height": 0,
-            "left_child": null,
-            "right_child": {
+            "left_child": {
                 "value": {
                     "key": [
                         3,
                         7.0,
-                        110
+                        1
                     ],
-                    "depth": 30,
-                    "epicenter_x": 500,
-                    "epicenter_y": 500,
-                    "datetime": "2026-10-01T16:00:00+00:00",
+                    "depth": 10,
+                    "epicenter_x": 20,
+                    "epicenter_y": 30,
+                    "datetime": "2024-06-01T12:00:00+00:00",
                     "revision": 1,
                     "reporting_stations": [
-                        "ST-001"
+                        "ST-002"
                     ],
                     "attention_status": "pending",
                     "event_status": "active",
@@ -120,33 +95,10 @@
                 },
                 "height": 0,
                 "left_child": null,
-                "right_child": {
-                    "value": {
-                        "key": [
-                            3,
-                            8.0,
-                            120
-                        ],
-                        "depth": 40,
-                        "epicenter_x": 500,
-                        "epicenter_y": 500,
-                        "datetime": "2026-10-01T17:00:00+00:00",
-                        "revision": 1,
-                        "reporting_stations": [
-                            "ST-001"
-                        ],
-                        "attention_status": "pending",
-                        "event_status": "active",
-                        "populated_zone": false,
-                        "expensive_access": false
-                    },
-                    "height": 0,
-                    "left_child": null,
-                    "right_child": null,
-                    "node_creation_time": null
-                },
+                "right_child": null,
                 "node_creation_time": null
             },
+            "right_child": null,
             "node_creation_time": null
         }
     },
@@ -154,14 +106,20 @@
         {
             "id": "ST-001",
             "name": "S1",
-            "x": 100,
-            "y": 100
+            "x": 0,
+            "y": 0
+        },
+        {
+            "id": "ST-002",
+            "name": "S2",
+            "x": 0,
+            "y": 0
         }
     ],
     "zones": [
         {
             "id": "z1",
-            "name": "Zona norte poblada",
+            "name": "North zone",
             "x_min": 0,
             "x_max": 400,
             "y_min": 600,
@@ -170,74 +128,16 @@
         },
         {
             "id": "z2",
-            "name": "Zona sur no poblada",
-            "x_min": 600,
-            "x_max": 1000,
-            "y_min": 0,
-            "y_max": 400,
-            "is_populated": false
+            "name": "Sur zone",
+            "x_min": 0,
+            "x_max": 400,
+            "y_min": 600,
+            "y_max": 1000,
+            "is_populated": true
         }
     ],
     "history": {
-        "archived": {
-            "20": {
-                "key": [
-                    1,
-                    2.5,
-                    20
-                ],
-                "depth": 120,
-                "epicenter_x": 500,
-                "epicenter_y": 500,
-                "datetime": "2026-10-01T13:00:00+00:00",
-                "revision": 1,
-                "reporting_stations": [
-                    "ST-001"
-                ],
-                "attention_status": "pending",
-                "event_status": "archived",
-                "populated_zone": false,
-                "expensive_access": false
-            },
-            "10": {
-                "key": [
-                    1,
-                    2.0,
-                    10
-                ],
-                "depth": 100,
-                "epicenter_x": 500,
-                "epicenter_y": 500,
-                "datetime": "2026-10-01T12:00:00+00:00",
-                "revision": 1,
-                "reporting_stations": [
-                    "ST-001"
-                ],
-                "attention_status": "pending",
-                "event_status": "archived",
-                "populated_zone": false,
-                "expensive_access": false
-            },
-            "30": {
-                "key": [
-                    1,
-                    3.0,
-                    30
-                ],
-                "depth": 150,
-                "epicenter_x": 500,
-                "epicenter_y": 500,
-                "datetime": "2026-10-01T14:00:00+00:00",
-                "revision": 1,
-                "reporting_stations": [
-                    "ST-001"
-                ],
-                "attention_status": "pending",
-                "event_status": "archived",
-                "populated_zone": false,
-                "expensive_access": false
-            }
-        },
+        "archived": {},
         "deleted_ids": []
     },
     "report_queue": {
@@ -246,159 +146,39 @@
     "action_stack": {
         "items": [
             {
-                "action_type": "mass_archive",
-                "datetime": "2026-10-10T00:00:00+00:00",
+                "action_type": "LOAD_SCENARIO",
+                "datetime": "2026-09-07T10:00:00+00:00",
                 "before_snapshot": {
                     "avl_tree": {
-                        "root": {
-                            "value": {
+                        "root": null
+                    },
+                    "bst_tree": {
+                        "root": null
+                    },
+                    "stations": [],
+                    "zones": [],
+                    "history": {
+                        "archived": {
+                            "20": {
                                 "key": [
-                                    3,
-                                    6.0,
-                                    100
+                                    1,
+                                    2.5,
+                                    20
                                 ],
-                                "depth": 20,
+                                "depth": 120,
                                 "epicenter_x": 500,
                                 "epicenter_y": 500,
-                                "datetime": "2026-10-01T15:00:00+00:00",
+                                "datetime": "2026-10-01T13:00:00+00:00",
                                 "revision": 1,
                                 "reporting_stations": [
                                     "ST-001"
                                 ],
                                 "attention_status": "pending",
-                                "event_status": "active",
+                                "event_status": "archived",
                                 "populated_zone": false,
                                 "expensive_access": false
                             },
-                            "height": 2,
-                            "left_child": {
-                                "value": {
-                                    "key": [
-                                        1,
-                                        2.5,
-                                        20
-                                    ],
-                                    "depth": 120,
-                                    "epicenter_x": 500,
-                                    "epicenter_y": 500,
-                                    "datetime": "2026-10-01T13:00:00+00:00",
-                                    "revision": 1,
-                                    "reporting_stations": [
-                                        "ST-001"
-                                    ],
-                                    "attention_status": "pending",
-                                    "event_status": "active",
-                                    "populated_zone": false,
-                                    "expensive_access": false
-                                },
-                                "height": 1,
-                                "left_child": {
-                                    "value": {
-                                        "key": [
-                                            1,
-                                            2.0,
-                                            10
-                                        ],
-                                        "depth": 100,
-                                        "epicenter_x": 500,
-                                        "epicenter_y": 500,
-                                        "datetime": "2026-10-01T12:00:00+00:00",
-                                        "revision": 1,
-                                        "reporting_stations": [
-                                            "ST-001"
-                                        ],
-                                        "attention_status": "pending",
-                                        "event_status": "active",
-                                        "populated_zone": false,
-                                        "expensive_access": false
-                                    },
-                                    "height": 0,
-                                    "left_child": null,
-                                    "right_child": null,
-                                    "node_creation_time": null
-                                },
-                                "right_child": {
-                                    "value": {
-                                        "key": [
-                                            1,
-                                            3.0,
-                                            30
-                                        ],
-                                        "depth": 150,
-                                        "epicenter_x": 500,
-                                        "epicenter_y": 500,
-                                        "datetime": "2026-10-01T14:00:00+00:00",
-                                        "revision": 1,
-                                        "reporting_stations": [
-                                            "ST-001"
-                                        ],
-                                        "attention_status": "pending",
-                                        "event_status": "active",
-                                        "populated_zone": false,
-                                        "expensive_access": false
-                                    },
-                                    "height": 0,
-                                    "left_child": null,
-                                    "right_child": null,
-                                    "node_creation_time": null
-                                },
-                                "node_creation_time": null
-                            },
-                            "right_child": {
-                                "value": {
-                                    "key": [
-                                        3,
-                                        7.0,
-                                        110
-                                    ],
-                                    "depth": 30,
-                                    "epicenter_x": 500,
-                                    "epicenter_y": 500,
-                                    "datetime": "2026-10-01T16:00:00+00:00",
-                                    "revision": 1,
-                                    "reporting_stations": [
-                                        "ST-001"
-                                    ],
-                                    "attention_status": "pending",
-                                    "event_status": "active",
-                                    "populated_zone": false,
-                                    "expensive_access": false
-                                },
-                                "height": 1,
-                                "left_child": null,
-                                "right_child": {
-                                    "value": {
-                                        "key": [
-                                            3,
-                                            8.0,
-                                            120
-                                        ],
-                                        "depth": 40,
-                                        "epicenter_x": 500,
-                                        "epicenter_y": 500,
-                                        "datetime": "2026-10-01T17:00:00+00:00",
-                                        "revision": 1,
-                                        "reporting_stations": [
-                                            "ST-001"
-                                        ],
-                                        "attention_status": "pending",
-                                        "event_status": "active",
-                                        "populated_zone": false,
-                                        "expensive_access": false
-                                    },
-                                    "height": 0,
-                                    "left_child": null,
-                                    "right_child": null,
-                                    "node_creation_time": null
-                                },
-                                "node_creation_time": null
-                            },
-                            "node_creation_time": null
-                        }
-                    },
-                    "bst_tree": {
-                        "root": {
-                            "value": {
+                            "10": {
                                 "key": [
                                     1,
                                     2.0,
@@ -413,173 +193,37 @@
                                     "ST-001"
                                 ],
                                 "attention_status": "pending",
-                                "event_status": "active",
+                                "event_status": "archived",
                                 "populated_zone": false,
                                 "expensive_access": false
                             },
-                            "height": 0,
-                            "left_child": null,
-                            "right_child": {
-                                "value": {
-                                    "key": [
-                                        1,
-                                        2.5,
-                                        20
-                                    ],
-                                    "depth": 120,
-                                    "epicenter_x": 500,
-                                    "epicenter_y": 500,
-                                    "datetime": "2026-10-01T13:00:00+00:00",
-                                    "revision": 1,
-                                    "reporting_stations": [
-                                        "ST-001"
-                                    ],
-                                    "attention_status": "pending",
-                                    "event_status": "active",
-                                    "populated_zone": false,
-                                    "expensive_access": false
-                                },
-                                "height": 0,
-                                "left_child": null,
-                                "right_child": {
-                                    "value": {
-                                        "key": [
-                                            1,
-                                            3.0,
-                                            30
-                                        ],
-                                        "depth": 150,
-                                        "epicenter_x": 500,
-                                        "epicenter_y": 500,
-                                        "datetime": "2026-10-01T14:00:00+00:00",
-                                        "revision": 1,
-                                        "reporting_stations": [
-                                            "ST-001"
-                                        ],
-                                        "attention_status": "pending",
-                                        "event_status": "active",
-                                        "populated_zone": false,
-                                        "expensive_access": false
-                                    },
-                                    "height": 0,
-                                    "left_child": null,
-                                    "right_child": {
-                                        "value": {
-                                            "key": [
-                                                3,
-                                                6.0,
-                                                100
-                                            ],
-                                            "depth": 20,
-                                            "epicenter_x": 500,
-                                            "epicenter_y": 500,
-                                            "datetime": "2026-10-01T15:00:00+00:00",
-                                            "revision": 1,
-                                            "reporting_stations": [
-                                                "ST-001"
-                                            ],
-                                            "attention_status": "pending",
-                                            "event_status": "active",
-                                            "populated_zone": false,
-                                            "expensive_access": false
-                                        },
-                                        "height": 0,
-                                        "left_child": null,
-                                        "right_child": {
-                                            "value": {
-                                                "key": [
-                                                    3,
-                                                    7.0,
-                                                    110
-                                                ],
-                                                "depth": 30,
-                                                "epicenter_x": 500,
-                                                "epicenter_y": 500,
-                                                "datetime": "2026-10-01T16:00:00+00:00",
-                                                "revision": 1,
-                                                "reporting_stations": [
-                                                    "ST-001"
-                                                ],
-                                                "attention_status": "pending",
-                                                "event_status": "active",
-                                                "populated_zone": false,
-                                                "expensive_access": false
-                                            },
-                                            "height": 0,
-                                            "left_child": null,
-                                            "right_child": {
-                                                "value": {
-                                                    "key": [
-                                                        3,
-                                                        8.0,
-                                                        120
-                                                    ],
-                                                    "depth": 40,
-                                                    "epicenter_x": 500,
-                                                    "epicenter_y": 500,
-                                                    "datetime": "2026-10-01T17:00:00+00:00",
-                                                    "revision": 1,
-                                                    "reporting_stations": [
-                                                        "ST-001"
-                                                    ],
-                                                    "attention_status": "pending",
-                                                    "event_status": "active",
-                                                    "populated_zone": false,
-                                                    "expensive_access": false
-                                                },
-                                                "height": 0,
-                                                "left_child": null,
-                                                "right_child": null,
-                                                "node_creation_time": null
-                                            },
-                                            "node_creation_time": null
-                                        },
-                                        "node_creation_time": null
-                                    },
-                                    "node_creation_time": null
-                                },
-                                "node_creation_time": null
-                            },
-                            "node_creation_time": null
-                        }
-                    },
-                    "stations": [
-                        {
-                            "id": "ST-001",
-                            "name": "S1",
-                            "x": 100,
-                            "y": 100
-                        }
-                    ],
-                    "zones": [
-                        {
-                            "id": "z1",
-                            "name": "Zona norte poblada",
-                            "x_min": 0,
-                            "x_max": 400,
-                            "y_min": 600,
-                            "y_max": 1000,
-                            "is_populated": true
+                            "30": {
+                                "key": [
+                                    1,
+                                    3.0,
+                                    30
+                                ],
+                                "depth": 150,
+                                "epicenter_x": 500,
+                                "epicenter_y": 500,
+                                "datetime": "2026-10-01T14:00:00+00:00",
+                                "revision": 1,
+                                "reporting_stations": [
+                                    "ST-001"
+                                ],
+                                "attention_status": "pending",
+                                "event_status": "archived",
+                                "populated_zone": false,
+                                "expensive_access": false
+                            }
                         },
-                        {
-                            "id": "z2",
-                            "name": "Zona sur no poblada",
-                            "x_min": 600,
-                            "x_max": 1000,
-                            "y_min": 0,
-                            "y_max": 400,
-                            "is_populated": false
-                        }
-                    ],
-                    "history": {
-                        "archived": {},
                         "deleted_ids": []
                     },
                     "report_queue": {
                         "items": []
                     },
                     "clock": {
-                        "current_time": "2026-10-10T00:00:00Z"
+                        "current_time": "2026-10-02T03:23:18Z"
                     },
                     "l": 3,
                     "t": 72.0,
@@ -590,14 +234,14 @@
                         "selected_references": {}
                     },
                     "metrics": {
-                        "active_events": 6,
-                        "historical_events": 0,
+                        "active_events": 0,
+                        "historical_events": 3,
                         "events_by_priority": {
-                            "1": 3,
+                            "1": 0,
                             "2": 0,
-                            "3": 3
+                            "3": 0
                         },
-                        "pending_attention": 6,
+                        "pending_attention": 0,
                         "high_cost_access_events": 0,
                         "accepted_corrections": 0,
                         "discarded_reports": 0,
@@ -605,307 +249,27 @@
                         "mass_archives": 0,
                         "archived_events": 0,
                         "ll_cases": 0,
-                        "rr_cases": 3,
+                        "rr_cases": 0,
                         "rl_cases": 0,
                         "lr_cases": 0,
-                        "simple_left_rotations": 3,
+                        "simple_left_rotations": 0,
                         "simple_right_rotations": 0
                     },
-                    "execution_mode": "normal"
+                    "execution_mode": "normal",
+                    "scenario_id": null,
+                    "action_stack": {
+                        "items": []
+                    },
+                    "saved_versions": []
                 },
                 "metadata": {
-                    "metrics_before": {
-                        "tree": {
-                            "active_events": 6,
-                            "height": 2,
-                            "leaves": 3,
-                            "inorder": [
-                                [
-                                    1,
-                                    2.0,
-                                    10
-                                ],
-                                [
-                                    1,
-                                    2.5,
-                                    20
-                                ],
-                                [
-                                    1,
-                                    3.0,
-                                    30
-                                ],
-                                [
-                                    3,
-                                    6.0,
-                                    100
-                                ],
-                                [
-                                    3,
-                                    7.0,
-                                    110
-                                ],
-                                [
-                                    3,
-                                    8.0,
-                                    120
-                                ]
-                            ],
-                            "preorder": [
-                                [
-                                    3,
-                                    6.0,
-                                    100
-                                ],
-                                [
-                                    1,
-                                    2.5,
-                                    20
-                                ],
-                                [
-                                    1,
-                                    2.0,
-                                    10
-                                ],
-                                [
-                                    1,
-                                    3.0,
-                                    30
-                                ],
-                                [
-                                    3,
-                                    7.0,
-                                    110
-                                ],
-                                [
-                                    3,
-                                    8.0,
-                                    120
-                                ]
-                            ],
-                            "postorder": [
-                                [
-                                    1,
-                                    2.0,
-                                    10
-                                ],
-                                [
-                                    1,
-                                    3.0,
-                                    30
-                                ],
-                                [
-                                    1,
-                                    2.5,
-                                    20
-                                ],
-                                [
-                                    3,
-                                    8.0,
-                                    120
-                                ],
-                                [
-                                    3,
-                                    7.0,
-                                    110
-                                ],
-                                [
-                                    3,
-                                    6.0,
-                                    100
-                                ]
-                            ],
-                            "levels": [
-                                [
-                                    3,
-                                    6.0,
-                                    100
-                                ],
-                                [
-                                    1,
-                                    2.5,
-                                    20
-                                ],
-                                [
-                                    3,
-                                    7.0,
-                                    110
-                                ],
-                                [
-                                    1,
-                                    2.0,
-                                    10
-                                ],
-                                [
-                                    1,
-                                    3.0,
-                                    30
-                                ],
-                                [
-                                    3,
-                                    8.0,
-                                    120
-                                ]
-                            ]
-                        },
-                        "counters": {
-                            "active_events": 6,
-                            "historical_events": 0,
-                            "events_by_priority": {
-                                "1": 3,
-                                "2": 0,
-                                "3": 3
-                            },
-                            "pending_attention": 6,
-                            "high_cost_access_events": 0,
-                            "accepted_corrections": 0,
-                            "discarded_reports": 0,
-                            "conflicts": 0,
-                            "mass_archives": 0,
-                            "archived_events": 0,
-                            "ll_cases": 0,
-                            "rr_cases": 3,
-                            "rl_cases": 0,
-                            "lr_cases": 0,
-                            "simple_left_rotations": 3,
-                            "simple_right_rotations": 0
-                        }
-                    },
-                    "metrics_after": {
-                        "tree": {
-                            "active_events": 3,
-                            "height": 1,
-                            "leaves": 2,
-                            "inorder": [
-                                [
-                                    3,
-                                    6.0,
-                                    100
-                                ],
-                                [
-                                    3,
-                                    7.0,
-                                    110
-                                ],
-                                [
-                                    3,
-                                    8.0,
-                                    120
-                                ]
-                            ],
-                            "preorder": [
-                                [
-                                    3,
-                                    7.0,
-                                    110
-                                ],
-                                [
-                                    3,
-                                    6.0,
-                                    100
-                                ],
-                                [
-                                    3,
-                                    8.0,
-                                    120
-                                ]
-                            ],
-                            "postorder": [
-                                [
-                                    3,
-                                    6.0,
-                                    100
-                                ],
-                                [
-                                    3,
-                                    8.0,
-                                    120
-                                ],
-                                [
-                                    3,
-                                    7.0,
-                                    110
-                                ]
-                            ],
-                            "levels": [
-                                [
-                                    3,
-                                    7.0,
-                                    110
-                                ],
-                                [
-                                    3,
-                                    6.0,
-                                    100
-                                ],
-                                [
-                                    3,
-                                    8.0,
-                                    120
-                                ]
-                            ]
-                        },
-                        "counters": {
-                            "active_events": 3,
-                            "historical_events": 3,
-                            "events_by_priority": {
-                                "1": 0,
-                                "2": 0,
-                                "3": 3
-                            },
-                            "pending_attention": 3,
-                            "high_cost_access_events": 0,
-                            "accepted_corrections": 0,
-                            "discarded_reports": 0,
-                            "conflicts": 0,
-                            "mass_archives": 1,
-                            "archived_events": 3,
-                            "ll_cases": 0,
-                            "rr_cases": 3,
-                            "rl_cases": 0,
-                            "lr_cases": 0,
-                            "simple_left_rotations": 3,
-                            "simple_right_rotations": 0
-                        }
-                    },
-                    "metrics_delta": {
-                        "tree": {
-                            "active_events": -3,
-                            "height": -1,
-                            "leaves": -1
-                        },
-                        "counters": {
-                            "active_events": -3,
-                            "historical_events": 3,
-                            "pending_attention": -3,
-                            "high_cost_access_events": 0,
-                            "accepted_corrections": 0,
-                            "discarded_reports": 0,
-                            "conflicts": 0,
-                            "mass_archives": 1,
-                            "archived_events": 3,
-                            "ll_cases": 0,
-                            "rr_cases": 0,
-                            "rl_cases": 0,
-                            "lr_cases": 0,
-                            "simple_left_rotations": 0,
-                            "simple_right_rotations": 0
-                        }
-                    },
-                    "details": {
-                        "root_id": 20,
-                        "affected_ids": [
-                            20,
-                            10,
-                            30
-                        ]
-                    }
+                    "source": "scenario_load"
                 }
             }
         ]
     },
     "clock": {
-        "current_time": "2026-10-10T00:00:00Z"
+        "current_time": "2026-09-07T10:01:50Z"
     },
     "l": 3,
     "t": 72.0,
@@ -916,25 +280,25 @@
         "selected_references": {}
     },
     "metrics": {
-        "active_events": 3,
-        "historical_events": 3,
+        "active_events": 2,
+        "historical_events": 0,
         "events_by_priority": {
             "1": 0,
             "2": 0,
-            "3": 3
+            "3": 2
         },
-        "pending_attention": 3,
+        "pending_attention": 2,
         "high_cost_access_events": 0,
         "accepted_corrections": 0,
         "discarded_reports": 0,
         "conflicts": 0,
-        "mass_archives": 1,
-        "archived_events": 3,
+        "mass_archives": 0,
+        "archived_events": 0,
         "ll_cases": 0,
-        "rr_cases": 3,
+        "rr_cases": 0,
         "rl_cases": 0,
         "lr_cases": 0,
-        "simple_left_rotations": 3,
+        "simple_left_rotations": 0,
         "simple_right_rotations": 0
     },
     "saved_versions": [],
