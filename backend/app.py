@@ -5,7 +5,7 @@ from flask_socketio import SocketIO
 from backend.services.reports.report_queue_runner import ReportQueueRunner
 from backend.utils.json_utils import objectToDict
 from backend.services.seismic_observatory_service import SeismicObservatoryService, ScenarioValidationError
-from backend.services.realtime_service import init_realtime
+from backend.services.socket.realtime_service import init_realtime
 from backend.services.event_engine import EventEngine
 from backend.services.ai_client.event_generator_client import AIEventClient 
 from backend.managers.stress_mode_manager import StressModeManager
@@ -72,20 +72,7 @@ def createEvent():
     if not response["success"]:
         return jsonify(response), 400
     return jsonify(response), 201
-
-""" @app.route("/api/scenario", methods=["POST"])
-def load_scenario():
-    data = request.get_json()
-    A loadScenario method would read, validate, and build a SeismicObservatory
-    from the JSON payload.
-    observatory = obs_service.loadScenario(data)
-    generator_manager.load_scenario(observatory)
-    
-    return jsonify({
-        "message": "Escenario cargado correctamente",
-        "stations": len(observatory.getStations())
-    }), 200 """
-    
+ 
 # Legacy JSON loading endpoint retained for API compatibility.
 @app.route("/api/scenario", methods=["GET"])
 def load_scenario():
@@ -177,6 +164,11 @@ def handle_clock_advance(data=None):
             return {"ok": False, "reason": str(error)}
 
     return {"ok": False, "reason": "missing_clock_advance_value"}
+
+@socketio.on("action:undo")
+def handle_action_undo(_data=None):
+    """Undo the latest completed action through the Event Engine."""
+    return event_engine.undo_action()
     
 @socketio.on("structure:audit")
 def handle_structure_audit(_data=None):
@@ -237,30 +229,35 @@ def handle_archive_decision(data=None):
 @socketio.on("reports:prepare")
 def prepare_reports(data):
     # The engine validates the complete batch before adding it to the FIFO queue.
-    reports = data.get("reports", []) if isinstance(data, dict) else data
-    return report_queue_runner.prepare_reports(reports)
+    if not isinstance(data, dict) or "reports" not in data:
+        return {
+            "ok": False,
+            "enqueued": 0,
+            "issues": ["La solicitud debe contener una propiedad reports"],
+        }
+    return report_queue_runner.prepare_reports(data["reports"])
 
 
 @socketio.on("reports:step")
-def process_report_step():
+def process_report_step(data=None):
     # Process exactly one report through the engine-owned lifecycle.
     return report_queue_runner.process_next()
 
 
 @socketio.on("reports:start")
-def start_report_processing():
+def start_report_processing(data=None):
     # Start the background loop; it stops automatically when the queue is empty.
     return report_queue_runner.start_continuous()
 
 
 @socketio.on("reports:pause")
-def pause_report_processing():
+def pause_report_processing(data=None):
     # Pause processing without removing pending reports.
     return report_queue_runner.pause()
 
 
 @socketio.on("reports:snapshot")
-def report_queue_snapshot():
+def report_queue_snapshot(data=None):
     # Read the queue under the same lock used by report processing.
     return report_queue_runner.snapshot()
 

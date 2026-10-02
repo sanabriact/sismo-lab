@@ -13,6 +13,7 @@ const Scenario = lazy(() => import ('../pages/scenery/Scenery'));
 const LoadScenario = lazy(() => import ('../pages/load/loadScenario'));
 const VerifyStructure = lazy(() => import('../pages/events/verify/VerifyStructure'));
 const EventList = lazy(() => import('../pages/events/list/EventList'));
+const Reports = lazy(() => import('../pages/reports/Reports'));
 
 /* Adding components to each route */
 const coreRoutes: AppRoute[] = [
@@ -27,6 +28,12 @@ const coreRoutes: AppRoute[] = [
         component: LoadScenario,
     },
     {
+        path: "/reports",
+        title: "Reportes",
+        component: Reports,
+        requiresScenario: true,
+    },
+    {
         path: "/scenario",
         title: "Escenario",
         component: Scenario,
@@ -39,13 +46,13 @@ const coreRoutes: AppRoute[] = [
         group: "events",
         requiresScenario: true
     },
-    /* {
+    {
         path: "/events/create-events",
         title: "Crear eventos",
         component: CreateEvent,
         group: "events",
         requiresScenario: true
-    }, */
+    },
     {
         path: "/events/visualize-trees",
         title: "Visualizar eventos",

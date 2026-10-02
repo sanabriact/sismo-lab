@@ -1,12 +1,14 @@
 import { Search, Plus, Pencil, Check, Trash2 } from "lucide-react";
 import type { EventsTableProps } from "../../../models/interfaces/table/EventsTableProps";
+import { useNavigate } from "react-router-dom";
 
 const HEADERS = [
     "Identificador",
     "Magnitud",
     "Profundidad",
-    "Coordenadas (x, y)",
+    "Coordenadas",
     "Fecha y hora",
+    "Estaciones",
     "Revisión",
     "Acciones",
 ];
@@ -28,6 +30,12 @@ function EventsTable({
     onMarkChecked,
     onDelete
 }: EventsTableProps) {
+    const navigate = useNavigate();
+
+    const handleAdd = () => {
+        navigate("/events/create-events")
+    };
+
     return (
         <div className="w-full rounded-lg border border-gray-200 bg-white shadow-sm">
             {/* Barra superior: lupa y + a la derecha */}
@@ -42,7 +50,7 @@ function EventsTable({
                 </button>
                 <button
                     type="button"
-                    onClick={onAdd}
+                    onClick={handleAdd}
                     aria-label="Crear evento"
                     className={iconButton}
                 >
@@ -81,6 +89,7 @@ function EventsTable({
                                         ({event.epicenter_x.toFixed(1)}, {event.epicenter_y.toFixed(1)})
                                     </td>
                                     <td className="px-4 py-3">{formatDateTime(event.datetime)}</td>
+                                    <td className="px-4 py-3">ST-00{event.reporting_stations}</td>
                                     <td className="px-4 py-3">{event.revision}</td>
                                     <td className="px-4 py-3">
                                         <div className="flex items-center gap-1">
