@@ -132,7 +132,6 @@ class LoadScenarioManager:
         history = observatory.getHistory()
         avl = observatory.getAVLTree()
         bst = observatory.getBSTTree()
-        list_ids = []
         for e in event_list:
             event = Event.fromDict(e)
             history.addIdEvent(e["key"][2])

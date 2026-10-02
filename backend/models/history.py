@@ -2,10 +2,19 @@ from backend.models.event import Event
 class History:
     
     def __init__(self):
-        self.archived = {}            # int:event
-        self.archivedTrees = []       # un snapshot por cada archivado
-        self.deleted_ids = set()
+        self.archived = {}
+        self.archivedTrees = []
+        self.deleted = {}
         self.listHistoricIds = []
+
+    def addDeleted(self, key, event):
+        self.deleted[key] = event
+
+    def getDeleted(self):
+        return self.deleted
+
+    def getDeletedEvents(self):
+        return [e.toDict() for e in self.deleted.values()]
 
     def addArchivedTree(self, root_id, ids, tree):
         self.archivedTrees.append({
@@ -17,6 +26,7 @@ class History:
 
     def getArchivedTrees(self):
         return self.archivedTrees
+    
     def getArchived(self):
         return self.archived
     def getArchivedEvent(self,key):
@@ -25,13 +35,6 @@ class History:
         self.archived[key] = event
     def deleteArchived(self, key):
         del self.archived[key]
-
-    def getDeletedIds(self):
-        return self.deleted_ids
-    def addDeletedId(self,id):
-        self.deleted_ids.add(id)
-    def deleteId(self, id):
-        self.deleted_ids.remove(id)
 
     def addIdEvent(self, id):
         if self.binarySearch(id, self.listHistoricIds):
@@ -87,13 +90,17 @@ class History:
     
     def toDict(self):
         return {
-            "archived": {key: event.toDict() for key,event in self.archived.items()},
-            "deleted_ids":[event_id for event_id in self.deleted_ids]
-            }
-        
+            "archived": {k: e.toDict() for k, e in self.archived.items()},
+            "archivedTrees": self.archivedTrees,
+            "deleted": {k: e.toDict() for k, e in self.deleted.items()},
+            "listHistoricIds": self.listHistoricIds,
+    }
+
     @classmethod
     def fromDict(cls, data):
         history = cls()
-        history.archived = {int(key):Event.fromDict(event) for key,event in data["archived"].items()}
-        history.deleted_ids = set(data["deleted_ids"])
+        history.archived = {int(k): Event.fromDict(e) for k, e in data["archived"].items()}
+        history.archivedTrees = data.get("archivedTrees", [])
+        history.deleted = {int(k): Event.fromDict(e) for k, e in data.get("deleted", {}).items()}
+        history.listHistoricIds = data.get("listHistoricIds", [])
         return history

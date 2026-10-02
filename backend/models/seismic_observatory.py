@@ -150,11 +150,18 @@ class SeismicObservatory:
 
     def deleteEventById(self, id):
         node = self.avl_tree.searchById(id)
-        if node is not None: 
-            self.history.addDeletedId(id)
-            return self.avl_tree.delete(id), self.bst_tree.delete(id)
-        return False
+        if node is None:
+            return False
+        event = node.getValue()         
+        avl_removed = self.avl_tree.delete(id)
+        bst_removed = self.bst_tree.delete(id)
 
+        if avl_removed and bst_removed:
+            event.setEventStatus("deleted")
+            self.history.addDeleted(id, event)
+
+        return avl_removed, bst_removed
+    
     def editEvent(self,report):
         #Al crearse un reporte, sus datos ya están validados
         event = self.searchEventById(report.getEventId())
