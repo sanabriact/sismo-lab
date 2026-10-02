@@ -1,0 +1,14 @@
+{
+    "reports": [
+        {
+            "event_id": 101,
+            "revision": 1,
+            "station": 1,
+            "magnitude": 4.8,
+            "depth": 20.0,
+            "epicenter_x": 400,
+            "epicenter_y": 300,
+            "datetime": "2026-09-29T20:00:00Z"
+        }
+    ]
+}
