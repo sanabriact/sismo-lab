@@ -1,10 +1,22 @@
 from backend.models.event import Event
 class History:
+    
     def __init__(self):
-        self.archived = {} #dict int:event
-        self.deleted_ids = set() #set de enteros
+        self.archived = {}            # int:event
+        self.archivedTrees = []       # un snapshot por cada archivado
+        self.deleted_ids = set()
         self.listHistoricIds = []
 
+    def addArchivedTree(self, root_id, ids, tree):
+        self.archivedTrees.append({
+            "root_id": root_id,
+            "affected_ids": ids,
+            "number_nodes": len(ids),
+            "tree": tree,
+        })
+
+    def getArchivedTrees(self):
+        return self.archivedTrees
     def getArchived(self):
         return self.archived
     def getArchivedEvent(self,key):
