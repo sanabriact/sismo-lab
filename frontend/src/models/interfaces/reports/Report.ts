@@ -1,0 +1,66 @@
+export interface ReportInput {
+    event_id: number;
+    revision: number;
+    station: number;
+    magnitude: number;
+    depth: number;
+    epicenter_x: number;
+    epicenter_y: number;
+    datetime: string;
+}
+
+export interface ReportsPayload {
+    reports: ReportInput[];
+}
+
+export interface ReportQueueItem {
+    position: number;
+    event_id: number;
+    revision: number;
+    station_id: number;
+    magnitude: number;
+    depth: number;
+    epicenter_x: number;
+    epicenter_y: number;
+    datetime: string;
+}
+
+export interface ReportQueueSnapshot {
+    size: number;
+    items: ReportQueueItem[];
+}
+
+export interface ReportIssue {
+    report?: number;
+    reason?: string;
+    message?: string;
+}
+
+export interface ReportsResponse {
+    ok: boolean;
+    enqueued: number;
+    issues: ReportIssue[] | string[];
+    snapshot?: ReportQueueSnapshot;
+    reason?: string;
+}
+
+export interface ReportStepResponse {
+    ok: boolean;
+    reason?: string;
+    decision?: string;
+    eventId?: number;
+    revision?: number;
+    stationId?: number;
+    rotations?: string[];
+    remaining?: number;
+}
+
+export interface ReportQueueEvent {
+    decision?: string;
+    reason?: string;
+    eventId?: number;
+    revision?: number;
+    stationId?: number;
+    rotations?: string[];
+    remaining?: number;
+}

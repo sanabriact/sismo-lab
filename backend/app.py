@@ -237,30 +237,35 @@ def handle_archive_decision(data=None):
 @socketio.on("reports:prepare")
 def prepare_reports(data):
     # The engine validates the complete batch before adding it to the FIFO queue.
-    reports = data.get("reports", []) if isinstance(data, dict) else data
-    return report_queue_runner.prepare_reports(reports)
+    if not isinstance(data, dict) or "reports" not in data:
+        return {
+            "ok": False,
+            "enqueued": 0,
+            "issues": ["La solicitud debe contener una propiedad reports"],
+        }
+    return report_queue_runner.prepare_reports(data["reports"])
 
 
 @socketio.on("reports:step")
-def process_report_step():
+def process_report_step(data=None):
     # Process exactly one report through the engine-owned lifecycle.
     return report_queue_runner.process_next()
 
 
 @socketio.on("reports:start")
-def start_report_processing():
+def start_report_processing(data=None):
     # Start the background loop; it stops automatically when the queue is empty.
     return report_queue_runner.start_continuous()
 
 
 @socketio.on("reports:pause")
-def pause_report_processing():
+def pause_report_processing(data=None):
     # Pause processing without removing pending reports.
     return report_queue_runner.pause()
 
 
 @socketio.on("reports:snapshot")
-def report_queue_snapshot():
+def report_queue_snapshot(data=None):
     # Read the queue under the same lock used by report processing.
     return report_queue_runner.snapshot()
 
