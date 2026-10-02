@@ -2,6 +2,7 @@ import queue
 import threading
 import time
 from datetime import timedelta
+from backend.models.seismic_observatory import SeismicObservatory
 from backend.services.reports.report_processor import ReportProcessor
 from backend.services.reports.report_queue_service import ReportQueueService
 from backend.services.seismic_observatory_service import ScenarioValidationError
@@ -252,7 +253,15 @@ class EventEngine:
 
             self.observatory = restored
             self.scenario_id = restored.scenario_id
-            self._reset_realtime_anchor_locked(restored.getClock().getCurrentTime())
+            if self.scenario_id is None:
+                self._stop_realtime_clock_locked()
+            else:
+                self._reset_realtime_anchor_locked(restored.getClock().getCurrentTime())
+            if self.scenario_manager is not None:
+                self.scenario_manager.stop()
+                self.scenario_manager.stations = restored.getStations()
+                self.scenario_manager.current_index = 0
+                self.scenario_manager.event_count = 0
             self.service.metrics_service.refresh_derived_metrics(restored)
             self.service.saveObservatory(restored)
             payload = {
@@ -606,7 +615,12 @@ class EventEngine:
     def _snapshot_for_load(self, observatory):
         """Capture the previous scenario when a load can be undone."""
         if observatory is None:
-            return None
+            empty = SeismicObservatory()
+            snapshot = empty.toVersion()
+            snapshot["scenario_id"] = None
+            snapshot["action_stack"] = empty.getActionStack().toDict()
+            snapshot["saved_versions"] = empty.getSavedVersions()
+            return snapshot
 
         snapshot = observatory.toVersion()
         snapshot["scenario_id"] = observatory.getScenarioId()
@@ -616,11 +630,6 @@ class EventEngine:
 
     def _record_loaded_scenario(self, observatory, previous_snapshot):
         """Record a successful scenario replacement as one atomic action."""
-        if previous_snapshot is None:
-            if hasattr(self.service, "saveObservatory"):
-                self.service.saveObservatory(observatory)
-            return
-
         with self.lock:
             self.action_stack_service.record_action(
                 observatory,

@@ -85,6 +85,21 @@ def test_process_report_undo_restores_report_position_and_tree():
     assert restored.getReportQueue().size() == 1
 
 
+def test_load_scenario_undo_returns_to_an_empty_scenario():
+    observatory = make_observatory()
+    observatory.createEvent(7, 4.8, 70.0, 200.0, 200.0, NOW, 1, 1)
+    service = ActionStackService()
+    service.record_action(observatory, "LOAD_SCENARIO", observatory.toVersion())
+
+    restored, action = service.undo(observatory)
+
+    assert action.getActionType() == "LOAD_SCENARIO"
+    assert restored.getScenarioId() is None
+    assert restored.getStations() == []
+    assert restored.getAVLTree().root is None
+    assert restored.getBSTTree().root is None
+
+
 def test_unknown_action_type_is_rejected():
     service = ActionStackService()
     with pytest.raises(ActionStackError, match="Tipo de acción inválido"):

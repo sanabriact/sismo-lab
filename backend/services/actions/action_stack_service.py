@@ -97,6 +97,11 @@ class ActionStackService:
             stack.push(action)
             raise ActionStackError("La acción no contiene un estado anterior")
 
+        if action.getActionType() == "LOAD_SCENARIO":
+            # Loading a scenario is intentionally undone by returning to the
+            # empty state so the user can choose another JSON scenario.
+            return SeismicObservatory(), action
+
         try:
             # toVersion() intentionally excludes the action stack. The stack
             # after popping is therefore the exact stack that existed before

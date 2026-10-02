@@ -20,6 +20,9 @@ const REASONS: Record<string, string> = {
 };
 
 class ActionStackService {
+    private readonly updateListeners = new Set<(payload: ActionUndonePayload) => void>();
+    private updatesSubscribed = false;
+
     undo(): Promise<ActionUndoResponse> {
         return new Promise((resolve) => {
             socketService.connect().timeout(TIMEOUT_MS).emit(
@@ -41,21 +44,56 @@ class ActionStackService {
         });
     }
 
-    subscribeToUpdates(): () => void {
+    subscribeToUpdates(listener?: (payload: ActionUndonePayload) => void): () => void {
         const socket = socketService.connect();
-        const handleUpdate = (payload: ActionUndonePayload) => {
-            void this.refreshFromApi(payload);
-        };
+        if (listener) this.updateListeners.add(listener);
 
-        socket.on("action:undone", handleUpdate);
-        return () => socket.off("action:undone", handleUpdate);
+        if (!this.updatesSubscribed) {
+            this.updatesSubscribed = true;
+            socket.on("action:undone", (payload: ActionUndonePayload) => {
+                void this.handleUpdate(payload);
+            });
+        }
+
+        return () => {
+            if (listener) this.updateListeners.delete(listener);
+        };
+    }
+
+    private async handleUpdate(payload: ActionUndonePayload): Promise<void> {
+        await this.refreshFromApi(payload);
+        this.updateListeners.forEach((listener) => listener(payload));
     }
 
     private async refreshFromApi(payload: ActionUndonePayload): Promise<void> {
         const observatory = await ObservatoryService.getObservatory();
+        if (payload.actionType === "LOAD_SCENARIO" && payload.scenarioId === null) {
+            this.clearScenario();
+            return;
+        }
         if (!observatory || observatory.scenario_id !== payload.scenarioId) return;
 
         this.applyObservatory(observatory, payload);
+    }
+
+    private clearScenario(): void {
+        const current = scenarioStore.getSnapshot();
+        scenarioStore.set({
+            ...current,
+            hydrated: true,
+            loaded: false,
+            scenarioId: null,
+            operation: "idle",
+            source: null,
+            message: null,
+            issues: [],
+            zones: [],
+            stations: [],
+            events: [],
+            summary: null,
+        });
+        clockService.setCurrentTime(null);
+        applySnapshot("normal", 0);
     }
 
     private applyObservatory(

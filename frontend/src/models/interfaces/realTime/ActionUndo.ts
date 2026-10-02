@@ -1,5 +1,5 @@
 export interface ActionUndonePayload {
-    scenarioId: string;
+    scenarioId: string | null;
     actionType: string;
     currentTime: string;
     events: number;

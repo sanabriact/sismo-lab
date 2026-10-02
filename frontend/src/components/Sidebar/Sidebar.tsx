@@ -8,6 +8,7 @@ import Logo from "../../assets/sidebar/svg/logo";
 
 import routes from "../../routes";
 import { NavLink } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { sidebarGroups } from "../../routes/sidebarGroups";
 import RouteGroupMenu from "./events/RouteGroupMenu";
 import AdvanceClock from "../clock/AdvanceClock";
@@ -31,6 +32,7 @@ const Sidebar = () => {
   const linkClass = `block p-2 rounded-lg hover:bg-white/10`;
 
   const scenarioLoaded = useScenarioLoaded();
+  const navigate = useNavigate();
   const [undoPending, setUndoPending] = useState(false);
   const [undoMessage, setUndoMessage] = useState<string | null>(null);
   const ungroupedRoutes = routes.filter((route) => !route.group && (scenarioLoaded || !route.requiresScenario));
@@ -42,6 +44,9 @@ const Sidebar = () => {
     setUndoMessage(null);
     const response = await actionStackService.undo();
     setUndoPending(false);
+    if (response.ok && response.action?.action_type === "LOAD_SCENARIO") {
+      navigate("/load-scenario");
+    }
     setUndoMessage(response.ok
       ? `Deshecha: ${response.action?.action_type ?? "acción"}`
       : response.reason ?? "No se pudo deshacer la acción.");
