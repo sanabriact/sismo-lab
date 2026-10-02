@@ -195,6 +195,21 @@ def test_engine_pause_and_resume_are_the_single_queue_lifecycle():
     assert engine.report_queue_paused is True
 
 
+def test_scenario_activation_starts_the_realtime_clock_once():
+    observatory = SeismicObservatory()
+    engine, socketio, _service, _mode_changed = make_engine(observatory)
+
+    with engine.lock:
+        engine._start_realtime_clock_locked()
+        engine._start_realtime_clock_locked()
+
+    assert engine.clock_realtime_running is True
+    assert socketio.started == [engine._run_realtime_clock]
+
+    with engine.lock:
+        engine._stop_realtime_clock_locked()
+
+
 def test_audit_accepts_a_balanced_tree_from_topology():
     observatory = SeismicObservatory()
     observatory.addStation(Station(1, "Station", 0, 0))

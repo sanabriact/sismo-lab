@@ -35,6 +35,7 @@ const Sidebar = () => {
       className={`
         fixed top-0 left-0 z-40
         h-screen w-64
+        overflow-y-auto
         bg-[#04172f] text-white
         shadow-lg
       `}
