@@ -1,8 +1,10 @@
+/* Search, Plus, Pencil, Check and Trash2 are SVG icons imported from the library lucide-react */
 import { Search, Plus, Pencil, Check, Trash2 } from "lucide-react";
 import type { EventsTableProps } from "../../../models/interfaces/table/EventsTableProps";
 import { useNavigate } from "react-router-dom";
 import type { SeismicEvent } from "../../../models/interfaces/tree/SeismicEvent";
 
+/* Here we define the columns headers */
 const HEADERS = [
     "Identificador",
     "Magnitud",
@@ -14,6 +16,7 @@ const HEADERS = [
     "Acciones",
 ];
 
+/* Here we format the date time for better visual appearance */
 const formatDateTime = (iso: string) => {
     return new Date(iso).toLocaleString("es-CO", {
         timeZone: "UTC",
@@ -22,6 +25,7 @@ const formatDateTime = (iso: string) => {
     }) + " UTC";
 };
 
+/* We define a common Tailwind CSS classname for all buttons */
 const iconButton = "rounded-md p-1.5 text-gray-600 transition-colors hover:bg-gray-100";
 function EventsTable({
     data,
@@ -33,17 +37,17 @@ function EventsTable({
 }: EventsTableProps) {
     const navigate = useNavigate();
 
+    /* Here we define the handlers for the actions that can be made by the user. */
     const handleAdd = () => {
         navigate("/events/create-events");
     };
-
     const handleEdit = (event: SeismicEvent) => {
         navigate(`/events/correct-event/${event.key[2]}`);
     };
 
     return (
         <div className="w-full rounded-lg border border-gray-200 bg-white shadow-sm">
-            {/* Barra superior: lupa y + a la derecha */}
+            {/* Top bar with search and add at top right of the table */}
             <div className="flex items-center justify-end gap-2 border-b border-gray-200 px-4 py-3">
                 <button
                     type="button"
@@ -53,6 +57,7 @@ function EventsTable({
                 >
                     <Search size={18} />
                 </button>
+                {/* Here is the add button and the handler that will navigate the user to the creation page */}
                 <button
                     type="button"
                     onClick={handleAdd}
@@ -63,6 +68,7 @@ function EventsTable({
                 </button>
             </div>
 
+            {/* Here we define the div that contains the table and the table itself */}
             <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm">
                     <thead className="bg-gray-50 text-xs uppercase text-gray-500">
@@ -85,6 +91,10 @@ function EventsTable({
                                 </td>
                             </tr>
                         ) : (
+                            /* 
+                                For each event, we generate a cell in the table with its 
+                                id, magnitude, depth, coordinates, datetime, reporting stations, revision status and actions buttons.
+                            */
                             data.map((event) => (
                                 <tr key={event.key[2]} className="hover:bg-gray-50">
                                     <td className="px-4 py-3 font-medium">{event.key[2]}</td>
@@ -98,9 +108,10 @@ function EventsTable({
                                     <td className="px-4 py-3">{event.revision}</td>
                                     <td className="px-4 py-3">
                                         <div className="flex items-center gap-1">
+                                            {/* Here is the edit button with its handler. */}
                                             <button
                                                 type="button"
-                                                onClick={() => onEdit?.(event)}
+                                                onClick={() => handleEdit(event)}
                                                 aria-label={`Editar evento ${event.key[2]}`}
                                                 className={`${iconButton} hover:text-amber-500`}
                                             >

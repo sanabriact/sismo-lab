@@ -84,6 +84,17 @@ def load_scenario():
 def getEvents():
     return jsonify(event_engine.get_active_events())
 
+# Route for editing a event based on its id
+@app.route("/api/events/<int:event_id>", methods=["GET"])
+def get_event_by_id(event_id):
+    event = event_engine.get_active_event(event_id)
+    if event is None:
+        return jsonify({
+            "ok": False,
+            "reason": "event_not_found"
+        }), 404
+    return jsonify(event)
+
 @socketio.on("connect")
 def handle_connect():
     print("Cliente conectado por WebSocket")
@@ -121,6 +132,16 @@ def handle_manual_event_create(data):
         return {"ok": False, "reason": str(error)}
 
     return {"ok": True, "operation": operation}
+
+# Receptor of the manual event update change or solicitude
+@socketio.on("manual-event:update")
+def handle_manual_event_update(data):
+    if not isinstance(data, dict):
+        return {
+            "ok": False,
+            "Reason": "invalid_request"
+        }
+    return event_engine.update_manual_event(data)
 
 @socketio.on("generation:start")
 def handle_generation_start(_data=None):

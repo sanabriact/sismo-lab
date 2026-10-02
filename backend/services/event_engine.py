@@ -488,7 +488,176 @@ class EventEngine:
 
         self.socketio.emit("tree:operation", operation)
         return operation
+    
+    # Method for returning a event by searching first in the observatory and then converting it in a dict instance
+    def get_active_event(self, event_id):
+        observatory = self.get_or_load_observatory()
+        with self.lock:
+            event = observatory.searchEventById(event_id)
+            if event is None:
+                return None
+            return event.toDict()
 
+    # Method for updating manual events
+    def update_manual_event(self, data):
+        # Lock the update process to avoid simultaneous changes to the same data.
+        with self.lock:
+            # An event can only be updated when a scenario is loaded.
+            if self.observatory is None:
+                return {
+                    "ok": False,
+                    "reason": "no_scenario"
+                }
+
+            # Do not allow updates while the tree is being recovered.
+            if self.recovering:
+                return {
+                    "ok": False,
+                    "reason": "busy"
+                }
+
+            # Read and validate the immutable event ID sent by the client.
+            event_id = data.get("event_id")
+            if isinstance(event_id, bool) or not isinstance(event_id, int):
+                return {
+                    "ok": False,
+                    "reason": "invalid_event_id"
+                }
+
+            # The event must still be active in the observatory.
+            event = self.observatory.searchEventById(event_id)
+            if event is None:
+                return {
+                    "ok": False,
+                    "reason": "event_not_found"
+                }
+
+            try:
+                # Build and validate the report for this correction.
+                report = self.service.build_manual_update_report(
+                    self.observatory,
+                    event_id,
+                    data
+                )
+            except ValueError as error:
+                return {
+                    "ok": False,
+                    "reason": str(error)
+                }
+
+            # Save the current state before changing anything.
+            # This allows the action to be undone later.
+            before_version = self.observatory.toVersion()
+            before_indicators = self.service.metrics_service.capture_display(
+                self.observatory
+            )
+            queue = self.observatory.getReportQueue()
+
+            # Keep a tree notification only when the event key changes.
+            tree_operation = None
+
+            # Keep FIFO order when reports are already pending.
+            if not queue.is_empty():
+                self.observatory.enqueueReport(report)
+
+                # Save the queue change in the undo stack.
+                self.service.metrics_service.record_operation(
+                    observatory=self.observatory,
+                    action_type="updated_event",
+                    before_version=before_version,
+                    before_indicators=before_indicators,
+                    details={
+                        "event_id": event_id,
+                        "revision": report.getRevision(),
+                        "queued": True
+                    }
+                )
+
+                self.service.saveObservatory(self.observatory)
+                snapshot = self.report_queue_service.snapshot(self.observatory)
+
+                response = {
+                    "ok": True,
+                    "queued": True,
+                    "revision": report.getRevision(),
+                    "snapshot": snapshot
+                }
+
+            # Apply the correction immediately when the queue is empty.
+            else:
+                self.observatory.begin_visual_operation()
+                try:
+                    result = self.report_processor.apply(
+                        self.observatory,
+                        report
+                    )
+                finally:
+                    # Always close the visual operation.
+                    steps = self.observatory.finish_visual_operation()
+
+                if result.decision != "updated":
+                    return {
+                        "ok": False,
+                        "reason": result.reason,
+                        "decision": result.decision
+                    }
+
+                self.service.metrics_service.refresh_derived_metrics(
+                    self.observatory
+                )
+                self.service.metrics_service.register_rotation_steps(
+                    self.observatory.getMetrics(),
+                    steps
+                )
+
+                # Save the state before the direct update for undo.
+                self.service.metrics_service.record_operation(
+                    observatory=self.observatory,
+                    action_type="updated_event",
+                    before_version=before_version,
+                    before_indicators=before_indicators,
+                    details={
+                        "event_id": event_id,
+                        "revision": report.getRevision(),
+                        "queued": False,
+                        "key_changed": result.tree_changed
+                    }
+                )
+
+                self.service.saveObservatory(self.observatory)
+                snapshot = self.report_queue_service.snapshot(self.observatory)
+
+                response = {
+                    "ok": True,
+                    "queued": False,
+                    "revision": report.getRevision(),
+                    "event": event.toDict(),
+                    "snapshot": snapshot
+                }
+
+                # Build the tree notification only if the key changed.
+                if result.tree_changed:
+                    self.sequence += 1
+                    tree_operation = {
+                        "scenarioId": self.scenario_id,
+                        "sequence": self.sequence,
+                        "mode": self.observatory.getExecutionMode(),
+                        "stationId": report.getStation().getId(),
+                        "event": event.toDict(),
+                        "steps": steps,
+                    }
+
+        # Emit Socket.IO events after releasing the lock.
+        if tree_operation is not None:
+            self.socketio.emit("tree:operation", tree_operation)
+
+        self.socketio.emit("queue:updated", snapshot)
+        self.socketio.emit("event:updated", {
+            "eventId": event_id,
+            "queued": response["queued"]
+        })
+
+        return response
     # ===================== Execution mode (normal / stress) =====================
 
     def announce_mode(self):

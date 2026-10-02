@@ -53,8 +53,9 @@ const coreRoutes: AppRoute[] = [
         requiresScenario: true,
         hideInSidebar: true
     },
+    /* Here we put :eventId for indicating React that a attribute will go there. */
     {
-        path: "/events/correct-event",
+        path: "/events/correct-event/:eventId",
         title: "Corregir eventos",
         component: CorrectEvent,
         requiresScenario: true,
