@@ -35,7 +35,7 @@ const Sidebar = () => {
   const navigate = useNavigate();
   const [undoPending, setUndoPending] = useState(false);
   const [undoMessage, setUndoMessage] = useState<string | null>(null);
-  const ungroupedRoutes = routes.filter((route) => !route.group && (scenarioLoaded || !route.requiresScenario));
+  const ungroupedRoutes = routes.filter((route) => !route.group && !route.hideInSidebar && (scenarioLoaded || !route.requiresScenario));
 
   const undoLastAction = async () => {
     if (undoPending) return;

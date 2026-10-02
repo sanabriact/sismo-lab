@@ -1,6 +1,7 @@
 import { Search, Plus, Pencil, Check, Trash2 } from "lucide-react";
 import type { EventsTableProps } from "../../../models/interfaces/table/EventsTableProps";
 import { useNavigate } from "react-router-dom";
+import type { SeismicEvent } from "../../../models/interfaces/tree/SeismicEvent";
 
 const HEADERS = [
     "Identificador",
@@ -33,7 +34,11 @@ function EventsTable({
     const navigate = useNavigate();
 
     const handleAdd = () => {
-        navigate("/events/create-events")
+        navigate("/events/create-events");
+    };
+
+    const handleEdit = (event: SeismicEvent) => {
+        navigate(`/events/correct-event/${event.key[2]}`);
     };
 
     return (
