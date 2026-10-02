@@ -95,6 +95,20 @@ def get_event_by_id(event_id):
         }), 404
     return jsonify(event)
 
+@app.route("/api/events/<int:event_id>/attention-status", methods=["PATCH"])
+def update_event_attention_status(event_id):
+    data = request.get_json()
+    result = event_engine.set_attention_status(event_id, data.get("attention_status"))
+    
+    if not result["ok"]:
+        if result["reason"] == "no_event":
+            status_code = 404
+        else:
+            status_code = 400
+        return jsonify(result), status_code
+    
+    return jsonify(result["event"])
+    
 @socketio.on("connect")
 def handle_connect():
     print("Cliente conectado por WebSocket")

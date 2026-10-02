@@ -26,6 +26,11 @@ class EventService {
             return null;
         }
     }
+
+    async setAttentionStatus(eventId: number, attentionStatus: string): Promise<SeismicEvent> {
+        const response = await axios.patch<SeismicEvent>(`${API_URL}/api/events/${eventId}/attention-status`, {attention_status: attentionStatus});
+        return response.data
+    } 
 }
 
 export const eventService = new EventService();

@@ -3,6 +3,7 @@ import { Search, Plus, Pencil, Check, Trash2 } from "lucide-react";
 import type { EventsTableProps } from "../../../models/interfaces/table/EventsTableProps";
 import { useNavigate } from "react-router-dom";
 import type { SeismicEvent } from "../../../models/interfaces/tree/SeismicEvent";
+import { eventService } from "../../../services/events/eventService";
 
 /* Here we define the columns headers */
 const HEADERS = [
@@ -30,8 +31,6 @@ const iconButton = "rounded-md p-1.5 text-gray-600 transition-colors hover:bg-gr
 function EventsTable({
     data,
     onSearch,
-    onAdd,
-    onEdit,
     onMarkChecked,
     onDelete
 }: EventsTableProps) {
@@ -44,6 +43,14 @@ function EventsTable({
     const handleEdit = (event: SeismicEvent) => {
         navigate(`/events/correct-event/${event.key[2]}`);
     };
+    const handleMarkChecked = async (eventId: number) => {
+        try {
+            const response = await eventService.setAttentionStatus(eventId, "reviewed"); 
+            onMarkChecked?.(response);
+        } catch (error) {
+            console.log("Hubo un error al mandar la petición de revisión: " + error);
+        }
+    }
 
     return (
         <div className="w-full rounded-lg border border-gray-200 bg-white shadow-sm">
@@ -119,7 +126,7 @@ function EventsTable({
                                             </button>
                                             <button
                                                 type="button"
-                                                onClick={() => onMarkChecked?.(event)}
+                                                onClick={() => handleMarkChecked(event.key[2])}
                                                 aria-label={`Marcar evento ${event.key[2]} como revisado`}
                                                 className={`${iconButton} hover:text-green-600`}
                                             >

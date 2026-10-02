@@ -658,6 +658,29 @@ class EventEngine:
         })
 
         return response
+    
+    def set_attention_status(self, id, status):
+        if status not in ["pending", "reviewed"]:
+            return {
+                "ok": False,
+                "reason": "invalid_status"
+            }
+        observatory = self.get_or_load_observatory()
+        with self.lock:
+            event = observatory.searchEventById(id)
+            if event is None:
+                return {
+                    "ok": False,
+                    "reason": "no_event"
+                }
+            event.setAttentionStatus(status)
+            self.service.repository.save(observatory)
+            
+            return {
+                "ok": True,
+                "event": event.toDict()
+            }
+            
     # ===================== Execution mode (normal / stress) =====================
 
     def announce_mode(self):
