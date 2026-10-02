@@ -12,6 +12,7 @@ const DeleteEvent = lazy (() => import ('../pages/events/delete/DeleteEvent'));
 const Scenario = lazy(() => import ('../pages/scenery/Scenery'));
 const LoadScenario = lazy(() => import ('../pages/load/loadScenario'));
 const VerifyStructure = lazy(() => import('../pages/events/verify/VerifyStructure'));
+const EventList = lazy(() => import('../pages/events/list/EventList'));
 
 /* Adding components to each route */
 const coreRoutes: AppRoute[] = [
@@ -32,45 +33,23 @@ const coreRoutes: AppRoute[] = [
         requiresScenario: true
     },
     {
+        path: "/events/list",
+        title: "Gestionar eventos",
+        component: EventList,
+        group: "events",
+        requiresScenario: true
+    },
+    /* {
         path: "/events/create-events",
         title: "Crear eventos",
         component: CreateEvent,
         group: "events",
         requiresScenario: true
-    },
+    }, */
     {
         path: "/events/visualize-trees",
         title: "Visualizar eventos",
         component: VisualizeTrees,
-        group: "events",
-        requiresScenario: true
-    },
-    {
-        path: "/events/check-events",
-        title: "Marcar eventos",
-        component: CheckEvent,
-        group: "events",
-        requiresScenario: true
-    },
-    {
-        path: "/events/consult-events",
-        title: "Consultar eventos",
-        component: ConsultEvent,
-        group: "events",
-        requiresScenario: true
-    },
-    {
-        path: "/events/correct-events",
-        title: "Corregir eventos",
-        component: CorrectEvent,
-        group: "events",
-        requiresScenario: true
-    },
-    
-    {
-        path: "/events/delete-events",
-        title: "Eliminar eventos",
-        component: DeleteEvent,
         group: "events",
         requiresScenario: true
     },

@@ -92,7 +92,11 @@ def load_scenario():
     data = request.get_json()
     result = load_scenario_manager.load(data)
     return jsonify(result)
-    
+
+@app.route("/api/events-list", methods=["GET"])
+def getEvents():
+    return jsonify(event_engine.get_events().toDict())
+
 @socketio.on("connect")
 def handle_connect():
     print("Cliente conectado por WebSocket")
@@ -179,6 +183,7 @@ def handle_structure_audit(_data=None):
     """Delegate the read-only audit to the engine-owned service boundary."""
     print("Solicitud de auditar estructura")
     return event_engine.audit_structure()
+
 @socketio.on("scenario:load")
 def handle_scenario_load(data):
     if not isinstance(data, dict):

@@ -76,6 +76,9 @@ class EventEngine:
                 self.scenario_id = self.observatory.scenario_id
                 self._start_realtime_clock_locked()
             return self.observatory
+    
+    def get_events(self):
+        return self.events
 
     def prepare_archive_tree(self, threshold_hours=None, client_id=None):
         """Select and preview an archivable branch without changing the AVL."""
