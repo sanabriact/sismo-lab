@@ -6,6 +6,7 @@ from backend.services.metrics.metrics_service import MetricsService
 from backend.models.seismic_observatory import SeismicObservatory
 from backend.models.station import Station
 from backend.models.zone import Zone
+from backend.models.report import Report
 from backend.utils.quantities import parseDatetime, hasAtMostOneDecimal
 
 EXECUTION_MODES = ("normal", "stress")
@@ -90,6 +91,88 @@ class SeismicObservatoryService:
                 "success": True,
                 "event": event.toDict()
             }
+    
+    def build_manual_update_report(self, observatory, event_id, data):
+        # These fields are required to create a valid update report.
+        required = (
+            "magnitude",
+            "depth",
+            "epicenter_x",
+            "epicenter_y",
+            "datetime",
+            "station",
+        )
+
+        # Reject the request if its data is invalid or incomplete.
+        if not isinstance(data, dict) or any(field not in data for field in required):
+            raise ValueError("Faltan datos obligatorios para editar el evento")
+
+        # The event must still exist and be active before it can be updated.
+        event = observatory.searchEventById(event_id)
+        if event is None:
+            raise ValueError("El evento ya no está activo")
+
+        # Validate that the station ID is an integer.
+        station_id = data["station"]
+        if isinstance(station_id, bool) or not isinstance(station_id, int):
+            raise ValueError("La estación seleccionada no es válida")
+
+        # Create a quick lookup table for the scenario stations.
+        stations = {
+            station.getId(): station
+            for station in observatory.getStations()
+        }
+
+        # The selected station must belong to the current scenario.
+        station = stations.get(station_id)
+        if station is None:
+            raise ValueError("La estación no pertenece al escenario")
+
+        # Validate numeric fields and allow only one decimal place.
+        for field in ("magnitude", "depth", "epicenter_x", "epicenter_y"):
+            value = data[field]
+
+            if isinstance(value, bool) or not isinstance(value, (int, float)):
+                raise ValueError(f"{field} debe ser numérico")
+
+            if not hasAtMostOneDecimal(value):
+                raise ValueError(f"{field} admite máximo un decimal")
+
+        try:
+            # Convert the received text into a valid UTC datetime.
+            event_datetime = parseDatetime(data["datetime"])
+        except (TypeError, ValueError, AttributeError) as error:
+            raise ValueError("La fecha del evento no es válida") from error
+
+        # The event cannot occur after the current simulation clock time.
+        if not observatory.getClock().canOccurAt(event_datetime):
+            raise ValueError("La fecha del evento supera el reloj del escenario")
+
+        # Find pending corrections for this same event.
+        # Their revisions are considered to avoid duplicate or old revisions.
+        pending_revisions = [
+            queued.getRevision()
+            for queued in observatory.getReportQueue().items
+            if queued.getEventId() == event_id
+        ]
+
+        # The new correction gets a revision greater than the active event
+        # and any pending correction for that event.
+        revision = max(
+            [event.getCurrentRevision(), *pending_revisions],
+        ) + 1
+
+        # Return a validated Report object ready to be applied or enqueued.
+        return Report(
+            event_id=event_id,
+            revision=revision,
+            station=station,
+            magnitude=data["magnitude"],
+            depth=data["depth"],
+            epicenter_x=data["epicenter_x"],
+            epicenter_y=data["epicenter_y"],
+            datetime_=event_datetime,
+        )
 
     def markAsRevised(self, id):
         obs = self.getObservatory()
@@ -615,3 +698,13 @@ class SeismicObservatoryService:
         nodeToDict = node.toDict()
         avl.eliminateReferences(node)
         return nodeToDict
+    
+    def getActiveEvents(self, observatory):
+        events = []
+        for event_id, node in observatory.getAVLTree().index.items():
+            event = node.getValue()
+            data = event.toDict()
+            data["priority"] = event.getKey()[0]
+            data["magnitude"] = event.getKey()[1]
+            events.append(data)
+        return events

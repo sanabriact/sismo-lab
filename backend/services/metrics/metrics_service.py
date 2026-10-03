@@ -180,26 +180,28 @@ class MetricsService:
         self._collect_postorder(node.getRightChild())
         self._postorder.append(node.getValue().getKey())
 
-    def _collect_levels(self, root):
-        if root is None:
-            return []
+    def _collect_levels(self, root, queue=None, result=None):
+        if queue is None:
+            queue = []
+        if result is None:
+            result = []
 
-        result = []
-        queue = [root]
-        position = 0
+        if root is not None:
+            queue.append(root)
 
-        while position < len(queue):
-            node = queue[position]
-            position += 1
-            result.append(node.getValue().getKey())
+        if not queue:
+            return result
 
-            if node.getLeftChild() is not None:
-                queue.append(node.getLeftChild())
+        node = queue.pop(0)
+        result.append(node.getValue().getKey())
 
-            if node.getRightChild() is not None:
-                queue.append(node.getRightChild())
+        if node.getLeftChild() is not None:
+            queue.append(node.getLeftChild())
 
-        return result
+        if node.getRightChild() is not None:
+            queue.append(node.getRightChild())
+
+        return self._collect_levels(None, queue, result)
 
     def _height(self, node):
         if node is None:
