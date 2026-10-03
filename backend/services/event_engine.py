@@ -721,6 +721,8 @@ class EventEngine:
                 "event": event.toDict(),
             }
             
+    def delete_event_by_id(self, eventId)
+            
     # ===================== Execution mode (normal / stress) =====================
 
     def announce_mode(self):

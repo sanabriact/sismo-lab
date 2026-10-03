@@ -54,7 +54,7 @@ function EventsTable({
             cancelButtonText: "Cancelar",
             html: `
                 <div style="text-align: left">
-                    <p><b>Evento:</b> ${event.key[2]}</p>
+                    <p><b>Id:</b> ${event.key[2]}</p>
                     <p><b>Magnitud:</b> ${event.key[1].toFixed(1)}</p>
                     <p><b>Profundidad:</b> ${event.depth.toFixed(1)} km</p>
                     <p><b>Coordenadas:</b> (${event.epicenter_x.toFixed(1)}, ${event.epicenter_y.toFixed(1)})</p>
@@ -79,6 +79,56 @@ function EventsTable({
             confirmButtonText: "Aceptar",
         });
         window.location.reload();
+    };
+
+    const handleDeleteEvent = async (event: SeismicEvent) => {
+        const result = await Swal.fire({
+            title: "¿Quieres eliminar el siguiente evento?",
+            icon: "question",
+            showCancelButton: true,
+            confirmButtonText: "Eliminar",
+            cancelButtonText: "Cancelar",
+            html: `
+                <div style="text-align: left">
+                    <p><b>Id:</b> ${event.key[2]}</p>
+                    <p><b>Magnitud:</b> ${event.key[1].toFixed(1)}</p>
+                    <p><b>Profundidad:</b> ${event.depth.toFixed(1)} km</p>
+                    <p><b>Coordenadas:</b> (${event.epicenter_x.toFixed(1)}, ${event.epicenter_y.toFixed(1)})</p>
+                    <p><b>Fecha y hora:</b> ${formatDateTime(event.datetime)}</p>
+                    <p><b>Estaciones:</b> ${event.reporting_stations.join(", ")}</p>
+                    <p><b>Revisión:</b> ${event.revision}</p>
+                </div>
+                `,
+        });
+
+        if (!result.isConfirmed) return;
+        try {
+            const wasEventDeleted = await eventService.deleteEventById(event.key[2]);
+            if(!wasEventDeleted) {
+                await Swal.fire({
+                    title: "No se pudo eliminar el evento",
+                    text: "El servidor no pudo eliminar el evento.",
+                    icon: "error"
+                });
+                return;
+            }
+
+            await Swal.fire({
+                title: "Evento eliminado",
+                icon: "success",
+                confirmButtonText: "Aceptar"
+            });
+
+            window.location.reload();
+        } catch (error) {
+            console.error("Error eliminando evento: " + error);
+
+            await Swal.fire({
+                title: "No se pudo eliminar el evento",
+                text: "Ocurrió un error al eliminar el evento",
+                icon: "error"
+            });
+        }
     };
 
     return (
@@ -164,7 +214,7 @@ function EventsTable({
                                             </button>
                                             <button
                                                 type="button"
-                                                onClick={() => onDelete?.(event)}
+                                                onClick={() => handleDeleteEvent(event)}
                                                 aria-label={`Eliminar evento ${event.key[2]}`}
                                                 className={`${iconButton} hover:text-red-600`}
                                             >

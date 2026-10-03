@@ -5,7 +5,10 @@ import type { SeismicEvent } from "../../models/interfaces/tree/SeismicEvent";
 const API_URL = import.meta.env.VITE_API_URL;
 
 class EventService {
-    /* This is the method for getting all the active events. It will return a list of SeismicEvent or null */
+    /* 
+        This is the method for getting all the active events. It will return a list of SeismicEvent or null. 
+
+    */
     async getAll(): Promise<SeismicEvent[] | null> {
         try {
             const response = await axios.get<SeismicEvent[]>(`${API_URL}/api/events-list`);
@@ -31,6 +34,11 @@ class EventService {
         const response = await axios.patch<SeismicEvent>(`${API_URL}/api/events/${eventId}/attention-status`, {attention_status: attentionStatus});
         return response.data
     } 
+
+    async deleteEventById(eventId: number): Promise<boolean> {
+        const response = await axios.delete(`${API_URL}/api/events/${eventId}`);
+        return response.data.ok;
+    }
 }
 
 export const eventService = new EventService();
