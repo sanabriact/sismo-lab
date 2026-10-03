@@ -44,6 +44,9 @@ importers:
       socket.io-client:
         specifier: ^4.8.4
         version: 4.8.4
+      sweetalert2:
+        specifier: ^11.26.25
+        version: 11.26.25
       tailwindcss:
         specifier: ^4.3.3
         version: 4.3.3
@@ -1351,6 +1354,9 @@ packages:
     resolution: {integrity: sha512-UXWMKhLOwVKb728IUtQPXxfYU+usdybtUrK/8uGE8CQMvrhOpwvzDBwj0QhSL7MQc7vIsISBG8VQ8+IDQxpfQA==}
     engines: {node: '>=0.10.0'}
 
+  sweetalert2@11.26.25:
+    resolution: {integrity: sha512-+hunCOJdJ6FLj04T9YSLvvZXRjsvIkTeTKP2e4VF8CaBias961BTnWiSFAy7F/CM5eq3QK2Rraoc5Gzftslvkg==}
+
   tailwindcss@4.3.3:
     resolution: {integrity: sha512-gOhV3P7ufE62QDGg1zVaTgCR+EtPv92k2nIhVcVKcLmxT1sUBsQGhnZj175j+MqRt4zLF7ic+sCYjfhxMxj7YQ==}
 
@@ -2650,6 +2656,8 @@ snapshots:
       - supports-color
 
   source-map-js@1.2.1: {}
+
+  sweetalert2@11.26.25: {}
 
   tailwindcss@4.3.3: {}
 

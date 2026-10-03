@@ -19,6 +19,7 @@ venv/
 __pycache__/
 .pytest_cache/
 *.pyc
+backend/data/
 
 # Variables de entorno
 .env

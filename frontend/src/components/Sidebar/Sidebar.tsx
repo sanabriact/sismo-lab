@@ -35,7 +35,7 @@ const Sidebar = () => {
   const navigate = useNavigate();
   const [undoPending, setUndoPending] = useState(false);
   const [undoMessage, setUndoMessage] = useState<string | null>(null);
-  const ungroupedRoutes = routes.filter((route) => !route.group && (scenarioLoaded || !route.requiresScenario));
+  const ungroupedRoutes = routes.filter((route) => !route.group && !route.hideInSidebar && (scenarioLoaded || !route.requiresScenario));
 
   const undoLastAction = async () => {
     if (undoPending) return;
@@ -98,16 +98,6 @@ const Sidebar = () => {
 
         {scenarioLoaded && (<div className="p-4 border-t border-white/20 space-y-6">
           <AdvanceClock />
-          {
-            /* Label that contains that shows "Verificar estructura" and button type input.*/
-          }
-          <NavLink
-            to="/events/verify-structure"
-            className="w-full flex items-center justify-between gap-2 p-2 rounded-lg hover:bg-white/20 transition-colors"
-          >
-            <span>Verificar estructura</span>
-            <span aria-hidden="true">→</span>
-          </NavLink>
           {
             /* Label that contains that shows "Deshacer" and button type input */
           }
