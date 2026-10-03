@@ -121,10 +121,7 @@ class SeismicObservatory:
             return False
         if self.bst_tree.searchById(id) is not None:
             return False
-        #Validar que no este en historico
-        if id in self.history.getArchived():
-            return False
-        if id in self.history.getDeletedIds():
+        if not self.history.addIdEvent(id):
             return False
         event = Event(id, magnitude, depth, epicenter_x, epicenter_y, datetime, revision, station, self.zones)
         # AVL decides whether to rotate using its current balance attribute.
@@ -153,11 +150,18 @@ class SeismicObservatory:
 
     def deleteEventById(self, id):
         node = self.avl_tree.searchById(id)
-        if node is not None: 
-            self.history.addDeletedId(id)
-            return self.avl_tree.delete(id), self.bst_tree.delete(id)
-        return False
+        if node is None:
+            return False
+        event = node.getValue()         
+        avl_removed = self.avl_tree.delete(id)
+        bst_removed = self.bst_tree.delete(id)
 
+        if avl_removed and bst_removed:
+            event.setEventStatus("deleted")
+            self.history.addDeleted(id, event)
+
+        return avl_removed, bst_removed
+    
     def editEvent(self,report):
         #Al crearse un reporte, sus datos ya están validados
         event = self.searchEventById(report.getEventId())
@@ -179,8 +183,8 @@ class SeismicObservatory:
             event.setAttentionStatus("revised")
     
     # Méthod to archivate a sub tree , por hacer
-    def archivateSubTree(self, actualTime):
-        rootToArchivate = self.avl_tree.archiveSubTree(actualTime)
+    def archivateSubTree(self, actualTime, T):
+        return self.avl_tree.archiveSubTree(actualTime, T)
 
     def enqueueReport(self, report):
         self.report_queue.enqueue(report)
@@ -243,5 +247,3 @@ class SeismicObservatory:
         observatory.saved_versions = data["saved_versions"]
         observatory.execution_mode = data.get("execution_mode", "normal")
         return observatory
-
-

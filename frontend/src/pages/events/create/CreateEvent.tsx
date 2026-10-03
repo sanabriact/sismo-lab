@@ -110,7 +110,7 @@ const CreateEvent = () => {
                 <button type="button" onClick={() => setView("options")} className="text-sm font-medium text-[#04172f] hover:underline">← Volver</button>
                 <div>
                     <h1 className="text-3xl font-bold text-gray-900">Crear evento manual</h1>
-                    <p className="mt-1 text-gray-600">La fecha y hora deben ser iguales o posteriores a la apertura de este formulario.</p>
+                    <p className="mt-1 text-gray-600">La fecha y hora parten del reloj de simulación y no pueden superarlo.</p>
                 </div>
                 <form onSubmit={submitManual} className="grid gap-5 rounded-lg border border-gray-200 bg-white p-6 shadow-sm md:grid-cols-2">
                     <Field label="ID numérico"><input required min="1" max="999999" step="1" type="number" value={form.id} onChange={(e) => setForm({ ...form, id: e.target.value })} /></Field>

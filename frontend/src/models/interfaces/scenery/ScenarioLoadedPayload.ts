@@ -5,4 +5,5 @@ export interface ScenarioLoadedPayload {
     mode: ExecutionMode;
     stations: number;
     events: number;
+    currentTime: string;
 }

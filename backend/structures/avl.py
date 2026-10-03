@@ -1,6 +1,6 @@
 from backend.structures.node import Node
 from backend.utils.json_utils import objectToDict
-from backend.services.structure_audit_service import StructureAuditService
+from backend.services.audit.structure_audit_service import StructureAuditService
 
 class AVL:
     def __init__(self):
@@ -537,17 +537,19 @@ class AVL:
     # Public method for archiving a sub-tree
     def archiveSubTree(self, actualTime, time):
         if self.root is None:
-            print("The tree is empty")
+            return None
+
+        candidates = []
+        whole_tree_is_eligible = self._archiveSubTree(
+            self.root, actualTime, time, candidates
+        )
+        if whole_tree_is_eligible:
+            selected = self.root
+        elif candidates:
+            selected = self.findArchiveSubTree(candidates, 1, candidates[0])
         else:
-            listToArchivate = []
-            archivateRoot = self._archiveSubTree(self.root, actualTime, time ,listToArchivate)
-            if archivateRoot:
-                self.root = None
-                return archivateRoot
-            else:
-                rootToArchivate = self.findArchiveSubTree(listToArchivate, 1, listToArchivate[0])
-                self.removeSubTree(rootToArchivate)
-                return rootToArchivate
+            return None
+        return selected, self.objectToSend(selected, [])
 
     # Private method for archivating a sub-tree
     def _archiveSubTree(self, node, actualTime, time, listToArchivate):
@@ -578,10 +580,21 @@ class AVL:
             if nodeDepth > bestDepth:
                 best = node
             elif nodeDepth == bestDepth:
-                if node.getValue()[2] > best.getValue()[2]:
+                if node.getValue().getKey()[2] > best.getValue().getKey()[2]:
                     best = node
         
         return self.findArchiveSubTree(listToArchivate, index+1, best)
+    
+    def eliminateReferences(self, root):
+        parent = root.getParent()
+        if root.hasLeftChild():
+            root.setParent(None)
+            parent.setLeftChild(None)
+        else:
+            root.setParent(None)
+            parent.setRightChild(None)
+            parent.setRightChild()
+            self._checkBalance(parent, 0)
     
     def audit(self, mode="normal"):
         audit_service = StructureAuditService()
@@ -598,7 +611,25 @@ class AVL:
         lines.append(self._label(self.root))
         self._draw(self.root.getLeftChild(), "", True, lines)
         print("\n".join(lines))
+        
+    def objectToSend(self, currentRoot, listIds):
+        list = self.getIdsToPaint(currentRoot, listIds) 
+        nodes = len(list)
+        message = "This subtree was selected for archiving because all of its events have low priority and are older than T hours (strictly), making it eligible. Among all eligible subtrees, it contains the largest number of nodes."
+        object = {
+            "afect_ids": list,
+            "number_nodes": nodes,
+            "message": message
+        }
+        return object
 
+    def getIdsToPaint(self, currentRoot, listIds):
+        if currentRoot is not None:
+            listIds.append(currentRoot.getValue().getKey()[2])
+            self.getIdsToPaint(currentRoot.getLeftChild(), listIds)
+            self.getIdsToPaint(currentRoot.getRightChild(), listIds)
+            return listIds
+    
     # Private method for drawing a tree
     def _draw(self, node, prefix, isLeft, lines):
         if node is None:
