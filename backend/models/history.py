@@ -29,10 +29,13 @@ class History:
     
     def getArchived(self):
         return self.archived
+    
     def getArchivedEvent(self,key):
         return self.archived[key]
+    
     def addArchived(self,key,event):
         self.archived[key] = event
+        
     def deleteArchived(self, key):
         del self.archived[key]
 
