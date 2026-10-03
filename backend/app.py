@@ -113,7 +113,7 @@ def delete_event(event_id):
     result = event_engine.delete_event_by_id(event_id)
     
     if not result["ok"]:
-        if result["reason"] == "no_event":
+        if result["reason"] == "event_not_found":
             return jsonify(result), 404
         if result["reason"] in ["busy", "no_scenario"]:
             return jsonify(result), 404

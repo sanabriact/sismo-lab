@@ -33,8 +33,7 @@ const iconButton = "rounded-md p-1.5 text-gray-600 transition-colors hover:bg-gr
 function EventsTable({
     data,
     onSearch,
-    onMarkChecked,
-    onDelete
+    onMarkChecked
 }: EventsTableProps) {
     const navigate = useNavigate();
 
