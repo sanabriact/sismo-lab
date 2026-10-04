@@ -12,6 +12,7 @@ const LoadScenario = lazy(() => import ('../pages/load/loadScenario'));
 const VerifyStructure = lazy(() => import('../pages/events/verify/VerifyStructure'));
 const EventList = lazy(() => import('../pages/events/list/EventList'));
 const Reports = lazy(() => import('../pages/reports/Reports'));
+const CreateReport = lazy(() => import('../pages/reports/CreateReport'));
 const Associations = lazy(() => import('../pages/events/associations/Associations'));
 const History = lazy(() => import('../pages/history/History'));
 const ArchivedEvents = lazy(() => import('../pages/history/ArchivedEvents'));
@@ -41,6 +42,13 @@ const coreRoutes: AppRoute[] = [
         title: "Reportes",
         component: Reports,
         requiresScenario: true,
+    },
+    {
+        path: "/reports/create",
+        title: "Crear reporte",
+        component: CreateReport,
+        requiresScenario: true,
+        hideInSidebar: true,
     },
     {
         path: "/history",

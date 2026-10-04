@@ -23,8 +23,12 @@ class JsonScenarioRepository:
     @staticmethod
     def _rejectDuplicateKeys(archive):
         result = {}
+        seen_keys = set()
+        
         for key, value in archive:
-            if key in result:
+            if key in seen_keys:
                 raise ValueError(f"Duplicate key in JSON: '{key}'")
+            seen_keys.add(key)
             result[key] = value
+            
         return result
