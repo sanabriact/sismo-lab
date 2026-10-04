@@ -4,11 +4,9 @@ import type { AppRoute } from '../models/interfaces/appRoute/AppRoute';
 /* Import routes components */
 const Home = lazy(() => import('../pages/home/Home'));
 const VisualizeTrees = lazy(() => import('../pages/events/visualize/VisualizeTrees'));
-const CheckEvent = lazy(() => import ('../pages/events/check/CheckEvent'));
 const ConsultEvent = lazy(() => import ('../pages/events/consult/ConsultEvent'));
 const CorrectEvent = lazy(() => import ('../pages/events/correct/CorrectEvent'));
 const CreateEvent = lazy(() => import ('../pages/events/create/CreateEvent'));
-const DeleteEvent = lazy (() => import ('../pages/events/delete/DeleteEvent'));
 const Scenario = lazy(() => import ('../pages/scenery/Scenery'));
 const LoadScenario = lazy(() => import ('../pages/load/loadScenario'));
 const VerifyStructure = lazy(() => import('../pages/events/verify/VerifyStructure'));
@@ -83,7 +81,8 @@ const coreRoutes: AppRoute[] = [
         title: "Consultar eventos",
         component: ConsultEvent,
         group: "events",
-        requiresScenario: true
+        requiresScenario: true,
+        hideInSidebar: true
     },
     {
         path: "/events/associations",

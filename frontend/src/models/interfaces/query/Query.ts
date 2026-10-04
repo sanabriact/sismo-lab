@@ -5,7 +5,6 @@ export type QueryType =
     | "top_pending"
     | "magnitude_range"
     | "date_depth_range"
-    | "associations"
     | "expensive_access";
 
 export interface QueryRequest {
