@@ -15,4 +15,6 @@ export interface SeismicEvent {
     populated_zone: boolean;
     reporting_stations: Station["id"][];
     revision: number;
+    candidate_references: number[];
+    selected_reference: number | null;
 }

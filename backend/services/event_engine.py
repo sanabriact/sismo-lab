@@ -92,6 +92,56 @@ class EventEngine:
                 "events": self.service.getActiveEvents(observatory)
             }
 
+    def get_association_limits(self):
+        """Return the current W and R values without changing the scenario."""
+        with self.lock:
+            if self.observatory is None:
+                return {"ok": False, "reason": "no_scenario"}
+            return {"ok": True, **self.observatory.getAssociationManager().getLimits()}
+
+    def update_association_limits(self, data):
+        """Update W/R through the engine and register one undoable action."""
+        with self.lock:
+            if self.observatory is None:
+                return {"ok": False, "reason": "no_scenario"}
+            if self.recovering:
+                return {"ok": False, "reason": "busy"}
+            if not isinstance(data, dict):
+                return {"ok": False, "reason": "invalid_parameters"}
+
+            manager = self.observatory.getAssociationManager()
+            before_limits = manager.getLimits()
+            before_version = self.observatory.toVersion()
+            before_indicators = self.service.metrics_service.capture_display(self.observatory)
+            try:
+                self.observatory.setAssociationLimits(
+                    data.get("W"),
+                    data.get("R"),
+                )
+            except (TypeError, ValueError) as error:
+                return {"ok": False, "reason": str(error)}
+
+            after_limits = manager.getLimits()
+            if before_limits == after_limits:
+                return {"ok": True, "changed": False, **after_limits}
+
+            # The previous snapshot must contain the state before the change.
+            before_version["association_manager"] = {
+                "W": before_limits["W"],
+                "R": before_limits["R"],
+                "candidates": before_version["association_manager"].get("candidates", {}),
+                "selected_references": before_version["association_manager"].get("selected_references", {}),
+            }
+            self.service.metrics_service.record_operation(
+                observatory=self.observatory,
+                action_type="change_parameter",
+                before_version=before_version,
+                before_indicators=before_indicators,
+                details={"parameter": "association_limits", "before": before_limits, "after": after_limits},
+            )
+            self.service.saveObservatory(self.observatory)
+            return {"ok": True, "changed": True, **after_limits}
+
     def execute_query(self, data):
         """Validate the request and delegate the read-only query to QueryService."""
         with self.lock:

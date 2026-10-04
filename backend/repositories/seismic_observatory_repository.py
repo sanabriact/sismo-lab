@@ -1,4 +1,4 @@
-from backend.models.association_manager import AssociationManager
+from backend.managers.association_manager import AssociationManager
 from backend.models.clock import SimulationClock
 from backend.models.history import History
 from backend.models.metrics import Metrics
