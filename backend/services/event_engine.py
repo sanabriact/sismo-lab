@@ -9,6 +9,7 @@ from backend.services.seismic_observatory_service import ScenarioValidationError
 from backend.services.archive.archive_tree_service import ArchiveTreeService
 from backend.services.actions.action_stack_service import ActionStackError, ActionStackService
 from backend.services.query.query_service import QueryService
+from backend.services.history.history_service import HistoryService
 
 class EventEngine:
     """
@@ -37,6 +38,7 @@ class EventEngine:
         self.action_stack_service = ActionStackService()
         # The engine owns the query service just like the other domain services.
         self.query_service = QueryService()
+        self.history_service = HistoryService()
         if hasattr(self.service, "metrics_service"):
             self.service.metrics_service.action_stack_service = self.action_stack_service
         self.report_queue_interval = 1.5
@@ -91,6 +93,40 @@ class EventEngine:
             return {
                 "events": self.service.getActiveEvents(observatory)
             }
+
+    def get_history_summary(self):
+        """Return historical counters through the central application engine."""
+        with self.lock:
+            if self.observatory is None:
+                return {"ok": False, "reason": "no_scenario"}
+            return {
+                "ok": True,
+                **self.history_service.get_summary(self.observatory),
+            }
+
+    def get_archived_events(self):
+        """Return archived events without changing observatory state."""
+        with self.lock:
+            if self.observatory is None:
+                return {"ok": False, "reason": "no_scenario"}
+            events = self.history_service.get_archived_events(self.observatory)
+            return {"ok": True, "events": events, "count": len(events)}
+
+    def get_deleted_events(self):
+        """Return deleted events through the central application engine."""
+        with self.lock:
+            if self.observatory is None:
+                return {"ok": False, "reason": "no_scenario"}
+            events = self.history_service.get_deleted_events(self.observatory)
+            return {"ok": True, "events": events, "count": len(events)}
+
+    def get_historical_ids(self):
+        """Return the identifiers maintained by the historical index."""
+        with self.lock:
+            if self.observatory is None:
+                return {"ok": False, "reason": "no_scenario"}
+            identifiers = self.history_service.get_historical_ids(self.observatory)
+            return {"ok": True, "identifiers": identifiers, "count": len(identifiers)}
 
     def get_association_limits(self):
         """Return the current W and R values without changing the scenario."""

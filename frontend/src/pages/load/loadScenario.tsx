@@ -55,9 +55,23 @@ const LoadScenario = () => {
                 <div className="rounded-lg border border-red-300 bg-red-50 p-4 text-red-800">
                     <p className="font-semibold">{state.message}</p>
                     {state.issues.length > 0 && (
-                        <ul className="mt-2 max-h-48 list-disc space-y-1 overflow-auto pl-5 text-sm">
-                            {state.issues.map((issue, i) => <li key={i}>{issue}</li>)}
-                        </ul>
+                        <div className="mt-4 overflow-hidden rounded-lg border border-red-200 bg-white text-sm text-gray-800">
+                            <div className="bg-red-100 px-3 py-2 font-semibold text-red-900">
+                                Errores encontrados ({state.issues.length})
+                            </div>
+                            <div className="grid grid-cols-[4rem_minmax(0,1fr)] border-t border-red-200 bg-red-50 px-3 py-2 font-semibold text-red-900">
+                                <span>#</span>
+                                <span>Detalle</span>
+                            </div>
+                            <div className="max-h-64 overflow-auto">
+                                {state.issues.map((issue, i) => (
+                                    <div key={`${i}-${issue}`} className="grid grid-cols-[4rem_minmax(0,1fr)] border-t border-red-100 px-3 py-2 odd:bg-white even:bg-red-50">
+                                        <span className="text-gray-500">{i + 1}</span>
+                                        <span className="break-words">{issue}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
                     )}
                 </div>
             )}
