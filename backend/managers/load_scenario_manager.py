@@ -341,6 +341,7 @@ class LoadScenarioManager:
             return False
 
         root = data["tree"]["root"]
+        _, metadata_valid = self.validateTreeMetadata(root)
         valid = self.validateAutenticityIds(root, self.eventIds)
         valid = self.validateOrder(root, None, None) and valid
         
@@ -353,7 +354,39 @@ class LoadScenarioManager:
         zones = data.get("zones")
         if isinstance(zones, list) and all(isinstance(zone, dict) for zone in zones):
             valid = self.validatePriority(root, zones) and valid
-        return valid
+        return valid and metadata_valid
+
+    def validateTreeMetadata(self, node):
+        """Check saved node heights and balance factors against the links."""
+        if node is None:
+            return -1, True
+
+        left_height, left_valid = self.validateTreeMetadata(node["left_child"])
+        right_height, right_valid = self.validateTreeMetadata(node["right_child"])
+        expected_height = max(left_height, right_height) + 1
+        expected_balance = left_height - right_height
+        event_id = node["event"]["key"][2]
+        valid = left_valid and right_valid
+
+        if "height" not in node:
+            self.errors.append(f"Event {event_id}: node is missing stored height")
+            valid = False
+        elif isinstance(node["height"], bool) or not isinstance(node["height"], int) or node["height"] != expected_height:
+            self.errors.append(
+                f"Event {event_id}: stored height {node['height']} does not match calculated height {expected_height}"
+            )
+            valid = False
+
+        if "balance_factor" not in node:
+            self.errors.append(f"Event {event_id}: node is missing stored balance_factor")
+            valid = False
+        elif isinstance(node["balance_factor"], bool) or not isinstance(node["balance_factor"], int) or node["balance_factor"] != expected_balance:
+            self.errors.append(
+                f"Event {event_id}: stored balance_factor {node['balance_factor']} does not match calculated balance_factor {expected_balance}"
+            )
+            valid = False
+
+        return expected_height, valid
     
     def validateDataTree(self, tree):
         if not isinstance(tree, dict):
@@ -536,6 +569,9 @@ class LoadScenarioManager:
         if not isinstance(section, dict):
             raise ValueError("history must be an object")
         history = observatory.getHistory()
+        active_ids = set(observatory.getAVLTree().index)
+        archived_ids = set()
+        deleted_event_ids = set()
         for field, status in (("archived", "archived"), ("eliminated", "deleted")):
             if field == "eliminated" and field not in section:
                 field = "deleted"
@@ -555,12 +591,35 @@ class LoadScenarioManager:
                 event = self._event_from_optional_history(item, observatory, status)
                 event_id = event.getKey()[2]
                 if status == "archived":
+                    if event_id in active_ids or event_id in archived_ids or event_id in deleted_event_ids:
+                        raise ValueError(f"history contains duplicate event id {event_id}")
+                    archived_ids.add(event_id)
                     history.addArchived(event_id, event)
                 else:
+                    if event_id in active_ids or event_id in archived_ids or event_id in deleted_event_ids:
+                        raise ValueError(f"history contains duplicate event id {event_id}")
+                    deleted_event_ids.add(event_id)
                     history.addDeleted(event_id, event)
 
-        for event_id in section.get("deletedIds", []):
-            history.addDeletedId(int(event_id))
+        deleted_ids = section.get("deletedIds", [])
+        if not isinstance(deleted_ids, list):
+            raise ValueError("history.deletedIds must be a list")
+        for value in deleted_ids:
+            if isinstance(value, bool) or not isinstance(value, (int, str)):
+                raise ValueError("history.deletedIds entries must be positive integer ids")
+            if isinstance(value, str) and not value.isdigit():
+                raise ValueError("history.deletedIds entries must be positive integer ids")
+            event_id = int(value)
+            if not 1 <= event_id <= 999999:
+                raise ValueError("history.deletedIds entries must be between 1 and 999999")
+            if event_id in active_ids or event_id in archived_ids:
+                raise ValueError(f"history contains duplicate event id {event_id}")
+            history.addDeletedId(event_id)
+
+        archived_trees = section.get("archivedTrees", [])
+        if not isinstance(archived_trees, list):
+            raise ValueError("history.archivedTrees must be a list")
+        history.archivedTrees = archived_trees
 
     def _event_from_optional_history(self, item, observatory, status):
         if "key" in item:
@@ -570,7 +629,8 @@ class LoadScenarioManager:
             normalized.setdefault("populated_zone", False)
             normalized.setdefault("expensive_access", False)
             normalized.setdefault("reporting_stations", [])
-            return Event.fromDict(normalized)
+            event = Event.fromDict(normalized)
+            return self._validateHistoricalEvent(event, observatory, status)
 
         event_id = int(item.get("id", item.get("event_id")))
         magnitude = float(item["magnitude"])
@@ -596,7 +656,45 @@ class LoadScenarioManager:
             "populated_zone": item.get("populated_zone", populated),
             "expensive_access": item.get("expensive_access", False),
         }
-        return Event.fromDict(event_data)
+        event = Event.fromDict(event_data)
+        return self._validateHistoricalEvent(event, observatory, status)
+
+    def _validateHistoricalEvent(self, event, observatory, expected_status):
+        """Validate retained event data before adding it to scenario history."""
+        priority, magnitude, event_id = event.getKey()
+        issues = self._validateData(
+            event_id,
+            magnitude,
+            event.getDepth(),
+            event.getEpicenterX(),
+            event.getEpicenterY(),
+            event.getDateTime(),
+        )
+        if issues:
+            raise ValueError(f"historical event {event_id}: {'; '.join(issues)}")
+        if isinstance(event.getCurrentRevision(), bool) or not isinstance(event.getCurrentRevision(), int) or event.getCurrentRevision() <= 0:
+            raise ValueError(f"historical event {event_id} has an invalid revision")
+        if event.getEventStatus() != expected_status:
+            raise ValueError(f"historical event {event_id} has an invalid status")
+        if not observatory.getClock().canOccurAt(event.getDateTime()):
+            raise ValueError(f"historical event {event_id} occurs after the scenario clock")
+
+        populated = self.isPopulatedZone(
+            event.getEpicenterX(), event.getEpicenterY(), observatory.getZones()
+        )
+        if event.getPopulatedZone() != populated:
+            raise ValueError(f"historical event {event_id} has an inconsistent populated_zone")
+        if priority != self.calculatePriority(magnitude, event.getDepth(), populated):
+            raise ValueError(f"historical event {event_id} has an inconsistent priority")
+
+        station_ids = {station.getId() for station in observatory.getStations()}
+        unknown_stations = event.getReportingStations() - station_ids
+        if unknown_stations:
+            raise ValueError(
+                f"historical event {event_id} references unknown stations: "
+                f"{', '.join(map(str, sorted(unknown_stations, key=str)))}"
+            )
+        return event
 
     def loadOptionalReportQueue(self, observatory, section):
         if section is None:
@@ -642,15 +740,23 @@ class LoadScenarioManager:
                 raise ValueError("association_manager.candidates must be an object")
             if any(not isinstance(ids, list) for ids in candidates.values()):
                 raise ValueError("association_manager candidate values must be lists")
-            manager.candidates = {
+            restored_candidates = {
                 int(event_id): [int(candidate) for candidate in ids]
                 for event_id, ids in candidates.items()
             }
-            manager.selected_references = {
-                event_id: ids[0]
-                for event_id, ids in manager.candidates.items()
-                if ids
+            if restored_candidates != manager.getCandidates():
+                raise ValueError("association_manager candidates do not match the scenario")
+
+        selected_references = section.get("selected_references")
+        if selected_references is not None:
+            if not isinstance(selected_references, dict):
+                raise ValueError("association_manager.selected_references must be an object")
+            restored_references = {
+                int(event_id): int(reference_id)
+                for event_id, reference_id in selected_references.items()
             }
+            if restored_references != manager.getSelectedReferences():
+                raise ValueError("association_manager selected references do not match the scenario")
 
     def loadOptionalMetrics(self, observatory, section):
         if section is None:

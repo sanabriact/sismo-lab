@@ -355,7 +355,7 @@ class EventEngine:
         return {"ok": True, "clock": payload, "currentTime": current_time.isoformat()}
 
     def load_scenario_from_text(self, content):
-        """Validate, build, activate and persist a text-based scenario."""
+        """Validate and build before persisting or activating a new scenario."""
         previous = self.observatory
         previous_snapshot = self._snapshot_for_load(previous)
         with self.lock:
@@ -374,6 +374,7 @@ class EventEngine:
                             f"Secciones opcionales inválidas: {error}"
                         ]) from error
                     self.service.metrics_service.refresh_derived_metrics(observatory)
+                if hasattr(self.service, "saveObservatory"):
                     self.service.saveObservatory(observatory)
             except Exception:
                 self.parameters_service.update(previous_parameters)
@@ -706,8 +707,10 @@ class EventEngine:
                     "reason": "invalid_event_id"
                 }
 
-            # The event must still be active in the observatory.
+            # The event can still be active or archived in history.
             event = self.observatory.searchEventById(event_id)
+            if event is None:
+                event = self.observatory.getHistory().getArchived().get(event_id)
             if event is None:
                 return {
                     "ok": False,
@@ -777,7 +780,7 @@ class EventEngine:
                     # Always close the visual operation.
                     steps = self.observatory.finish_visual_operation()
 
-                if result.decision != "updated":
+                if result.decision not in ("updated", "reactivated"):
                     return {
                         "ok": False,
                         "reason": result.reason,
@@ -808,6 +811,7 @@ class EventEngine:
 
                 self.service.saveObservatory(self.observatory)
                 snapshot = self.report_queue_service.snapshot(self.observatory)
+                event = self.observatory.searchEventById(event_id)
 
                 response = {
                     "ok": True,

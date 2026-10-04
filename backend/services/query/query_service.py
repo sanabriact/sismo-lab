@@ -1,6 +1,8 @@
 from datetime import datetime, time, timezone
 
 from backend.utils.quantities import parseDatetime
+from backend.structures.avl import AVL
+from backend.structures.bst import BST
 
 
 class QueryService:
@@ -34,6 +36,8 @@ class QueryService:
             return self.associations(observatory, parameters.get("event_id"))
         if query_type == "expensive_access":
             return self.expensive_access(observatory)
+        if query_type == "tree_comparison":
+            return self.compare_tree_orders(observatory)
         raise ValueError("Tipo de consulta no válido")
 
     def find_by_id(self, observatory, event_id):
@@ -173,11 +177,14 @@ class QueryService:
         parameter_service = getattr(self, "parameters_service", None)
         limit = parameter_service.getL() if parameter_service is not None else observatory.getL()
         results = []
+        examined = 0
 
         def visit(node, depth):
+            nonlocal examined
             if node is None:
                 return
 
+            examined += 1
             event = node.getValue()
             if self._is_expensive_access(event.getKey()[0], depth, limit):
                 results.append({
@@ -191,17 +198,96 @@ class QueryService:
             visit(node.getRightChild(), depth + 1)
 
         visit(observatory.getAVLTree().root, 0)
-        return self._success({"events": results, "limit": limit}, 0)
+        return self._success({"events": results, "limit": limit}, examined)
+
+    def compare_tree_orders(self, observatory):
+        """Compare AVL and BST shapes using the same events and search keys."""
+        events = [node.getValue() for node in observatory.getAVLTree().index.values()]
+        by_key = sorted(events, key=lambda event: tuple(event.getKey()))
+        insertion_orders = (
+            ("ascending_key", by_key),
+            ("descending_key", list(reversed(by_key))),
+            ("ascending_id", sorted(events, key=lambda event: event.getKey()[2])),
+        )
+        runs = []
+
+        for order_name, ordered_events in insertion_orders:
+            avl = AVL()
+            bst = BST()
+            for event in ordered_events:
+                avl.insert(event)
+                bst.insert(event)
+
+            search_keys = [tuple(event.getKey()) for event in by_key]
+            runs.append({
+                "order": order_name,
+                "event_count": len(ordered_events),
+                "searches_per_tree": len(search_keys),
+                "avl": self._tree_comparison_summary(avl, search_keys),
+                "bst": self._tree_comparison_summary(bst, search_keys),
+            })
+
+        return {
+            "ok": True,
+            "comparison": {
+                "event_count": len(events),
+                "comparison_definition": "Una comparación por cada nodo visitado al buscar una clave K.",
+                "runs": runs,
+            },
+        }
+
+    def _tree_comparison_summary(self, tree, search_keys):
+        leaves = 0
+
+        def inspect(node):
+            nonlocal leaves
+            if node is None:
+                return -1
+            left_height = inspect(node.getLeftChild())
+            right_height = inspect(node.getRightChild())
+            if node.isLeaf():
+                leaves += 1
+            return max(left_height, right_height) + 1
+
+        height = inspect(tree.root)
+        comparisons = sum(
+            self._search_key_comparisons(tree.root, key)
+            for key in search_keys
+        )
+        search_count = len(search_keys)
+        return {
+            "root_id": tree.root.getValue().getKey()[2] if tree.root else None,
+            "height": height,
+            "leaves": leaves,
+            "search_comparisons": comparisons,
+            "average_comparisons": comparisons / search_count if search_count else 0,
+        }
+
+    def _search_key_comparisons(self, root, key):
+        """Count one key comparison for every node visited on a K search."""
+        comparisons = 0
+        node = root
+        while node is not None:
+            comparisons += 1
+            current_key = tuple(node.getValue().getKey())
+            if key == current_key:
+                return comparisons
+            node = node.getLeftChild() if key < current_key else node.getRightChild()
+        return comparisons
 
     def tree_characteristics(self, observatory):
         """Describe each node using the existing Node height/depth methods."""
         parameter_service = getattr(self, "parameters_service", None)
         limit = parameter_service.getL() if parameter_service is not None else observatory.getL()
         trees = {}
+        summaries = {}
         for name, tree in (("avl", observatory.getAVLTree()), ("bst", observatory.getBSTTree())):
             nodes = {}
+            leaves = 0
+            max_depth = -1
 
             def visit(node):
+                nonlocal leaves, max_depth
                 if node is None:
                     return -1
                 left_height = visit(node.getLeftChild())
@@ -209,6 +295,9 @@ class QueryService:
                 event = node.getValue()
                 event_id = event.getKey()[2]
                 depth = node.getDepth(0)
+                max_depth = max(max_depth, depth)
+                if node.isLeaf():
+                    leaves += 1
                 priority = event.getKey()[0]
                 nodes[str(event_id)] = {
                     # BST nodes do not maintain the cached AVL height, so
@@ -220,9 +309,15 @@ class QueryService:
                 }
                 return max(left_height, right_height) + 1
 
-            visit(tree.root)
+            height = visit(tree.root)
             trees[name] = nodes
-        return {"ok": True, "limit": limit, "trees": trees}
+            summaries[name] = {
+                "root_id": tree.root.getValue().getKey()[2] if tree.root else None,
+                "height": height,
+                "max_depth": max_depth,
+                "leaves": leaves,
+            }
+        return {"ok": True, "limit": limit, "trees": trees, "tree_summaries": summaries}
 
     @staticmethod
     def _is_expensive_access(priority, depth, limit):
