@@ -47,6 +47,13 @@ const coreRoutes: AppRoute[] = [
         requiresScenario: true
     },
     {
+        path: "/events/consult",
+        title: "Consultar eventos",
+        component: ConsultEvent,
+        group: "events",
+        requiresScenario: true
+    },
+    {
         path: "/events/create-events",
         title: "Crear eventos",
         component: CreateEvent,
