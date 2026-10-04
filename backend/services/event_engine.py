@@ -50,9 +50,14 @@ class EventEngine:
         self._recovery_before_version = 0
         self._recovery_before_indicators = {}
         self.clock_realtime_interval = 1.0
+        # The clock is broadcast every second, but disk persistence is less
+        # frequent because the simulation state does not need one file write
+        # per visual tick.
+        self.clock_persistence_interval = 10.0
         self.clock_realtime_running = False
         self._clock_realtime_anchor_monotonic = None
         self._clock_realtime_anchor_time = None
+        self._clock_last_persist_monotonic = None
 
     def set_scenario_manager(self, manager):
         """Register the manager that prepares the generator after a load."""
@@ -1095,8 +1100,10 @@ class EventEngine:
             return
 
         self.clock_realtime_running = True
-        self._clock_realtime_anchor_monotonic = time.monotonic()
+        now = time.monotonic()
+        self._clock_realtime_anchor_monotonic = now
         self._clock_realtime_anchor_time = self.observatory.getClock().getCurrentTime()
+        self._clock_last_persist_monotonic = now
         self.socketio.start_background_task(self._run_realtime_clock)
 
     def _stop_realtime_clock_locked(self):
@@ -1104,11 +1111,16 @@ class EventEngine:
         self.clock_realtime_running = False
         self._clock_realtime_anchor_monotonic = None
         self._clock_realtime_anchor_time = None
+        self._clock_last_persist_monotonic = None
 
     def _reset_realtime_anchor_locked(self, current_time):
         """Continue real-time progression from a manually selected instant."""
-        self._clock_realtime_anchor_monotonic = time.monotonic()
+        now = time.monotonic()
+        self._clock_realtime_anchor_monotonic = now
         self._clock_realtime_anchor_time = current_time
+        # Manual advances persist immediately in their own operation, so the
+        # next automatic checkpoint starts a fresh ten-second interval.
+        self._clock_last_persist_monotonic = now
 
     def _run_realtime_clock(self):
         """Advance and broadcast the simulation clock once per real second."""
@@ -1119,9 +1131,8 @@ class EventEngine:
                 if not self.clock_realtime_running or self.observatory is None:
                     return
 
-                elapsed_seconds = int(
-                    time.monotonic() - self._clock_realtime_anchor_monotonic
-                )
+                now = time.monotonic()
+                elapsed_seconds = int(now - self._clock_realtime_anchor_monotonic)
                 target_time = self._clock_realtime_anchor_time + timedelta(
                     seconds=elapsed_seconds
                 )
@@ -1132,7 +1143,9 @@ class EventEngine:
 
                 clock.advanceTo(target_time)
                 self.service.metrics_service.refresh_derived_metrics(self.observatory)
-                self.service.saveObservatory(self.observatory)
+                if now - self._clock_last_persist_monotonic >= self.clock_persistence_interval:
+                    self.service.saveObservatory(self.observatory)
+                    self._clock_last_persist_monotonic = now
                 payload = {
                     "scenarioId": self.scenario_id,
                     "currentTime": clock.getCurrentTimeText(),

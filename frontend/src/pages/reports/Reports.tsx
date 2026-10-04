@@ -109,9 +109,6 @@ const Reports = () => {
                 <button type="button" onClick={() => navigate("/reports/create")} className="flex items-center gap-3 rounded-lg bg-[#04172f] p-4 text-left text-white shadow-sm transition hover:bg-[#08264d]"><FilePlus2 size={21} /><span><strong className="block text-sm">Crear manualmente</strong><small className="text-xs text-white/75">Nuevo reporte</small></span></button>
             </div>
 
-            <input ref={fileInputRef} type="file" accept=".json,application/json" className="sr-only" disabled={loading} onChange={(event) => { void selectFile(event.target.files?.[0] ?? null); event.target.value = ""; }} />
-            <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm"><ReportsUploader selectedFileName={fileName} error={validationError} /></div>
-
             {response && (
                 <div className={`space-y-4 rounded-lg border p-6 ${response.ok ? "border-emerald-300 bg-emerald-50 text-emerald-900" : "border-red-300 bg-red-50 text-red-900"}`}>
                     <h2 className="text-xl font-semibold">Resultado</h2>
