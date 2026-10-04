@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import type { ChangeEvent } from "react";
 import { AlertCircle, CheckCircle2, FilePlus2, ListChecks, LoaderCircle, Pause, Play, Sparkles, SkipForward } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import ReportsUploader from "../../components/reports/ReportsUploader";
@@ -39,26 +40,28 @@ const Reports = () => {
         void reportService.getSnapshot().then(setQueueSnapshot);
     }, []);
 
-    const selectFile = async (file: File | null) => {
-        setResponse(null);
-        setStepResult(null);
-        setValidationError(null);
-        setFileName(file?.name ?? null);
+    const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        event.target.value = "";
         if (!file) return;
 
+        setFileName(file.name);
+        setValidationError(null);
+        setResponse(null);
         setLoading(true);
+
         try {
-            const parsed = await parseReportsFile(file);
-            const result = await reportService.enqueueReports(parsed);
+            const payload = await parseReportsFile(file);
+            const result = await reportService.enqueueReports(payload);
             setResponse(result);
-            setQueueSnapshot(result.snapshot);
+            if (result.snapshot) setQueueSnapshot(result.snapshot);
         } catch (error) {
-            setFileName(null);
-            setValidationError(error instanceof Error ? error.message : "No se pudo validar el archivo.");
+            setValidationError(error instanceof Error ? error.message : "No se pudo leer el archivo.");
         } finally {
             setLoading(false);
         }
     };
+
 
     const processNext = async () => {
         if (processingAction || !queueSnapshot?.size) return;
@@ -108,6 +111,17 @@ const Reports = () => {
                 <button type="button" onClick={() => fileInputRef.current?.click()} disabled={loading} className="flex items-center gap-3 rounded-lg border border-[#0b6e69] bg-[#e7f5f2] p-4 text-left shadow-sm transition hover:bg-[#d8efeb] disabled:cursor-not-allowed disabled:opacity-60"><FilePlus2 className="text-[#0b6e69]" size={21} /><span><strong className="block text-sm text-slate-900">Cargar archivo</strong><small className="text-xs text-slate-600">Importar JSON</small></span></button>
                 <button type="button" onClick={() => navigate("/reports/create")} className="flex items-center gap-3 rounded-lg bg-[#04172f] p-4 text-left text-white shadow-sm transition hover:bg-[#08264d]"><FilePlus2 size={21} /><span><strong className="block text-sm">Crear manualmente</strong><small className="text-xs text-white/75">Nuevo reporte</small></span></button>
             </div>
+
+            <input
+                ref={fileInputRef}
+                type="file"
+                accept=".json,application/json"
+                onChange={(event) => void handleFileChange(event)}
+                className="hidden"
+                aria-label="Seleccionar archivo JSON de reportes"
+            />
+
+            <ReportsUploader selectedFileName={fileName} error={validationError} />
 
             {response && (
                 <div className={`space-y-4 rounded-lg border p-6 ${response.ok ? "border-emerald-300 bg-emerald-50 text-emerald-900" : "border-red-300 bg-red-50 text-red-900"}`}>
