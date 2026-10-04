@@ -51,7 +51,7 @@ class ReportProcessor:
             return StepResult("rejected_invalid", invalid_reason, event_id, revision, station_id)
 
         history = observatory.getHistory()
-        if event_id in history.getDeletedIds():
+        if event_id in history.getDeleted():
             observatory.getMetrics().incrementDiscardedReports()
             return StepResult("rejected_deleted", "El evento fue eliminado y no puede reanudarse", event_id, revision, station_id)
 
