@@ -6,4 +6,5 @@ export interface AppRoute {
     component: LazyExoticComponent<ComponentType>;
     group?: string;
     requiresScenario?: boolean;
+    hideInSidebar?: boolean;
 }

@@ -72,26 +72,55 @@ def createEvent():
     if not response["success"]:
         return jsonify(response), 400
     return jsonify(response), 201
-
-""" @app.route("/api/scenario", methods=["POST"])
-def load_scenario():
-    data = request.get_json()
-    A loadScenario method would read, validate, and build a SeismicObservatory
-    from the JSON payload.
-    observatory = obs_service.loadScenario(data)
-    generator_manager.load_scenario(observatory)
-    
-    return jsonify({
-        "message": "Escenario cargado correctamente",
-        "stations": len(observatory.getStations())
-    }), 200 """
-    
+ 
 # Legacy JSON loading endpoint retained for API compatibility.
 @app.route("/api/scenario", methods=["GET"])
 def load_scenario():
     data = request.get_json()
     result = load_scenario_manager.load(data)
     return jsonify(result)
+
+@app.route("/api/events-list", methods=["GET"])
+def getEvents():
+    return jsonify(event_engine.get_active_events())
+
+# Route for editing a event based on its id
+@app.route("/api/events/<int:event_id>", methods=["GET"])
+def get_event_by_id(event_id):
+    event = event_engine.get_active_event(event_id)
+    if event is None:
+        return jsonify({
+            "ok": False,
+            "reason": "event_not_found"
+        }), 404
+    return jsonify(event)
+
+@app.route("/api/events/<int:event_id>/attention-status", methods=["PATCH"])
+def update_event_attention_status(event_id):
+    result = event_engine.mark_event_as_reviewed(event_id)
+    
+    if not result["ok"]:
+        if result["reason"] == "no_event":
+            status_code = 404
+        else:
+            status_code = 400
+        return jsonify(result), status_code
+    
+    return jsonify(result["event"])
+
+@app.route("/api/events/<int:event_id>", methods=["DELETE"])
+def delete_event(event_id):
+    result = event_engine.delete_event_by_id(event_id)
+    
+    if not result["ok"]:
+        if result["reason"] == "event_not_found":
+            return jsonify(result), 404
+        if result["reason"] in ["busy", "no_scenario"]:
+            return jsonify(result), 404
+        
+        return jsonify(result), 400
+    
+    return jsonify(result), 200
     
 @socketio.on("connect")
 def handle_connect():
@@ -130,6 +159,16 @@ def handle_manual_event_create(data):
         return {"ok": False, "reason": str(error)}
 
     return {"ok": True, "operation": operation}
+
+# Receptor of the manual event update change or solicitude
+@socketio.on("manual-event:update")
+def handle_manual_event_update(data):
+    if not isinstance(data, dict):
+        return {
+            "ok": False,
+            "Reason": "invalid_request"
+        }
+    return event_engine.update_manual_event(data)
 
 @socketio.on("generation:start")
 def handle_generation_start(_data=None):
@@ -184,6 +223,7 @@ def handle_structure_audit(_data=None):
     """Delegate the read-only audit to the engine-owned service boundary."""
     print("Solicitud de auditar estructura")
     return event_engine.audit_structure()
+
 @socketio.on("scenario:load")
 def handle_scenario_load(data):
     if not isinstance(data, dict):

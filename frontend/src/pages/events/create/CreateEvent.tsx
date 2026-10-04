@@ -1,7 +1,10 @@
 import { useState, type FormEvent, type ReactNode } from "react";
 import { useObservable } from "../../../stores/useObservable";
 import { scenarioStore } from "../../../stores/scenario/ScenarioStore";
-import { eventCreationService, type ManualEventPayload } from "../../../services/socket/eventCreationService";
+import { eventCreationService } from "../../../services/socket/eventCreationService";
+import type { EventFormValues } from "../../../models/types/event/EventFormValues";
+import EventForm from "../../../components/events/EventsForm";
+import type { ManualEventPayload } from "../../../models/interfaces/events/ManualEventPayload";
 
 type View = "options" | "manual";
 
@@ -22,7 +25,7 @@ const CreateEvent = () => {
     const [minimumDatetime, setMinimumDatetime] = useState("");
     const [message, setMessage] = useState<string | null>(null);
     const [submitting, setSubmitting] = useState(false);
-    const [form, setForm] = useState({
+    const [form, setForm] = useState<EventFormValues>({
         id: "",
         magnitude: "",
         depth: "",
@@ -112,27 +115,25 @@ const CreateEvent = () => {
                     <h1 className="text-3xl font-bold text-gray-900">Crear evento manual</h1>
                     <p className="mt-1 text-gray-600">La fecha y hora parten del reloj de simulación y no pueden superarlo.</p>
                 </div>
-                <form onSubmit={submitManual} className="grid gap-5 rounded-lg border border-gray-200 bg-white p-6 shadow-sm md:grid-cols-2">
-                    <Field label="ID numérico"><input required min="1" max="999999" step="1" type="number" value={form.id} onChange={(e) => setForm({ ...form, id: e.target.value })} /></Field>
-                    <Field label="Magnitud"><input required min="-2" max="10" step="0.1" type="number" value={form.magnitude} onChange={(e) => setForm({ ...form, magnitude: e.target.value })} /></Field>
-                    <Field label="Profundidad (km)"><input required min="0" max="700" step="0.1" type="number" value={form.depth} onChange={(e) => setForm({ ...form, depth: e.target.value })} /></Field>
-                    <Field label="Coordenada X (km)"><input required min="0" max="1000" step="0.1 " type="number" value={form.epicenter_x} onChange={(e) => setForm({ ...form, epicenter_x: e.target.value })} /></Field>
-                    <Field label="Coordenada Y (km)"><input required min="0" max="1000" step="0.1" type="number" value={form.epicenter_y} onChange={(e) => setForm({ ...form, epicenter_y: e.target.value })} /></Field>
-                    <Field label="Fecha y hora"><input required min={minimumDatetime} type="datetime-local" value={form.datetime} onChange={(e) => setForm({ ...form, datetime: e.target.value })} /></Field>
-                    <Field label="Estación"><select required value={form.station} onChange={(e) => setForm({ ...form, station: e.target.value })}><option value="">Selecciona una estación</option>{scenario.stations.map((station) => <option key={station.id} value={station.id}>{station.name} (#{station.id})</option>)}</select></Field>
-                    <div className="flex items-end"><button disabled={submitting} type="submit" className="w-full rounded bg-[#04172f] px-4 py-2 font-medium text-white hover:bg-[#08264d] disabled:opacity-60">{submitting ? "Creando…" : "Crear evento"}</button></div>
-                    {message && <p className="md:col-span-2 rounded border border-gray-200 bg-gray-50 p-3 text-sm text-gray-700">{message}</p>}
-                </form>
+                <EventForm
+                    mode="create"
+                    values={form}
+                    stations={scenario.stations}
+                    submitting={submitting}
+                    minimumDatetime={minimumDatetime}
+                    submitText="Crear evento"
+                    onChange={setForm}
+                    onSubmit={submitManual}
+                />
+
+                {message && (
+                    <p className="rounded border border-gray-200 bg-gray-50 p-3 text-sm text-gray-700">
+                        {message}
+                    </p>
+                )}
             </div>
         </section>
     );
 };
-
-const Field = ({ label, children }: { label: string; children: ReactNode }) => (
-    <label className="grid gap-1 text-sm font-medium text-gray-700">
-        {label}
-        <span className="[&>input]:w-full [&>input]:rounded [&>input]:border [&>input]:border-gray-300 [&>input]:px-3 [&>input]:py-2 [&>select]:w-full [&>select]:rounded [&>select]:border [&>select]:border-gray-300 [&>select]:px-3 [&>select]:py-2">{children}</span>
-    </label>
-);
 
 export default CreateEvent;
