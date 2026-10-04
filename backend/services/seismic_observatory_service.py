@@ -3,6 +3,7 @@ from datetime import datetime
 from uuid import uuid4
 from backend.repositories.seismic_observatory_repository import SeismicObservatoryRepository
 from backend.services.metrics.metrics_service import MetricsService
+from backend.services.ai_client.scenario_generator_client import ScenarioGeneratorService
 from backend.models.seismic_observatory import SeismicObservatory
 from backend.models.station import Station
 from backend.models.zone import Zone
@@ -201,23 +202,9 @@ class SeismicObservatoryService:
     def loadScenarioFromAI(self, ai_mode):
         # Aún no hay generación de escenarios con la IA: "empty" usa una
         # configuración base (estaciones y zonas fijas, sin eventos).
-        if ai_mode != "empty":
-            raise ScenarioValidationError([
-                "La generación de escenarios con IA en el modo '" + str(ai_mode) + "' aún no está implementada"
-            ])
-        observatory = self.buildScenario({
-            "execution_mode": "normal",
-            "stations": [
-                {"id": 1, "name": "Estación Norte", "x": 250, "y": 750},
-                {"id": 2, "name": "Estación Centro", "x": 500, "y": 500},
-                {"id": 3, "name": "Estación Sur", "x": 750, "y": 250},
-            ],
-            "zones": [
-                {"id": 1, "name": "Zona Suroccidental", "x_min": 0, "x_max": 500, "y_min": 0, "y_max": 500, "is_populated": True},
-                {"id": 2, "name": "Zona Nororiental", "x_min": 500, "x_max": 1000, "y_min": 500, "y_max": 1000, "is_populated": False},
-            ],
-            "events": [],
-        })
+        scenario_generator_service = ScenarioGeneratorService()
+        data = scenario_generator_service.generate(ai_mode)
+        observatory = self.buildScenario(data)
         self.repository.save(observatory)
         return observatory
 

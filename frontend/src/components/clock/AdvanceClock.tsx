@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Clock3, FastForward } from "lucide-react";
 import { useObservable } from "../../stores/useObservable";
 import { clockStore } from "../../stores/clock/clockStore";
@@ -12,7 +12,13 @@ function formatClock(value: string | null): string {
 const AdvanceClock = () => {
     const clock = useObservable(clockStore);
     const [hours, setHours] = useState("1");
+    const [localTime, setLocalTime] = useState(() => new Date());
     const pending = clock.operation === "pending";
+
+    useEffect(() => {
+        const timer = window.setInterval(() => setLocalTime(new Date()), 1000);
+        return () => window.clearInterval(timer);
+    }, []);
 
     const submit = () => {
         const value = Number(hours);
@@ -26,7 +32,10 @@ const AdvanceClock = () => {
                 <Clock3 size={16} aria-hidden="true" />
                 <span>Reloj de simulación</span>
             </div>
-            <p className="mb-3 text-xs text-blue-100">{formatClock(clock.currentTime)}</p>
+            <div className="mb-3 space-y-1 text-xs text-blue-100">
+                <p><span className="font-semibold text-white">UTC (simulación):</span> {formatClock(clock.currentTime)}</p>
+                <p><span className="font-semibold text-white">Hora local:</span> {localTime.toLocaleString("es-CO", { dateStyle: "short", timeStyle: "medium" })}</p>
+            </div>
             <div className="flex items-end gap-2">
                 <label className="min-w-0 flex-1 text-xs text-blue-100">
                     Horas

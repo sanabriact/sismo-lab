@@ -67,7 +67,7 @@ def validate_ai_response(data, clock):
 
 class AIEventClient:
     def __init__(self):
-        api_key = os.getenv("GROQ_API_KEY")
+        api_key = os.getenv("GROQ_API_KEY_REPORTS")
         model = os.getenv("GROQ_MODEL")
         self.client = Groq(api_key=api_key)
         self.model = model
