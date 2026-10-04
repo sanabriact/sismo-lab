@@ -55,6 +55,8 @@ def test_create_event_undo_restores_the_previous_state():
 
     assert action.getActionType() == "CREATE_EVENT"
     assert restored.searchEventById(7) is None
+    assert restored.getHistory().getDeletedIds() == set()
+    assert restored.getHistory().listHistoricIds == []
     assert service.size(restored) == 0
 
 
@@ -104,3 +106,36 @@ def test_unknown_action_type_is_rejected():
     service = ActionStackService()
     with pytest.raises(ActionStackError, match="Tipo de acción inválido"):
         service.record_action(make_observatory(), "ROTATE_LEFT", {})
+
+
+def test_all_actions_store_compact_inverse_data():
+    action_types = [
+        "CREATE_EVENT",
+        "UPDATE_EVENT",
+        "DELETE_EVENT",
+        "ARCHIVE_BRANCH",
+        "MARK_REVIEWED",
+        "ADVANCE_CLOCK",
+        "CHANGE_PARAMETER",
+        "LOAD_SCENARIO",
+        "PROCESS_REPORT",
+        "RECOVER_AVL",
+    ]
+
+    for action_type in action_types:
+        observatory = make_observatory()
+        service = ActionStackService()
+        before = observatory.toVersion()
+
+        # The service receives the legacy input shape and compacts it before
+        # the action becomes part of the persisted stack.
+        service.record_action(observatory, action_type, before)
+        action = observatory.getActionStack().peek()
+
+        assert action.getBeforeSnapshot() is None
+        assert action.getUndoData()["version"] == 1
+        assert action.getInverseAction() is not None
+
+        restored, undone = service.undo(observatory)
+        assert undone.getActionType() == action_type
+        assert service.size(restored) == 0

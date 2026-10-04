@@ -1,3 +1,4 @@
+from copy import deepcopy
 from datetime import datetime, timezone
 from backend.models.zone import Zone
 from backend.structures.avl import AVL
@@ -219,7 +220,10 @@ class SeismicObservatory:
         self.report_queue.enqueue(report)
 
     def toVersion(self):
-        return {
+        # Return a detached value object. Some model serializers expose lists
+        # owned by the observatory, and undo snapshots must not change when a
+        # later operation mutates those lists.
+        version = {
             "avl_tree": objectToDict(self.avl_tree),
             "bst_tree": objectToDict(self.bst_tree),
             "stations": [objectToDict(s) for s in self.stations],
@@ -233,6 +237,7 @@ class SeismicObservatory:
             "metrics": objectToDict(self.metrics),
             "execution_mode": self.execution_mode,
         }
+        return deepcopy(version)
 
     def toDict(self):
         return {
