@@ -1,20 +1,20 @@
 {
-    "scenario_id": "f526924f-ac42-4eb5-a204-5cca455c2f5f",
+    "scenario_id": "dd75d861-74ce-45dd-8d9b-da4790356515",
     "avl_tree": {
         "root": {
             "value": {
                 "key": [
-                    3,
-                    6.5,
-                    2
+                    2,
+                    4.6,
+                    3
                 ],
-                "depth": 50,
-                "epicenter_x": 25,
-                "epicenter_y": 35,
-                "datetime": "2024-06-02T12:00:00+00:00",
+                "depth": 45.0,
+                "epicenter_x": 700.0,
+                "epicenter_y": 800.0,
+                "datetime": "2026-09-28T02:05:00+00:00",
                 "revision": 1,
                 "reporting_stations": [
-                    "ST-003"
+                    3
                 ],
                 "attention_status": "pending",
                 "event_status": "active",
@@ -25,38 +25,38 @@
             "left_child": {
                 "value": {
                     "key": [
-                        2,
-                        5.5,
+                        1,
+                        2.4,
                         5
                     ],
-                    "depth": 30,
-                    "epicenter_x": 20,
-                    "epicenter_y": 55,
-                    "datetime": "2024-06-06T12:00:00+00:00",
+                    "depth": 8.0,
+                    "epicenter_x": 400.0,
+                    "epicenter_y": 450.0,
+                    "datetime": "2026-09-28T11:00:00+00:00",
                     "revision": 1,
                     "reporting_stations": [
-                        "ST-001"
+                        2
                     ],
                     "attention_status": "pending",
                     "event_status": "active",
-                    "populated_zone": false,
+                    "populated_zone": true,
                     "expensive_access": false
                 },
                 "height": 2,
                 "left_child": {
                     "value": {
                         "key": [
-                            2,
-                            5.0,
-                            4
+                            1,
+                            1.9,
+                            7
                         ],
-                        "depth": 20,
-                        "epicenter_x": 35,
-                        "epicenter_y": 45,
-                        "datetime": "2024-06-04T12:00:00+00:00",
+                        "depth": 5.0,
+                        "epicenter_x": 600.0,
+                        "epicenter_y": 700.0,
+                        "datetime": "2026-09-28T19:45:00+00:00",
                         "revision": 1,
                         "reporting_stations": [
-                            "ST-003"
+                            1
                         ],
                         "attention_status": "pending",
                         "event_status": "active",
@@ -68,16 +68,16 @@
                         "value": {
                             "key": [
                                 1,
-                                4.0,
-                                6
+                                0.8,
+                                11
                             ],
-                            "depth": 35,
-                            "epicenter_x": 60,
-                            "epicenter_y": 65,
-                            "datetime": "2024-02-29T12:00:00+00:00",
-                            "revision": -1,
+                            "depth": 3.0,
+                            "epicenter_x": 950.0,
+                            "epicenter_y": 950.0,
+                            "datetime": "2026-09-29T12:25:00+00:00",
+                            "revision": 1,
                             "reporting_stations": [
-                                "ST-003"
+                                2
                             ],
                             "attention_status": "pending",
                             "event_status": "active",
@@ -95,26 +95,50 @@
                 "right_child": {
                     "value": {
                         "key": [
-                            3,
-                            6.0,
-                            3
+                            1,
+                            3.2,
+                            1
                         ],
-                        "depth": 15,
-                        "epicenter_x": 30,
-                        "epicenter_y": 40,
-                        "datetime": "2024-06-03T12:00:00+00:00",
+                        "depth": 12.5,
+                        "epicenter_x": 120.0,
+                        "epicenter_y": 340.0,
+                        "datetime": "2026-09-27T08:15:00+00:00",
                         "revision": 1,
                         "reporting_stations": [
-                            "ST-003"
+                            1
                         ],
                         "attention_status": "pending",
                         "event_status": "active",
-                        "populated_zone": false,
+                        "populated_zone": true,
                         "expensive_access": false
                     },
-                    "height": 0,
+                    "height": 1,
                     "left_child": null,
-                    "right_child": null,
+                    "right_child": {
+                        "value": {
+                            "key": [
+                                1,
+                                3.7,
+                                9
+                            ],
+                            "depth": 33.0,
+                            "epicenter_x": 750.0,
+                            "epicenter_y": 150.0,
+                            "datetime": "2026-09-29T06:50:00+00:00",
+                            "revision": 1,
+                            "reporting_stations": [
+                                3
+                            ],
+                            "attention_status": "pending",
+                            "event_status": "active",
+                            "populated_zone": true,
+                            "expensive_access": false
+                        },
+                        "height": 0,
+                        "left_child": null,
+                        "right_child": null,
+                        "node_creation_time": null
+                    },
                     "node_creation_time": null
                 },
                 "node_creation_time": null
@@ -123,47 +147,167 @@
                 "value": {
                     "key": [
                         3,
-                        7.0,
-                        1
+                        4.5,
+                        10
                     ],
-                    "depth": 10,
-                    "epicenter_x": 20,
-                    "epicenter_y": 30,
-                    "datetime": "2024-06-01T12:00:00+00:00",
+                    "depth": 20.0,
+                    "epicenter_x": 480.0,
+                    "epicenter_y": 480.0,
+                    "datetime": "2026-09-29T09:00:00+00:00",
                     "revision": 1,
                     "reporting_stations": [
-                        "ST-001"
+                        1
                     ],
                     "attention_status": "pending",
                     "event_status": "active",
-                    "populated_zone": false,
+                    "populated_zone": true,
                     "expensive_access": false
                 },
-                "height": 1,
-                "left_child": null,
-                "right_child": {
+                "height": 2,
+                "left_child": {
                     "value": {
                         "key": [
-                            3,
-                            7.0,
-                            7
+                            2,
+                            5.5,
+                            8
                         ],
-                        "depth": 25,
-                        "epicenter_x": 40,
-                        "epicenter_y": 50,
-                        "datetime": "2024-06-05T12:00:00+00:00",
+                        "depth": 90.0,
+                        "epicenter_x": 300.0,
+                        "epicenter_y": 600.0,
+                        "datetime": "2026-09-29T01:10:00+00:00",
                         "revision": 1,
                         "reporting_stations": [
-                            "ST-003"
+                            2
                         ],
                         "attention_status": "pending",
                         "event_status": "active",
                         "populated_zone": false,
                         "expensive_access": false
                     },
-                    "height": 0,
-                    "left_child": null,
-                    "right_child": null,
+                    "height": 1,
+                    "left_child": {
+                        "value": {
+                            "key": [
+                                2,
+                                5,
+                                99
+                            ],
+                            "depth": 34,
+                            "epicenter_x": 1000,
+                            "epicenter_y": 1000,
+                            "datetime": "2026-09-29T20:00:00+00:00",
+                            "revision": 1,
+                            "reporting_stations": [
+                                2
+                            ],
+                            "attention_status": "pending",
+                            "event_status": "active",
+                            "populated_zone": false,
+                            "expensive_access": false
+                        },
+                        "height": 0,
+                        "left_child": null,
+                        "right_child": null,
+                        "node_creation_time": null
+                    },
+                    "right_child": {
+                        "value": {
+                            "key": [
+                                2,
+                                5.9,
+                                12
+                            ],
+                            "depth": 110.0,
+                            "epicenter_x": 150.0,
+                            "epicenter_y": 900.0,
+                            "datetime": "2026-09-29T15:35:00+00:00",
+                            "revision": 1,
+                            "reporting_stations": [
+                                3
+                            ],
+                            "attention_status": "pending",
+                            "event_status": "active",
+                            "populated_zone": false,
+                            "expensive_access": false
+                        },
+                        "height": 0,
+                        "left_child": null,
+                        "right_child": null,
+                        "node_creation_time": null
+                    },
+                    "node_creation_time": null
+                },
+                "right_child": {
+                    "value": {
+                        "key": [
+                            3,
+                            5.1,
+                            2
+                        ],
+                        "depth": 18.0,
+                        "epicenter_x": 210.0,
+                        "epicenter_y": 150.0,
+                        "datetime": "2026-09-27T14:40:00+00:00",
+                        "revision": 1,
+                        "reporting_stations": [
+                            2
+                        ],
+                        "attention_status": "pending",
+                        "event_status": "active",
+                        "populated_zone": true,
+                        "expensive_access": false
+                    },
+                    "height": 1,
+                    "left_child": {
+                        "value": {
+                            "key": [
+                                3,
+                                4.8,
+                                6
+                            ],
+                            "depth": 25.0,
+                            "epicenter_x": 90.0,
+                            "epicenter_y": 90.0,
+                            "datetime": "2026-09-28T16:20:00+00:00",
+                            "revision": 1,
+                            "reporting_stations": [
+                                3
+                            ],
+                            "attention_status": "pending",
+                            "event_status": "active",
+                            "populated_zone": true,
+                            "expensive_access": false
+                        },
+                        "height": 0,
+                        "left_child": null,
+                        "right_child": null,
+                        "node_creation_time": null
+                    },
+                    "right_child": {
+                        "value": {
+                            "key": [
+                                3,
+                                6.3,
+                                4
+                            ],
+                            "depth": 60.0,
+                            "epicenter_x": 850.0,
+                            "epicenter_y": 300.0,
+                            "datetime": "2026-09-28T09:30:00+00:00",
+                            "revision": 1,
+                            "reporting_stations": [
+                                1
+                            ],
+                            "attention_status": "pending",
+                            "event_status": "active",
+                            "populated_zone": true,
+                            "expensive_access": false
+                        },
+                        "height": 0,
+                        "left_child": null,
+                        "right_child": null,
+                        "node_creation_time": null
+                    },
                     "node_creation_time": null
                 },
                 "node_creation_time": null
@@ -175,59 +319,59 @@
         "root": {
             "value": {
                 "key": [
-                    3,
-                    7.0,
+                    1,
+                    3.2,
                     1
                 ],
-                "depth": 10,
-                "epicenter_x": 20,
-                "epicenter_y": 30,
-                "datetime": "2024-06-01T12:00:00+00:00",
+                "depth": 12.5,
+                "epicenter_x": 120.0,
+                "epicenter_y": 340.0,
+                "datetime": "2026-09-27T08:15:00+00:00",
                 "revision": 1,
                 "reporting_stations": [
-                    "ST-001"
+                    1
                 ],
                 "attention_status": "pending",
                 "event_status": "active",
-                "populated_zone": false,
+                "populated_zone": true,
                 "expensive_access": false
             },
             "height": 0,
             "left_child": {
                 "value": {
                     "key": [
-                        3,
-                        6.5,
-                        2
+                        1,
+                        2.4,
+                        5
                     ],
-                    "depth": 50,
-                    "epicenter_x": 25,
-                    "epicenter_y": 35,
-                    "datetime": "2024-06-02T12:00:00+00:00",
+                    "depth": 8.0,
+                    "epicenter_x": 400.0,
+                    "epicenter_y": 450.0,
+                    "datetime": "2026-09-28T11:00:00+00:00",
                     "revision": 1,
                     "reporting_stations": [
-                        "ST-003"
+                        2
                     ],
                     "attention_status": "pending",
                     "event_status": "active",
-                    "populated_zone": false,
+                    "populated_zone": true,
                     "expensive_access": false
                 },
                 "height": 0,
                 "left_child": {
                     "value": {
                         "key": [
-                            3,
-                            6.0,
-                            3
+                            1,
+                            1.9,
+                            7
                         ],
-                        "depth": 15,
-                        "epicenter_x": 30,
-                        "epicenter_y": 40,
-                        "datetime": "2024-06-03T12:00:00+00:00",
+                        "depth": 5.0,
+                        "epicenter_x": 600.0,
+                        "epicenter_y": 700.0,
+                        "datetime": "2026-09-28T19:45:00+00:00",
                         "revision": 1,
                         "reporting_stations": [
-                            "ST-003"
+                            1
                         ],
                         "attention_status": "pending",
                         "event_status": "active",
@@ -238,17 +382,17 @@
                     "left_child": {
                         "value": {
                             "key": [
-                                2,
-                                5.0,
-                                4
+                                1,
+                                0.8,
+                                11
                             ],
-                            "depth": 20,
-                            "epicenter_x": 35,
-                            "epicenter_y": 45,
-                            "datetime": "2024-06-04T12:00:00+00:00",
+                            "depth": 3.0,
+                            "epicenter_x": 950.0,
+                            "epicenter_y": 950.0,
+                            "datetime": "2026-09-29T12:25:00+00:00",
                             "revision": 1,
                             "reporting_stations": [
-                                "ST-003"
+                                2
                             ],
                             "attention_status": "pending",
                             "event_status": "active",
@@ -256,56 +400,8 @@
                             "expensive_access": false
                         },
                         "height": 0,
-                        "left_child": {
-                            "value": {
-                                "key": [
-                                    1,
-                                    4.0,
-                                    6
-                                ],
-                                "depth": 35,
-                                "epicenter_x": 60,
-                                "epicenter_y": 65,
-                                "datetime": "2024-02-29T12:00:00+00:00",
-                                "revision": -1,
-                                "reporting_stations": [
-                                    "ST-003"
-                                ],
-                                "attention_status": "pending",
-                                "event_status": "active",
-                                "populated_zone": false,
-                                "expensive_access": false
-                            },
-                            "height": 0,
-                            "left_child": null,
-                            "right_child": null,
-                            "node_creation_time": null
-                        },
-                        "right_child": {
-                            "value": {
-                                "key": [
-                                    2,
-                                    5.5,
-                                    5
-                                ],
-                                "depth": 30,
-                                "epicenter_x": 20,
-                                "epicenter_y": 55,
-                                "datetime": "2024-06-06T12:00:00+00:00",
-                                "revision": 1,
-                                "reporting_stations": [
-                                    "ST-001"
-                                ],
-                                "attention_status": "pending",
-                                "event_status": "active",
-                                "populated_zone": false,
-                                "expensive_access": false
-                            },
-                            "height": 0,
-                            "left_child": null,
-                            "right_child": null,
-                            "node_creation_time": null
-                        },
+                        "left_child": null,
+                        "right_child": null,
                         "node_creation_time": null
                     },
                     "right_child": null,
@@ -318,25 +414,217 @@
                 "value": {
                     "key": [
                         3,
-                        7.0,
-                        7
+                        5.1,
+                        2
                     ],
-                    "depth": 25,
-                    "epicenter_x": 40,
-                    "epicenter_y": 50,
-                    "datetime": "2024-06-05T12:00:00+00:00",
+                    "depth": 18.0,
+                    "epicenter_x": 210.0,
+                    "epicenter_y": 150.0,
+                    "datetime": "2026-09-27T14:40:00+00:00",
                     "revision": 1,
                     "reporting_stations": [
-                        "ST-003"
+                        2
                     ],
                     "attention_status": "pending",
                     "event_status": "active",
-                    "populated_zone": false,
+                    "populated_zone": true,
                     "expensive_access": false
                 },
                 "height": 0,
-                "left_child": null,
-                "right_child": null,
+                "left_child": {
+                    "value": {
+                        "key": [
+                            2,
+                            4.6,
+                            3
+                        ],
+                        "depth": 45.0,
+                        "epicenter_x": 700.0,
+                        "epicenter_y": 800.0,
+                        "datetime": "2026-09-28T02:05:00+00:00",
+                        "revision": 1,
+                        "reporting_stations": [
+                            3
+                        ],
+                        "attention_status": "pending",
+                        "event_status": "active",
+                        "populated_zone": false,
+                        "expensive_access": false
+                    },
+                    "height": 0,
+                    "left_child": {
+                        "value": {
+                            "key": [
+                                1,
+                                3.7,
+                                9
+                            ],
+                            "depth": 33.0,
+                            "epicenter_x": 750.0,
+                            "epicenter_y": 150.0,
+                            "datetime": "2026-09-29T06:50:00+00:00",
+                            "revision": 1,
+                            "reporting_stations": [
+                                3
+                            ],
+                            "attention_status": "pending",
+                            "event_status": "active",
+                            "populated_zone": true,
+                            "expensive_access": false
+                        },
+                        "height": 0,
+                        "left_child": null,
+                        "right_child": null,
+                        "node_creation_time": null
+                    },
+                    "right_child": {
+                        "value": {
+                            "key": [
+                                3,
+                                4.8,
+                                6
+                            ],
+                            "depth": 25.0,
+                            "epicenter_x": 90.0,
+                            "epicenter_y": 90.0,
+                            "datetime": "2026-09-28T16:20:00+00:00",
+                            "revision": 1,
+                            "reporting_stations": [
+                                3
+                            ],
+                            "attention_status": "pending",
+                            "event_status": "active",
+                            "populated_zone": true,
+                            "expensive_access": false
+                        },
+                        "height": 0,
+                        "left_child": {
+                            "value": {
+                                "key": [
+                                    2,
+                                    5.5,
+                                    8
+                                ],
+                                "depth": 90.0,
+                                "epicenter_x": 300.0,
+                                "epicenter_y": 600.0,
+                                "datetime": "2026-09-29T01:10:00+00:00",
+                                "revision": 1,
+                                "reporting_stations": [
+                                    2
+                                ],
+                                "attention_status": "pending",
+                                "event_status": "active",
+                                "populated_zone": false,
+                                "expensive_access": false
+                            },
+                            "height": 0,
+                            "left_child": {
+                                "value": {
+                                    "key": [
+                                        2,
+                                        5,
+                                        99
+                                    ],
+                                    "depth": 34,
+                                    "epicenter_x": 1000,
+                                    "epicenter_y": 1000,
+                                    "datetime": "2026-09-29T20:00:00+00:00",
+                                    "revision": 1,
+                                    "reporting_stations": [
+                                        2
+                                    ],
+                                    "attention_status": "pending",
+                                    "event_status": "active",
+                                    "populated_zone": false,
+                                    "expensive_access": false
+                                },
+                                "height": 0,
+                                "left_child": null,
+                                "right_child": null,
+                                "node_creation_time": null
+                            },
+                            "right_child": {
+                                "value": {
+                                    "key": [
+                                        3,
+                                        4.5,
+                                        10
+                                    ],
+                                    "depth": 20.0,
+                                    "epicenter_x": 480.0,
+                                    "epicenter_y": 480.0,
+                                    "datetime": "2026-09-29T09:00:00+00:00",
+                                    "revision": 1,
+                                    "reporting_stations": [
+                                        1
+                                    ],
+                                    "attention_status": "pending",
+                                    "event_status": "active",
+                                    "populated_zone": true,
+                                    "expensive_access": false
+                                },
+                                "height": 0,
+                                "left_child": {
+                                    "value": {
+                                        "key": [
+                                            2,
+                                            5.9,
+                                            12
+                                        ],
+                                        "depth": 110.0,
+                                        "epicenter_x": 150.0,
+                                        "epicenter_y": 900.0,
+                                        "datetime": "2026-09-29T15:35:00+00:00",
+                                        "revision": 1,
+                                        "reporting_stations": [
+                                            3
+                                        ],
+                                        "attention_status": "pending",
+                                        "event_status": "active",
+                                        "populated_zone": false,
+                                        "expensive_access": false
+                                    },
+                                    "height": 0,
+                                    "left_child": null,
+                                    "right_child": null,
+                                    "node_creation_time": null
+                                },
+                                "right_child": null,
+                                "node_creation_time": null
+                            },
+                            "node_creation_time": null
+                        },
+                        "right_child": null,
+                        "node_creation_time": null
+                    },
+                    "node_creation_time": null
+                },
+                "right_child": {
+                    "value": {
+                        "key": [
+                            3,
+                            6.3,
+                            4
+                        ],
+                        "depth": 60.0,
+                        "epicenter_x": 850.0,
+                        "epicenter_y": 300.0,
+                        "datetime": "2026-09-28T09:30:00+00:00",
+                        "revision": 1,
+                        "reporting_stations": [
+                            1
+                        ],
+                        "attention_status": "pending",
+                        "event_status": "active",
+                        "populated_zone": true,
+                        "expensive_access": false
+                    },
+                    "height": 0,
+                    "left_child": null,
+                    "right_child": null,
+                    "node_creation_time": null
+                },
                 "node_creation_time": null
             },
             "node_creation_time": null
@@ -344,66 +632,51 @@
     },
     "stations": [
         {
-            "id": "ST-001",
-            "name": "S1",
-            "x": 10,
-            "y": 10
+            "id": 1,
+            "name": "Estación Norte",
+            "x": 300,
+            "y": 500
         },
         {
-            "id": "ST-002",
-            "name": "S2",
+            "id": 2,
+            "name": "Estación Centro",
             "x": 500,
-            "y": 20
+            "y": 500
         },
         {
-            "id": "ST-003",
-            "name": "S3",
-            "x": 30,
-            "y": 5
-        },
-        {
-            "id": "ST-004",
-            "name": "S4",
-            "x": 40,
-            "y": 40
+            "id": 3,
+            "name": "Estación Sur",
+            "x": 800,
+            "y": 800
         }
     ],
     "zones": [
         {
-            "id": "z1",
-            "name": "Zona Norte",
+            "id": 1,
+            "name": "Zona 1",
             "x_min": 0,
-            "x_max": 400,
-            "y_min": 600,
-            "y_max": 1000,
-            "is_populated": true
-        },
-        {
-            "id": "z2",
-            "name": "Zona Sur",
-            "x_min": 200,
-            "x_max": 300,
+            "x_max": 500,
             "y_min": 0,
-            "y_max": 300,
+            "y_max": 500,
             "is_populated": true
         },
         {
-            "id": "z3",
-            "name": "Zona Este",
+            "id": 2,
+            "name": "Zona 2",
             "x_min": 500,
-            "x_max": 900,
-            "y_min": 200,
-            "y_max": 800,
+            "x_max": 1000,
+            "y_min": 500,
+            "y_max": 1000,
             "is_populated": false
         },
         {
-            "id": "z4",
-            "name": "Zona Oeste",
-            "x_min": 0,
-            "x_max": 100,
+            "id": 3,
+            "name": "Zona 3",
+            "x_min": 500,
+            "x_max": 1000,
             "y_min": 0,
-            "y_max": 100,
-            "is_populated": false
+            "y_max": 500,
+            "is_populated": true
         }
     ],
     "history": {
@@ -418,7 +691,13 @@
             4,
             5,
             6,
-            7
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            99
         ]
     },
     "report_queue": {
@@ -428,7 +707,7 @@
         "items": [
             {
                 "action_type": "LOAD_SCENARIO",
-                "datetime": "2026-09-13T10:00:00+00:00",
+                "datetime": "2026-09-29T20:00:00+00:00",
                 "before_snapshot": null,
                 "inverse_action": "CLEAR_SCENARIO",
                 "undo_data": {
@@ -438,11 +717,704 @@
                 "metadata": {
                     "source": "scenario_load"
                 }
+            },
+            {
+                "action_type": "CREATE_EVENT",
+                "datetime": "2026-09-29T20:00:24+00:00",
+                "before_snapshot": null,
+                "inverse_action": "REMOVE_CHANGE",
+                "undo_data": {
+                    "version": 1,
+                    "changes": [
+                        {
+                            "path": [
+                                "history",
+                                "listHistoricIds"
+                            ],
+                            "exists": true,
+                            "value": [
+                                1,
+                                2,
+                                3,
+                                4,
+                                5,
+                                6,
+                                7,
+                                8,
+                                9,
+                                10,
+                                11,
+                                12
+                            ]
+                        },
+                        {
+                            "path": [
+                                "bst_tree",
+                                "root",
+                                "right_child",
+                                "left_child",
+                                "right_child",
+                                "left_child",
+                                "left_child"
+                            ],
+                            "exists": true,
+                            "value": null
+                        },
+                        {
+                            "path": [
+                                "metrics",
+                                "events_by_priority",
+                                2
+                            ],
+                            "exists": true,
+                            "value": 3
+                        },
+                        {
+                            "path": [
+                                "metrics",
+                                "active_events"
+                            ],
+                            "exists": true,
+                            "value": 12
+                        },
+                        {
+                            "path": [
+                                "metrics",
+                                "pending_attention"
+                            ],
+                            "exists": true,
+                            "value": 12
+                        },
+                        {
+                            "path": [
+                                "association_manager",
+                                "candidates",
+                                "99"
+                            ],
+                            "exists": false
+                        },
+                        {
+                            "path": [
+                                "avl_tree",
+                                "root",
+                                "right_child",
+                                "left_child",
+                                "left_child"
+                            ],
+                            "exists": true,
+                            "value": null
+                        }
+                    ]
+                },
+                "metadata": {
+                    "metrics_before": {
+                        "tree": {
+                            "active_events": 12,
+                            "height": 3,
+                            "leaves": 5,
+                            "inorder": [
+                                [
+                                    1,
+                                    0.8,
+                                    11
+                                ],
+                                [
+                                    1,
+                                    1.9,
+                                    7
+                                ],
+                                [
+                                    1,
+                                    2.4,
+                                    5
+                                ],
+                                [
+                                    1,
+                                    3.2,
+                                    1
+                                ],
+                                [
+                                    1,
+                                    3.7,
+                                    9
+                                ],
+                                [
+                                    2,
+                                    4.6,
+                                    3
+                                ],
+                                [
+                                    2,
+                                    5.5,
+                                    8
+                                ],
+                                [
+                                    2,
+                                    5.9,
+                                    12
+                                ],
+                                [
+                                    3,
+                                    4.5,
+                                    10
+                                ],
+                                [
+                                    3,
+                                    4.8,
+                                    6
+                                ],
+                                [
+                                    3,
+                                    5.1,
+                                    2
+                                ],
+                                [
+                                    3,
+                                    6.3,
+                                    4
+                                ]
+                            ],
+                            "preorder": [
+                                [
+                                    2,
+                                    4.6,
+                                    3
+                                ],
+                                [
+                                    1,
+                                    2.4,
+                                    5
+                                ],
+                                [
+                                    1,
+                                    1.9,
+                                    7
+                                ],
+                                [
+                                    1,
+                                    0.8,
+                                    11
+                                ],
+                                [
+                                    1,
+                                    3.2,
+                                    1
+                                ],
+                                [
+                                    1,
+                                    3.7,
+                                    9
+                                ],
+                                [
+                                    3,
+                                    4.5,
+                                    10
+                                ],
+                                [
+                                    2,
+                                    5.5,
+                                    8
+                                ],
+                                [
+                                    2,
+                                    5.9,
+                                    12
+                                ],
+                                [
+                                    3,
+                                    5.1,
+                                    2
+                                ],
+                                [
+                                    3,
+                                    4.8,
+                                    6
+                                ],
+                                [
+                                    3,
+                                    6.3,
+                                    4
+                                ]
+                            ],
+                            "postorder": [
+                                [
+                                    1,
+                                    0.8,
+                                    11
+                                ],
+                                [
+                                    1,
+                                    1.9,
+                                    7
+                                ],
+                                [
+                                    1,
+                                    3.7,
+                                    9
+                                ],
+                                [
+                                    1,
+                                    3.2,
+                                    1
+                                ],
+                                [
+                                    1,
+                                    2.4,
+                                    5
+                                ],
+                                [
+                                    2,
+                                    5.9,
+                                    12
+                                ],
+                                [
+                                    2,
+                                    5.5,
+                                    8
+                                ],
+                                [
+                                    3,
+                                    4.8,
+                                    6
+                                ],
+                                [
+                                    3,
+                                    6.3,
+                                    4
+                                ],
+                                [
+                                    3,
+                                    5.1,
+                                    2
+                                ],
+                                [
+                                    3,
+                                    4.5,
+                                    10
+                                ],
+                                [
+                                    2,
+                                    4.6,
+                                    3
+                                ]
+                            ],
+                            "levels": [
+                                [
+                                    2,
+                                    4.6,
+                                    3
+                                ],
+                                [
+                                    1,
+                                    2.4,
+                                    5
+                                ],
+                                [
+                                    3,
+                                    4.5,
+                                    10
+                                ],
+                                [
+                                    1,
+                                    1.9,
+                                    7
+                                ],
+                                [
+                                    1,
+                                    3.2,
+                                    1
+                                ],
+                                [
+                                    2,
+                                    5.5,
+                                    8
+                                ],
+                                [
+                                    3,
+                                    5.1,
+                                    2
+                                ],
+                                [
+                                    1,
+                                    0.8,
+                                    11
+                                ],
+                                [
+                                    1,
+                                    3.7,
+                                    9
+                                ],
+                                [
+                                    2,
+                                    5.9,
+                                    12
+                                ],
+                                [
+                                    3,
+                                    4.8,
+                                    6
+                                ],
+                                [
+                                    3,
+                                    6.3,
+                                    4
+                                ]
+                            ]
+                        },
+                        "counters": {
+                            "active_events": 12,
+                            "historical_events": 0,
+                            "events_by_priority": {
+                                "1": 5,
+                                "2": 3,
+                                "3": 4
+                            },
+                            "pending_attention": 12,
+                            "high_cost_access_events": 0,
+                            "accepted_corrections": 0,
+                            "discarded_reports": 0,
+                            "conflicts": 0,
+                            "mass_archives": 0,
+                            "archived_events": 0,
+                            "ll_cases": 2,
+                            "rr_cases": 0,
+                            "rl_cases": 1,
+                            "lr_cases": 1,
+                            "simple_left_rotations": 2,
+                            "simple_right_rotations": 4
+                        }
+                    },
+                    "metrics_after": {
+                        "tree": {
+                            "active_events": 13,
+                            "height": 3,
+                            "leaves": 6,
+                            "inorder": [
+                                [
+                                    1,
+                                    0.8,
+                                    11
+                                ],
+                                [
+                                    1,
+                                    1.9,
+                                    7
+                                ],
+                                [
+                                    1,
+                                    2.4,
+                                    5
+                                ],
+                                [
+                                    1,
+                                    3.2,
+                                    1
+                                ],
+                                [
+                                    1,
+                                    3.7,
+                                    9
+                                ],
+                                [
+                                    2,
+                                    4.6,
+                                    3
+                                ],
+                                [
+                                    2,
+                                    5,
+                                    99
+                                ],
+                                [
+                                    2,
+                                    5.5,
+                                    8
+                                ],
+                                [
+                                    2,
+                                    5.9,
+                                    12
+                                ],
+                                [
+                                    3,
+                                    4.5,
+                                    10
+                                ],
+                                [
+                                    3,
+                                    4.8,
+                                    6
+                                ],
+                                [
+                                    3,
+                                    5.1,
+                                    2
+                                ],
+                                [
+                                    3,
+                                    6.3,
+                                    4
+                                ]
+                            ],
+                            "preorder": [
+                                [
+                                    2,
+                                    4.6,
+                                    3
+                                ],
+                                [
+                                    1,
+                                    2.4,
+                                    5
+                                ],
+                                [
+                                    1,
+                                    1.9,
+                                    7
+                                ],
+                                [
+                                    1,
+                                    0.8,
+                                    11
+                                ],
+                                [
+                                    1,
+                                    3.2,
+                                    1
+                                ],
+                                [
+                                    1,
+                                    3.7,
+                                    9
+                                ],
+                                [
+                                    3,
+                                    4.5,
+                                    10
+                                ],
+                                [
+                                    2,
+                                    5.5,
+                                    8
+                                ],
+                                [
+                                    2,
+                                    5,
+                                    99
+                                ],
+                                [
+                                    2,
+                                    5.9,
+                                    12
+                                ],
+                                [
+                                    3,
+                                    5.1,
+                                    2
+                                ],
+                                [
+                                    3,
+                                    4.8,
+                                    6
+                                ],
+                                [
+                                    3,
+                                    6.3,
+                                    4
+                                ]
+                            ],
+                            "postorder": [
+                                [
+                                    1,
+                                    0.8,
+                                    11
+                                ],
+                                [
+                                    1,
+                                    1.9,
+                                    7
+                                ],
+                                [
+                                    1,
+                                    3.7,
+                                    9
+                                ],
+                                [
+                                    1,
+                                    3.2,
+                                    1
+                                ],
+                                [
+                                    1,
+                                    2.4,
+                                    5
+                                ],
+                                [
+                                    2,
+                                    5,
+                                    99
+                                ],
+                                [
+                                    2,
+                                    5.9,
+                                    12
+                                ],
+                                [
+                                    2,
+                                    5.5,
+                                    8
+                                ],
+                                [
+                                    3,
+                                    4.8,
+                                    6
+                                ],
+                                [
+                                    3,
+                                    6.3,
+                                    4
+                                ],
+                                [
+                                    3,
+                                    5.1,
+                                    2
+                                ],
+                                [
+                                    3,
+                                    4.5,
+                                    10
+                                ],
+                                [
+                                    2,
+                                    4.6,
+                                    3
+                                ]
+                            ],
+                            "levels": [
+                                [
+                                    2,
+                                    4.6,
+                                    3
+                                ],
+                                [
+                                    1,
+                                    2.4,
+                                    5
+                                ],
+                                [
+                                    3,
+                                    4.5,
+                                    10
+                                ],
+                                [
+                                    1,
+                                    1.9,
+                                    7
+                                ],
+                                [
+                                    1,
+                                    3.2,
+                                    1
+                                ],
+                                [
+                                    2,
+                                    5.5,
+                                    8
+                                ],
+                                [
+                                    3,
+                                    5.1,
+                                    2
+                                ],
+                                [
+                                    1,
+                                    0.8,
+                                    11
+                                ],
+                                [
+                                    1,
+                                    3.7,
+                                    9
+                                ],
+                                [
+                                    2,
+                                    5,
+                                    99
+                                ],
+                                [
+                                    2,
+                                    5.9,
+                                    12
+                                ],
+                                [
+                                    3,
+                                    4.8,
+                                    6
+                                ],
+                                [
+                                    3,
+                                    6.3,
+                                    4
+                                ]
+                            ]
+                        },
+                        "counters": {
+                            "active_events": 13,
+                            "historical_events": 0,
+                            "events_by_priority": {
+                                "1": 5,
+                                "2": 4,
+                                "3": 4
+                            },
+                            "pending_attention": 13,
+                            "high_cost_access_events": 0,
+                            "accepted_corrections": 0,
+                            "discarded_reports": 0,
+                            "conflicts": 0,
+                            "mass_archives": 0,
+                            "archived_events": 0,
+                            "ll_cases": 2,
+                            "rr_cases": 0,
+                            "rl_cases": 1,
+                            "lr_cases": 1,
+                            "simple_left_rotations": 2,
+                            "simple_right_rotations": 4
+                        }
+                    },
+                    "metrics_delta": {
+                        "tree": {
+                            "active_events": 1,
+                            "height": 0,
+                            "leaves": 1
+                        },
+                        "counters": {
+                            "active_events": 1,
+                            "historical_events": 0,
+                            "pending_attention": 1,
+                            "high_cost_access_events": 0,
+                            "accepted_corrections": 0,
+                            "discarded_reports": 0,
+                            "conflicts": 0,
+                            "mass_archives": 0,
+                            "archived_events": 0,
+                            "ll_cases": 0,
+                            "rr_cases": 0,
+                            "rl_cases": 0,
+                            "lr_cases": 0,
+                            "simple_left_rotations": 0,
+                            "simple_right_rotations": 0
+                        }
+                    },
+                    "details": {
+                        "event_id": 99,
+                        "source": "manual"
+                    }
+                }
             }
         ]
     },
     "clock": {
-        "current_time": "2026-09-13T10:10:02Z"
+        "current_time": "2026-09-29T20:01:17Z"
     },
     "l": 3,
     "t": 72.0,
@@ -451,52 +1423,43 @@
         "R": 40.0,
         "candidates": {
             "1": [],
-            "2": [
-                1
-            ],
-            "3": [
-                1,
-                2
-            ],
-            "4": [
-                2,
-                3
-            ],
+            "2": [],
+            "3": [],
+            "4": [],
+            "5": [],
+            "6": [],
             "7": [],
-            "5": [
-                7
-            ],
-            "6": []
+            "8": [],
+            "9": [],
+            "10": [],
+            "11": [],
+            "12": [],
+            "99": []
         },
-        "selected_references": {
-            "2": 1,
-            "3": 1,
-            "4": 2,
-            "5": 7
-        },
+        "selected_references": {},
         "selection_policy": "highest_magnitude_then_earliest_time_then_lowest_id"
     },
     "metrics": {
-        "active_events": 7,
+        "active_events": 13,
         "historical_events": 0,
         "events_by_priority": {
-            "1": 1,
-            "2": 2,
+            "1": 5,
+            "2": 4,
             "3": 4
         },
-        "pending_attention": 7,
+        "pending_attention": 13,
         "high_cost_access_events": 0,
         "accepted_corrections": 0,
         "discarded_reports": 0,
         "conflicts": 0,
         "mass_archives": 0,
         "archived_events": 0,
-        "ll_cases": 1,
+        "ll_cases": 2,
         "rr_cases": 0,
-        "rl_cases": 0,
+        "rl_cases": 1,
         "lr_cases": 1,
-        "simple_left_rotations": 1,
-        "simple_right_rotations": 2
+        "simple_left_rotations": 2,
+        "simple_right_rotations": 4
     },
     "saved_versions": [],
     "execution_mode": "normal"

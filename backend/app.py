@@ -185,7 +185,10 @@ def handle_manual_event_begin(_data=None):
         return {"ok": False, "reason": "no_scenario"}
 
     # Manual events must start from the active simulation clock, not wall time.
-    minimum = observatory.getClock().getCurrentTime().replace(microsecond=0)
+    # The browser input has minute precision. Use the beginning of the
+    # current simulated minute so that a value such as 10:00:00 remains valid
+    # while the authoritative clock is already at 10:00:57.
+    minimum = observatory.getClock().getCurrentTime().replace(second=0, microsecond=0)
     manual_event_minimums[request.sid] = minimum
     return {"ok": True, "minimumDatetime": minimum.isoformat()}
 
