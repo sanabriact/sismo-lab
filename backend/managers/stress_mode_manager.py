@@ -1,4 +1,6 @@
+
 class StressModeManager:
+    
     """Coordinates execution mode changes for the active observatory."""
 
     def activateStressMode(self, observatory):

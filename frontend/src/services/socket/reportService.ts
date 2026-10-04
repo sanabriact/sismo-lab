@@ -30,6 +30,10 @@ class ReportService {
         ));
     }
 
+    createManualReport(report: ReportsPayload["reports"][number]): Promise<ReportsResponse> {
+        return this.emit<ReportsResponse>("reports:create", report);
+    }
+
     processNext(): Promise<ReportStepResponse> {
         return this.emit<ReportStepResponse>("reports:step");
     }

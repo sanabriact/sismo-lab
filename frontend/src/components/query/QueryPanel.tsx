@@ -17,7 +17,6 @@ const labels: Record<QueryType, string> = {
     top_pending: "Primeros pendientes",
     magnitude_range: "Rango de magnitud",
     date_depth_range: "Fecha y profundidad",
-    associations: "Asociaciones",
     expensive_access: "Acceso costoso",
 };
 
@@ -80,7 +79,7 @@ const QueryPanel = ({
 
                 {/* Render only the fields required by the selected query. */}
                 <div className="mt-4 space-y-4">
-                    {(queryType === "by_id" || queryType === "associations") && eventIdField(values, onValueChange)}
+                    {queryType === "by_id" && eventIdField(values, onValueChange)}
                     {queryType === "top_pending" && (
                         <label className="space-y-1 text-sm font-medium text-slate-700">Cantidad k<input type="number" min="1" value={values.k ?? ""} onChange={(event) => onValueChange("k", event.target.value)} className="w-full rounded-lg border border-slate-300 px-3 py-2" required /></label>
                     )}

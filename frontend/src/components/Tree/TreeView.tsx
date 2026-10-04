@@ -12,9 +12,10 @@ import { toVIZ } from "../../utils/viznode/toHierarchy";
     r its the node circle radius.
     Each of them are in pixels units.
 */
-const NODE_W = 100;
+const NODE_W = 72;
 const NODE_H = 90;
 const R = 25;
+const CHARACTERISTICS_W = 122;
 
 /* 
     Here we generate the lines that connects each node.
@@ -27,7 +28,7 @@ const linesGenerator = linkVertical<HierarchyPointLink<VIZNode>, HierarchyPointN
 /* 
     Here we define the props that the component need to renderize at its full (data).
 */
-export function TreeView({ data, type, highlightIds }: TreeViewProps) {
+export function TreeView({ data, type, highlightIds, showCharacteristics = false, characteristics }: TreeViewProps) {
     /* 
         Here is the base of all the component.
     */
@@ -41,12 +42,13 @@ export function TreeView({ data, type, highlightIds }: TreeViewProps) {
             Then hierarchy function takes this tree and constructs a jerarquic representation. (Like the visual view of the tree).
             And for finishing, tree<VIZNode>() generates the tree layout and each node has a width and height depending on the value we want. We can change it from NODE_W and NODE_H constants up.
         */
-        return tree<VIZNode>().nodeSize([NODE_W, NODE_H])(hierarchy(toVIZ(data.root)));
+        const horizontalSpacing = NODE_W + (showCharacteristics ? CHARACTERISTICS_W : 0);
+        return tree<VIZNode>().nodeSize([horizontalSpacing, NODE_H])(hierarchy(toVIZ(data.root)));
 
         /* 
             And the last thing of this function, is the use of useMemo for React to remember and save the tree layout, so when data doesn't changes (observatory doesn't change neither), React reutilize the tree layout saved in this variable-function.
         */
-    }, [data])
+    }, [data, showCharacteristics])
 
     /* 
         If there's no layout, we return a simple message indicating that tree doesn't have values.
@@ -67,7 +69,7 @@ export function TreeView({ data, type, highlightIds }: TreeViewProps) {
     const links = layout.links().filter((l) => l.target.data.dto);
     const xs = layout.descendants().map((n) => n.x);
     const minX = Math.min(...xs) - NODE_W / 2;
-    const width = Math.max(...xs) - minX + NODE_W / 2;
+    const width = Math.max(...xs) - minX + NODE_W / 2 + (showCharacteristics ? CHARACTERISTICS_W : 0);
     const height = (layout.height + 1) * NODE_H;
 
     return (
@@ -106,6 +108,7 @@ export function TreeView({ data, type, highlightIds }: TreeViewProps) {
                  */
                 const dto = n.data.dto!;
                 const isArchiveCandidate = highlightIds?.has(dto.value.key[2]) ?? false;
+                const nodeCharacteristics = characteristics?.[String(dto.value.key[2])];
                 return (
                     <g key={n.data.id} transform={`translate(${n.x},${n.y})`}>
                         <circle
@@ -125,7 +128,19 @@ export function TreeView({ data, type, highlightIds }: TreeViewProps) {
                         (
                             <></>
                         )
-                    }
+                        }
+                        {showCharacteristics && nodeCharacteristics && (
+                            <g aria-label={`Altura ${nodeCharacteristics.height}, profundidad ${nodeCharacteristics.depth}, prioridad ${nodeCharacteristics.priority}, acceso costoso ${nodeCharacteristics.expensive_access ? "sí" : "no"}`}>
+                                <rect x={R + 5} y={-17} width={CHARACTERISTICS_W - 10} height={43} rx={6} fill="#fff" stroke="#cbd5e1" />
+                                <text x={R + 10} y={-5} fontSize={8} fill="#334155">Altura {nodeCharacteristics.height} · Prof. {nodeCharacteristics.depth}</text>
+                                <text x={R + 10} y={7} fontSize={8} fill={nodeCharacteristics.priority === 3 ? "#9f1239" : "#334155"} fontWeight={nodeCharacteristics.priority === 3 ? 700 : 400}>
+                                    Prioridad {nodeCharacteristics.priority}{nodeCharacteristics.priority === 3 ? " ★" : ""}
+                                </text>
+                                <text x={R + 10} y={19} fontSize={8} fill={nodeCharacteristics.expensive_access ? "#b91c1c" : "#475569"} fontWeight={nodeCharacteristics.expensive_access ? 700 : 400}>
+                                    Costoso: {nodeCharacteristics.expensive_access ? "Sí" : "No"}
+                                </text>
+                            </g>
+                        )}
                     </g>
                 );
             })}

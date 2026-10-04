@@ -5,7 +5,7 @@ import type { ScenarioLoadedResponse } from "../../models/interfaces/scenery/Sce
 import type { AIScenarioMode } from "../../models/types/scenario/aiScenarioMode";
 import { scenarioStore } from "../../stores/scenario/ScenarioStore";
 
-const TIMEOUT_MS = 5_000;
+const TIMEOUT_MS = 30_000;
 const REASONS: Record<string, string> = {
     no_loaded: "Carga un escenario primero",
     invalid_request: "Solicitud invalida",
@@ -27,7 +27,7 @@ class ScenarioService {
                 error: Error | null, response?: ScenarioLoadedResponse
             ) => {
                 if (error || !response) {
-                    applyScenarioFailed("El servidor no respondió")
+                    applyScenarioFailed("Se agotó el tiempo de espera al validar el escenario. Verifica que el backend esté activo e inténtalo de nuevo.")
                     return;
                 } 
 
@@ -57,12 +57,12 @@ class ScenarioService {
         }
     }
 
-    loadFromAI(aiMode: AIScenarioMode): void {
+    async loadFromAI(aiMode: AIScenarioMode): Promise<void> {
         if (this.isBusy()) return;
         applyScenarioPending("ai");
         this.sendLoad({
             source: "ai",
-            aiMode
+            content: aiMode
         });
     }
 }

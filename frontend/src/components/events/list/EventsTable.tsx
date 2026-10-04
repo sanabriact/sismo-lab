@@ -130,13 +130,17 @@ function EventsTable({
         }
     };
 
+    const handleSearchEvent = () => {
+        navigate("/events/consult")
+    }
+
     return (
         <div className="w-full rounded-lg border border-gray-200 bg-white shadow-sm">
             {/* Top bar with search and add at top right of the table */}
             <div className="flex items-center justify-end gap-2 border-b border-gray-200 px-4 py-3">
                 <button
                     type="button"
-                    onClick={onSearch}
+                    onClick={handleSearchEvent}
                     aria-label="Buscar evento"
                     className={iconButton}
                 >

@@ -1,9 +1,7 @@
 """Associations between seismic events, independent from AVL topology."""
 
 from math import hypot, isfinite
-
 from backend.utils.quantities import normalizeDatetime
-
 
 class AssociationManager:
     def __init__(self, w=48.0, r=40.0):

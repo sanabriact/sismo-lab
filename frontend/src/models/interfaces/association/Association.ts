@@ -1,16 +1,5 @@
 import type { QueryEvent } from "../query/Query";
 
-export interface AssociationLimits {
-    W: number;
-    R: number;
-}
-
-export interface AssociationLimitsResponse extends AssociationLimits {
-    ok: boolean;
-    changed?: boolean;
-    reason?: string;
-}
-
 export interface AssociationQueryResponse {
     ok: boolean;
     reason?: string;

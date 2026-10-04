@@ -6,7 +6,23 @@ import { clockService } from "../../services/socket/clockService";
 
 function formatClock(value: string | null): string {
     if (!value) return "Sin reloj";
-    return value.replace("T", " ").replace("Z", " UTC");
+    const instant = new Date(value);
+    if (Number.isNaN(instant.getTime())) return "Sin reloj";
+    return `${instant.toLocaleString("es-CO", {
+        timeZone: "UTC",
+        dateStyle: "short",
+        timeStyle: "medium",
+    })} UTC`;
+}
+
+function formatLocalClock(value: string | null): string {
+    if (!value) return "Sin reloj";
+    const instant = new Date(value);
+    if (Number.isNaN(instant.getTime())) return "Sin reloj";
+    return instant.toLocaleString("es-CO", {
+        dateStyle: "short",
+        timeStyle: "medium",
+    });
 }
 
 const AdvanceClock = () => {
@@ -26,7 +42,10 @@ const AdvanceClock = () => {
                 <Clock3 size={16} aria-hidden="true" />
                 <span>Reloj de simulación</span>
             </div>
-            <p className="mb-3 text-xs text-blue-100">{formatClock(clock.currentTime)}</p>
+            <div className="mb-3 space-y-1 text-xs text-blue-100">
+                <p><span className="font-semibold text-white">UTC (simulación):</span> {formatClock(clock.currentTime)}</p>
+                <p><span className="font-semibold text-white">Hora local (simulación):</span> {formatLocalClock(clock.currentTime)}</p>
+            </div>
             <div className="flex items-end gap-2">
                 <label className="min-w-0 flex-1 text-xs text-blue-100">
                     Horas

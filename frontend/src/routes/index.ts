@@ -4,17 +4,22 @@ import type { AppRoute } from '../models/interfaces/appRoute/AppRoute';
 /* Import routes components */
 const Home = lazy(() => import('../pages/home/Home'));
 const VisualizeTrees = lazy(() => import('../pages/events/visualize/VisualizeTrees'));
-const CheckEvent = lazy(() => import ('../pages/events/check/CheckEvent'));
 const ConsultEvent = lazy(() => import ('../pages/events/consult/ConsultEvent'));
 const CorrectEvent = lazy(() => import ('../pages/events/correct/CorrectEvent'));
 const CreateEvent = lazy(() => import ('../pages/events/create/CreateEvent'));
-const DeleteEvent = lazy (() => import ('../pages/events/delete/DeleteEvent'));
 const Scenario = lazy(() => import ('../pages/scenery/Scenery'));
 const LoadScenario = lazy(() => import ('../pages/load/loadScenario'));
 const VerifyStructure = lazy(() => import('../pages/events/verify/VerifyStructure'));
 const EventList = lazy(() => import('../pages/events/list/EventList'));
 const Reports = lazy(() => import('../pages/reports/Reports'));
+const CreateReport = lazy(() => import('../pages/reports/CreateReport'));
 const Associations = lazy(() => import('../pages/events/associations/Associations'));
+const History = lazy(() => import('../pages/history/History'));
+const ArchivedEvents = lazy(() => import('../pages/history/ArchivedEvents'));
+const DeletedEvents = lazy(() => import('../pages/history/DeletedEvents'));
+const HistoricalIds = lazy(() => import('../pages/history/HistoricalIds'));
+const Parameters = lazy(() => import('../pages/parameters/Parameters'));
+const ExportJson = lazy(() => import('../pages/export/ExportJson'));
 
 /* Adding components to each route */
 const coreRoutes: AppRoute[] = [
@@ -29,10 +34,56 @@ const coreRoutes: AppRoute[] = [
         component: LoadScenario,
     },
     {
+        path: "/parameters",
+        title: "Parámetros",
+        component: Parameters,
+        requiresScenario: true
+    },
+    {
+        path: "/export-json",
+        title: "Exportar JSON",
+        component: ExportJson,
+        requiresScenario: true,
+    },
+    {
         path: "/reports",
         title: "Reportes",
         component: Reports,
         requiresScenario: true,
+    },
+    {
+        path: "/reports/create",
+        title: "Crear reporte",
+        component: CreateReport,
+        requiresScenario: true,
+        hideInSidebar: true,
+    },
+    {
+        path: "/history",
+        title: "Histórico",
+        component: History,
+        requiresScenario: true,
+    },
+    {
+        path: "/history/archived-events",
+        title: "Eventos archivados",
+        component: ArchivedEvents,
+        requiresScenario: true,
+        hideInSidebar: true,
+    },
+    {
+        path: "/history/deleted-events",
+        title: "Eventos eliminados",
+        component: DeletedEvents,
+        requiresScenario: true,
+        hideInSidebar: true,
+    },
+    {
+        path: "/history/identifiers",
+        title: "Identificadores históricos",
+        component: HistoricalIds,
+        requiresScenario: true,
+        hideInSidebar: true,
     },
     {
         path: "/scenario",
@@ -52,7 +103,8 @@ const coreRoutes: AppRoute[] = [
         title: "Consultar eventos",
         component: ConsultEvent,
         group: "events",
-        requiresScenario: true
+        requiresScenario: true,
+        hideInSidebar: true
     },
     {
         path: "/events/associations",
