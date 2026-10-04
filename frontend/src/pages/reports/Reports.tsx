@@ -1,12 +1,12 @@
-import { useEffect, useState } from "react";
-import { AlertCircle, CheckCircle2, ListChecks, LoaderCircle, Pause, Play, SkipForward } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { AlertCircle, CheckCircle2, FilePlus2, ListChecks, LoaderCircle, Pause, Play, Sparkles, SkipForward } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import ReportsUploader from "../../components/reports/ReportsUploader";
 import { reportService } from "../../services/socket/reportService";
 import { parseReportsFile } from "../../utils/reports/validateReports";
 import type {
     ReportQueueSnapshot,
     ReportStepResponse,
-    ReportsPayload,
     ReportsResponse,
 } from "../../models/interfaces/reports/Report";
 
@@ -15,7 +15,6 @@ const issueText = (issue: ReportsResponse["issues"][number]) => (
 );
 
 const Reports = () => {
-    const [payload, setPayload] = useState<ReportsPayload | null>(null);
     const [fileName, setFileName] = useState<string | null>(null);
     const [validationError, setValidationError] = useState<string | null>(null);
     const [response, setResponse] = useState<ReportsResponse | null>(null);
@@ -24,6 +23,8 @@ const Reports = () => {
     const [processing, setProcessing] = useState(false);
     const [processingAction, setProcessingAction] = useState<"step" | "start" | "pause" | null>(null);
     const [stepResult, setStepResult] = useState<ReportStepResponse | null>(null);
+    const navigate = useNavigate();
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => reportService.subscribeToQueue(
         (nextSnapshot) => {
@@ -34,31 +35,29 @@ const Reports = () => {
         () => setProcessing(false),
     ), []);
 
+    useEffect(() => {
+        void reportService.getSnapshot().then(setQueueSnapshot);
+    }, []);
+
     const selectFile = async (file: File | null) => {
-        setPayload(null);
         setResponse(null);
-        setQueueSnapshot(undefined);
         setStepResult(null);
         setValidationError(null);
         setFileName(file?.name ?? null);
         if (!file) return;
 
+        setLoading(true);
         try {
-            setPayload(await parseReportsFile(file));
+            const parsed = await parseReportsFile(file);
+            const result = await reportService.enqueueReports(parsed);
+            setResponse(result);
+            setQueueSnapshot(result.snapshot);
         } catch (error) {
             setFileName(null);
             setValidationError(error instanceof Error ? error.message : "No se pudo validar el archivo.");
+        } finally {
+            setLoading(false);
         }
-    };
-
-    const enqueue = async () => {
-        if (!payload || loading) return;
-        setLoading(true);
-        setResponse(null);
-        const result = await reportService.enqueueReports(payload);
-        setResponse(result);
-        setQueueSnapshot(result.snapshot);
-        setLoading(false);
     };
 
     const processNext = async () => {
@@ -104,15 +103,10 @@ const Reports = () => {
                 <p className="mt-1 text-gray-600">Carga reportes JSON para agregarlos a la cola FIFO.</p>
             </div>
 
-            <div className="space-y-4 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-                <h2 className="text-xl font-semibold text-gray-900">Cargar archivo JSON</h2>
-                <ReportsUploader
-                    selectedFileName={fileName}
-                    loading={loading}
-                    error={validationError}
-                    onFileSelected={selectFile}
-                    onSubmit={() => void enqueue()}
-                />
+            <div className="grid gap-3 md:grid-cols-3">
+                <button type="button" disabled title="La generación con IA estará disponible próximamente" className="flex items-center gap-3 rounded-lg border border-slate-200 bg-white p-4 text-left shadow-sm transition hover:border-slate-300 disabled:cursor-not-allowed disabled:opacity-60"><Sparkles className="text-violet-500" size={21} /><span><strong className="block text-sm text-slate-900">Generar con IA</strong><small className="text-xs text-slate-500">Próximamente</small></span></button>
+                <button type="button" onClick={() => fileInputRef.current?.click()} disabled={loading} className="flex items-center gap-3 rounded-lg border border-[#0b6e69] bg-[#e7f5f2] p-4 text-left shadow-sm transition hover:bg-[#d8efeb] disabled:cursor-not-allowed disabled:opacity-60"><FilePlus2 className="text-[#0b6e69]" size={21} /><span><strong className="block text-sm text-slate-900">Cargar archivo</strong><small className="text-xs text-slate-600">Importar JSON</small></span></button>
+                <button type="button" onClick={() => navigate("/reports/create")} className="flex items-center gap-3 rounded-lg bg-[#04172f] p-4 text-left text-white shadow-sm transition hover:bg-[#08264d]"><FilePlus2 size={21} /><span><strong className="block text-sm">Crear manualmente</strong><small className="text-xs text-white/75">Nuevo reporte</small></span></button>
             </div>
 
             {response && (
@@ -167,7 +161,7 @@ const Reports = () => {
                                     className="inline-flex items-center gap-2 rounded-lg bg-[#0b6e69] px-3 py-2 text-sm font-semibold text-white transition hover:bg-[#095b57] disabled:cursor-not-allowed disabled:opacity-45"
                                 >
                                     {processingAction === "start" ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
-                                    Iniciar automático
+                                    Procesar toda la cola
                                 </button>
                             )}
                         </div>
