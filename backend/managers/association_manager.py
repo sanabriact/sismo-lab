@@ -42,6 +42,10 @@ class AssociationManager:
         new_r = self.R if r is None else self._validate_limit(r, "R")
         self.W, self.R = new_w, new_r
 
+    def getLimits(self):
+        """Return the current association limits in one small object."""
+        return {"W": self.W, "R": self.R}
+
     def getCandidates(self):
         return self.candidates
 
@@ -53,6 +57,14 @@ class AssociationManager:
 
     def getReference(self, key):
         return self.selected_references.get(key)
+
+    def getDependents(self, reference_id):
+        """Return event IDs that currently use reference_id."""
+        dependents = []
+        for event_id, selected_id in self.selected_references.items():
+            if selected_id == reference_id:
+                dependents.append(event_id)
+        return dependents
 
     @staticmethod
     def _event_id(event):
@@ -93,7 +105,12 @@ class AssociationManager:
         return (-cls._magnitude(event), cls._time(event), cls._event_id(event))
 
     def recalculate(self, active_events, archived_events):
-        """Rebuild all candidate and selected-reference maps atomically."""
+        """Rebuild all association maps from active and archived events.
+
+        Rebuilding from the complete event set keeps the rules easy to read
+        and prevents stale candidates after an event update or deletion.
+        Deleted events are intentionally excluded from the input set.
+        """
         events_by_id = {}
         for event in list(active_events) + list(archived_events):
             if event.getEventStatus() != "deleted":
@@ -115,7 +132,6 @@ class AssociationManager:
 
         self.candidates = candidates
         self.selected_references = references
-
     def toDict(self):
         return {
             "W": self.W,

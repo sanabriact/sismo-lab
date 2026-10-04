@@ -84,6 +84,20 @@ def load_scenario():
 def getEvents():
     return jsonify(event_engine.get_active_events())
 
+@app.route("/api/associations/limits", methods=["GET"])
+def get_association_limits():
+    result = event_engine.get_association_limits()
+    status_code = 200 if result.get("ok") else 404
+    return jsonify(result), status_code
+
+@app.route("/api/associations/limits", methods=["PATCH"])
+def update_association_limits():
+    result = event_engine.update_association_limits(request.get_json(silent=True))
+    status_code = 200 if result.get("ok") else 400
+    if result.get("reason") == "no_scenario":
+        status_code = 404
+    return jsonify(result), status_code
+
 # Read-only query endpoint. The engine remains the single application coordinator.
 @app.route("/api/queries", methods=["POST"])
 def execute_query():

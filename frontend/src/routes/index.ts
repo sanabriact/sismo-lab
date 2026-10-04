@@ -14,6 +14,7 @@ const LoadScenario = lazy(() => import ('../pages/load/loadScenario'));
 const VerifyStructure = lazy(() => import('../pages/events/verify/VerifyStructure'));
 const EventList = lazy(() => import('../pages/events/list/EventList'));
 const Reports = lazy(() => import('../pages/reports/Reports'));
+const Associations = lazy(() => import('../pages/events/associations/Associations'));
 
 /* Adding components to each route */
 const coreRoutes: AppRoute[] = [
@@ -50,6 +51,13 @@ const coreRoutes: AppRoute[] = [
         path: "/events/consult",
         title: "Consultar eventos",
         component: ConsultEvent,
+        group: "events",
+        requiresScenario: true
+    },
+    {
+        path: "/events/associations",
+        title: "Asociaciones",
+        component: Associations,
         group: "events",
         requiresScenario: true
     },

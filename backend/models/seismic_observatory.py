@@ -6,7 +6,7 @@ from backend.structures.queue import Queue
 from backend.structures.stack import Stack
 from backend.models.history import History
 from backend.models.clock import SimulationClock
-from backend.models.association_manager import AssociationManager
+from backend.managers.association_manager import AssociationManager
 from backend.models.metrics import Metrics
 from backend.models.event import Event
 from backend.models.station import Station
@@ -125,7 +125,13 @@ class SeismicObservatory:
             return False
         event = Event(id, magnitude, depth, epicenter_x, epicenter_y, datetime, revision, station, self.zones)
         # AVL decides whether to rotate using its current balance attribute.
-        return self.avl_tree.insert(event), self.bst_tree.insert(event)
+        avl_insert = self.avl_tree.insert(event)
+        bst_insert = self.bst_tree.insert(event)
+        
+        if avl_insert and bst_insert:
+            self.recalculateAssociations()
+            
+        return avl_insert, bst_insert
     
     def begin_visual_operation(self):
         self.avl_tree.begin_visual_operation()
@@ -159,8 +165,19 @@ class SeismicObservatory:
         if avl_removed and bst_removed:
             event.setEventStatus("deleted")
             self.history.addDeleted(id, event)
+            self.recalculateAssociations()
 
         return avl_removed, bst_removed
+    
+    def setAssociationLimits(self, w=None, r=None):
+        """Change association limits and rebuild all affected relations."""
+        self.association_manager.setLimits(w,r)
+        self.recalculateAssociations()
+
+    # Keep the old misspelled method as a compatibility alias for callers
+    # that already use it.
+    def setAssociatonLimits(self, w=None, r=None):
+        return self.setAssociationLimits(w, r)
     
     def editEvent(self,report):
         #Al crearse un reporte, sus datos ya están validados
@@ -174,8 +191,20 @@ class SeismicObservatory:
                 self.bst_tree._updateTree(event)
                 #RECALCULAR ASOCIACIONES Y METRICAS
                 
+            self.recalculateAssociations()
+                
             return True
         return False
+    
+    def recalculateAssociations(self):
+        active_events = [
+            node.getValue()
+            for node in self.avl_tree.index.values()
+        ]
+        
+        archived_events = list(self.history.getArchived().values())
+
+        self.association_manager.recalculate(active_events, archived_events)
 
     def markAsRevised(self, id):
         event = self.searchEventById(id)
