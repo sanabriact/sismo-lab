@@ -3,6 +3,8 @@ from datetime import datetime
 from backend.services.seismic_observatory_service import SeismicObservatoryService
 from backend.repositories.json_scenario_repository import JsonScenarioRepository
 from backend.models.event import Event
+from backend.models.report import Report
+from backend.models.station import Station
 from backend.utils.quantities import parseDatetime
 from backend.services.parameters.scenario_parameters_service import ScenarioParametersService
 
@@ -512,7 +514,153 @@ class LoadScenarioManager:
         result["zones"] = data["zones"]
         result["stations"] = data["stations"]
         result["events"] = events
+        for section in ("history", "report_queue", "association_manager", "metrics"):
+            if section in data:
+                result[section] = data[section]
         return result
+
+    def loadOptionalSections(self, observatory, data):
+        """Restore optional state included in a topology scenario export."""
+        if not isinstance(data, dict):
+            return observatory
+        self.loadOptionalHistory(observatory, data.get("history"))
+        observatory.recalculateAssociations()
+        self.loadOptionalReportQueue(observatory, data.get("report_queue"))
+        self.loadOptionalAssociations(observatory, data.get("association_manager"))
+        self.loadOptionalMetrics(observatory, data.get("metrics"))
+        return observatory
+
+    def loadOptionalHistory(self, observatory, section):
+        if section is None:
+            return
+        if not isinstance(section, dict):
+            raise ValueError("history must be an object")
+        history = observatory.getHistory()
+        for field, status in (("archived", "archived"), ("eliminated", "deleted")):
+            if field == "eliminated" and field not in section:
+                field = "deleted"
+            values = section.get(field, [])
+            if isinstance(values, dict):
+                values = list(values.values())
+            if not isinstance(values, list):
+                raise ValueError(f"history.{field} must be a list")
+            for item in values:
+                if isinstance(item, (int, str)):
+                    if status == "deleted":
+                        history.addDeletedId(int(item))
+                        continue
+                    raise ValueError("archived history entries must contain event data")
+                if not isinstance(item, dict):
+                    raise ValueError(f"history.{field} entries must be objects")
+                event = self._event_from_optional_history(item, observatory, status)
+                event_id = event.getKey()[2]
+                if status == "archived":
+                    history.addArchived(event_id, event)
+                else:
+                    history.addDeleted(event_id, event)
+
+        for event_id in section.get("deletedIds", []):
+            history.addDeletedId(int(event_id))
+
+    def _event_from_optional_history(self, item, observatory, status):
+        if "key" in item:
+            normalized = dict(item)
+            normalized.setdefault("attention_status", "pending")
+            normalized.setdefault("event_status", status)
+            normalized.setdefault("populated_zone", False)
+            normalized.setdefault("expensive_access", False)
+            normalized.setdefault("reporting_stations", [])
+            return Event.fromDict(normalized)
+
+        event_id = int(item.get("id", item.get("event_id")))
+        magnitude = float(item["magnitude"])
+        populated = any(
+            zone.getIsPopulated()
+            and zone.contains(item["epicenter_x"], item["epicenter_y"])
+            for zone in observatory.getZones()
+        )
+        event_data = {
+            "key": [
+                self.calculatePriority(magnitude, item["depth"], populated),
+                magnitude,
+                event_id,
+            ],
+            "depth": item["depth"],
+            "epicenter_x": item["epicenter_x"],
+            "epicenter_y": item["epicenter_y"],
+            "datetime": item["datetime"],
+            "revision": item.get("revision", 1),
+            "reporting_stations": item.get("reporting_stations", []),
+            "attention_status": item.get("attention_status", "pending"),
+            "event_status": status,
+            "populated_zone": item.get("populated_zone", populated),
+            "expensive_access": item.get("expensive_access", False),
+        }
+        return Event.fromDict(event_data)
+
+    def loadOptionalReportQueue(self, observatory, section):
+        if section is None:
+            return
+        if not isinstance(section, dict) or not isinstance(section.get("items", []), list):
+            raise ValueError("report_queue.items must be a list")
+        stations = {station.getId(): station for station in observatory.getStations()}
+        queue = observatory.getReportQueue()
+        for item in section.get("items", []):
+            if not isinstance(item, dict):
+                raise ValueError("report_queue entries must be objects")
+            station_data = item.get("station")
+            station_id = item.get("station_id")
+            if isinstance(station_data, dict):
+                station_id = station_data.get("id")
+                station = stations.get(station_id)
+                if station is None and all(key in station_data for key in ("name", "x", "y")):
+                    station = Station.fromDict(station_data)
+            else:
+                station = stations.get(station_id)
+            if station is None:
+                raise ValueError(f"report references unknown station {station_id}")
+            queue.enqueue(Report(
+                event_id=item.get("event_id", item.get("id")),
+                revision=item.get("revision", 1),
+                station=station,
+                magnitude=item["magnitude"],
+                depth=item["depth"],
+                epicenter_x=item["epicenter_x"],
+                epicenter_y=item["epicenter_y"],
+                datetime_=parseDatetime(item["datetime"]),
+            ))
+
+    def loadOptionalAssociations(self, observatory, section):
+        if section is None:
+            return
+        if not isinstance(section, dict):
+            raise ValueError("association_manager must be an object")
+        manager = observatory.getAssociationManager()
+        candidates = section.get("candidates")
+        if candidates is not None:
+            if not isinstance(candidates, dict):
+                raise ValueError("association_manager.candidates must be an object")
+            if any(not isinstance(ids, list) for ids in candidates.values()):
+                raise ValueError("association_manager candidate values must be lists")
+            manager.candidates = {
+                int(event_id): [int(candidate) for candidate in ids]
+                for event_id, ids in candidates.items()
+            }
+            manager.selected_references = {
+                event_id: ids[0]
+                for event_id, ids in manager.candidates.items()
+                if ids
+            }
+
+    def loadOptionalMetrics(self, observatory, section):
+        if section is None:
+            return
+        if not isinstance(section, dict):
+            raise ValueError("metrics must be an object")
+        from backend.models.metrics import Metrics
+        values = observatory.getMetrics().toDict()
+        values.update(section)
+        observatory.setMetrics(Metrics.fromDict(values))
 
     def validatePriority(self, currentRoot, zones):
         if currentRoot is not None:

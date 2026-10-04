@@ -33,6 +33,10 @@ const LoadScenario = () => {
         if (file) void scenarioService.loadFromFile(file);
     };
 
+    const onAIChange = (mode: AIScenarioMode) => {
+        scenarioService.loadFromAI(mode);
+    }
+
     return (
         <section className="mx-auto max-w-3xl space-y-8 p-8">
             <h1 className="text-3xl font-bold text-gray-900">Cargar escenario</h1>
@@ -67,7 +71,7 @@ const LoadScenario = () => {
                                 {state.issues.map((issue, i) => (
                                     <div key={`${i}-${issue}`} className="grid grid-cols-[4rem_minmax(0,1fr)] border-t border-red-100 px-3 py-2 odd:bg-white even:bg-red-50">
                                         <span className="text-gray-500">{i + 1}</span>
-                                        <span className="break-words">{issue}</span>
+                                        <span className="wrap-break-words">{issue}</span>
                                     </div>
                                 ))}
                             </div>
@@ -91,7 +95,7 @@ const LoadScenario = () => {
                         <button
                             key={mode}
                             disabled={validating}
-                            onClick={() => scenarioService.loadFromAI(mode)}
+                            onClick={() => onAIChange(mode)}
                             className="rounded-xl border border-gray-200 p-4 text-left hover:bg-gray-50 disabled:opacity-50"
                         >
                             <p className="font-semibold">{title}</p>

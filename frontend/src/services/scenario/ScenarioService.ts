@@ -57,12 +57,12 @@ class ScenarioService {
         }
     }
 
-    loadFromAI(aiMode: AIScenarioMode): void {
+    async loadFromAI(aiMode: AIScenarioMode): Promise<void> {
         if (this.isBusy()) return;
         applyScenarioPending("ai");
         this.sendLoad({
             source: "ai",
-            aiMode
+            content: aiMode
         });
     }
 }

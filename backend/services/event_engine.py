@@ -366,6 +366,15 @@ class EventEngine:
                     if validated is None:
                         raise ScenarioValidationError(self.scenario_validator.errors)
                 observatory = self.service.loadScenarioFromText(content)
+                if self.scenario_validator is not None:
+                    try:
+                        self.scenario_validator.loadOptionalSections(observatory, validated)
+                    except (AttributeError, IndexError, KeyError, TypeError, ValueError) as error:
+                        raise ScenarioValidationError([
+                            f"Secciones opcionales inválidas: {error}"
+                        ]) from error
+                    self.service.metrics_service.refresh_derived_metrics(observatory)
+                    self.service.saveObservatory(observatory)
             except Exception:
                 self.parameters_service.update(previous_parameters)
                 raise

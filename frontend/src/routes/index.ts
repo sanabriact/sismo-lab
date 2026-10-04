@@ -19,6 +19,7 @@ const ArchivedEvents = lazy(() => import('../pages/history/ArchivedEvents'));
 const DeletedEvents = lazy(() => import('../pages/history/DeletedEvents'));
 const HistoricalIds = lazy(() => import('../pages/history/HistoricalIds'));
 const Parameters = lazy(() => import('../pages/parameters/Parameters'));
+const ExportJson = lazy(() => import('../pages/export/ExportJson'));
 
 /* Adding components to each route */
 const coreRoutes: AppRoute[] = [
@@ -36,6 +37,13 @@ const coreRoutes: AppRoute[] = [
         path: "/parameters",
         title: "Parámetros",
         component: Parameters,
+        requiresScenario: true
+    },
+    {
+        path: "/export-json",
+        title: "Exportar JSON",
+        component: ExportJson,
+        requiresScenario: true,
     },
     {
         path: "/reports",
