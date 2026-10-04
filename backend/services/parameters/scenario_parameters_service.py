@@ -1,5 +1,7 @@
 from math import isfinite
 
+_UNSET = object()
+
 
 class ScenarioParametersService:
 
@@ -43,6 +45,28 @@ class ScenarioParametersService:
 
     def getAll(self):
         return {"L": self.getL(), "W": self.getW(), "R": self.getR(), "T": self.getT()}
+
+    def normalize_scenario_values(self, values=_UNSET):
+        """Validate scenario overrides and fill omitted fields with defaults."""
+        candidate = ScenarioParametersService()
+        if values is not _UNSET:
+            if not isinstance(values, dict):
+                candidate.update(values)
+            elif values:
+                candidate.update(values)
+        return candidate.getAll()
+
+    def parameters_from_scenario(self, scenario):
+        """Read the optional parameters object from a scenario document."""
+        if not isinstance(scenario, dict):
+            raise ValueError("El escenario debe ser un objeto")
+        if "parameters" in scenario and "parametros" in scenario:
+            raise ValueError("Use solo uno de 'parameters' o 'parametros'")
+        if "parameters" in scenario:
+            return self.normalize_scenario_values(scenario["parameters"])
+        if "parametros" in scenario:
+            return self.normalize_scenario_values(scenario["parametros"])
+        return self.normalize_scenario_values()
 
     def update(self, values):
         """Validate all supplied values before applying any of them."""

@@ -21,7 +21,7 @@ class EventEngine:
     transport requests to these engine methods.
     """
 
-    def __init__(self, socketio, service, mode_changed, stress_mode_manager):
+    def __init__(self, socketio, service, mode_changed, stress_mode_manager, parameters_service=None):
         self.socketio = socketio
         self.service = service
         self.mode_changed = mode_changed
@@ -40,7 +40,7 @@ class EventEngine:
         # The engine owns the query service just like the other domain services.
         self.query_service = QueryService()
         self.history_service = HistoryService()
-        self.parameters_service = ScenarioParametersService()
+        self.parameters_service = parameters_service or ScenarioParametersService()
         self.query_service.parameters_service = self.parameters_service
         if hasattr(self.service, "metrics_service"):
             self.service.metrics_service.action_stack_service = self.action_stack_service
@@ -227,6 +227,13 @@ class EventEngine:
             except (TypeError, ValueError) as error:
                 return {"ok": False, "reason": str(error)}
 
+    def get_tree_characteristics(self):
+        """Return height, depth, priority, and costly-access status by tree."""
+        with self.lock:
+            if self.observatory is None:
+                return {"ok": False, "reason": "no_scenario"}
+            return self.query_service.tree_characteristics(self.observatory)
+
     def prepare_archive_tree(self, threshold_hours=None, client_id=None):
         """Select and preview an archivable branch without changing the AVL."""
         with self.lock:
@@ -347,11 +354,16 @@ class EventEngine:
         previous = self.observatory
         previous_snapshot = self._snapshot_for_load(previous)
         with self.lock:
-            if self.scenario_validator is not None:
-                validated = self.scenario_validator.loadFromText(content, stress_mode=False)
-                if validated is None:
-                    raise ScenarioValidationError(self.scenario_validator.errors)
-            observatory = self.service.loadScenarioFromText(content)
+            previous_parameters = self.parameters_service.getAll()
+            try:
+                if self.scenario_validator is not None:
+                    validated = self.scenario_validator.loadFromText(content, stress_mode=False)
+                    if validated is None:
+                        raise ScenarioValidationError(self.scenario_validator.errors)
+                observatory = self.service.loadScenarioFromText(content)
+            except Exception:
+                self.parameters_service.update(previous_parameters)
+                raise
 
         if self.scenario_manager is not None:
             self.scenario_manager.load_scenario(observatory)

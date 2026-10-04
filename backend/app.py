@@ -13,22 +13,25 @@ from backend.managers.scenario_generator_manager import ScenarioGeneratorManager
 from backend.managers.load_scenario_manager import LoadScenarioManager
 from backend.services.socket.socket_broadcaster import SocketBroadcaster
 from backend.services.ai_client.event_bus import mode_changed, scenario_loaded
+from backend.services.parameters.scenario_parameters_service import ScenarioParametersService
 
 app = Flask(__name__)
 CORS(app)
 
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
 init_realtime(socketio)
-obs_service = SeismicObservatoryService()
+parameters_service = ScenarioParametersService()
+obs_service = SeismicObservatoryService(parameters_service=parameters_service)
 event_engine = EventEngine(
     socketio=socketio,
     service=obs_service,
     mode_changed=mode_changed,
     stress_mode_manager=StressModeManager(),
+    parameters_service=parameters_service,
 )
 socket_broadcaster = SocketBroadcaster(mode_changed, scenario_loaded)
 ai_client = AIEventClient()
-load_scenario_manager = LoadScenarioManager()
+load_scenario_manager = LoadScenarioManager(parameters_service=parameters_service)
 
 generator_manager = ScenarioGeneratorManager( ai_client=ai_client, engine=event_engine)
 event_engine.set_scenario_manager(generator_manager)
@@ -141,6 +144,12 @@ def execute_query():
         return jsonify(result), status_code
     return jsonify(result)
 
+@app.route("/api/tree-characteristics", methods=["GET"])
+def get_tree_characteristics():
+    result = event_engine.get_tree_characteristics()
+    status_code = 200 if result.get("ok") else 404
+    return jsonify(result), status_code
+
 # Route for editing a event based on its id
 @app.route("/api/events/<int:event_id>", methods=["GET"])
 def get_event_by_id(event_id):
@@ -195,7 +204,10 @@ def handle_manual_event_begin(_data=None):
         return {"ok": False, "reason": "no_scenario"}
 
     # Manual events must start from the active simulation clock, not wall time.
-    minimum = observatory.getClock().getCurrentTime().replace(microsecond=0)
+    # The browser input has minute precision. Use the beginning of the
+    # current simulated minute so that a value such as 10:00:00 remains valid
+    # while the authoritative clock is already at 10:00:57.
+    minimum = observatory.getClock().getCurrentTime().replace(second=0, microsecond=0)
     manual_event_minimums[request.sid] = minimum
     return {"ok": True, "minimumDatetime": minimum.isoformat()}
 

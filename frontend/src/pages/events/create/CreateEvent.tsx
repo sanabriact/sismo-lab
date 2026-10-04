@@ -10,10 +10,9 @@ type View = "options" | "manual";
 
 const toLocalInputValue = (iso: string) => {
     const value = new Date(iso);
-    // datetime-local no admite segundos: se redondea hacia arriba para que
-    // el valor inicial nunca sea anterior a la hora registrada por servidor.
+    // datetime-local has no seconds. Use the start of the current minute so
+    // the event is not placed after the simulation clock.
     value.setSeconds(0, 0);
-    value.setMinutes(value.getMinutes() + 1);
     return new Date(value.getTime() - value.getTimezoneOffset() * 60_000)
         .toISOString()
         .slice(0, 16);

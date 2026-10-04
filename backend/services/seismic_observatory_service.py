@@ -8,6 +8,7 @@ from backend.models.station import Station
 from backend.models.zone import Zone
 from backend.models.report import Report
 from backend.utils.quantities import parseDatetime, hasAtMostOneDecimal
+from backend.services.parameters.scenario_parameters_service import ScenarioParametersService
 
 EXECUTION_MODES = ("normal", "stress")
 
@@ -18,9 +19,10 @@ class ScenarioValidationError(Exception):
         self.issues = issues
 
 class SeismicObservatoryService:
-    def __init__(self):
+    def __init__(self, parameters_service=None):
         self.repository = SeismicObservatoryRepository()
         self.metrics_service = MetricsService()
+        self.parameters_service = parameters_service or ScenarioParametersService()
 
     def getObservatory(self):
         observatory = self.repository.load()
@@ -248,6 +250,11 @@ class SeismicObservatoryService:
         if mode not in EXECUTION_MODES:
             raise ScenarioValidationError(["execution_mode debe ser 'normal' o 'stress'"])
 
+        try:
+            parameters = self.parameters_service.parameters_from_scenario(data)
+        except (TypeError, ValueError) as error:
+            raise ScenarioValidationError([f"Parámetros inválidos: {error}"])
+
         if "tree" in data:
             topology_data = {
                 **data,
@@ -260,6 +267,10 @@ class SeismicObservatoryService:
         # Siempre un id nuevo: evita que eventos en cola de un escenario
         # anterior con el mismo id se apliquen a este.
         observatory.scenario_id = str(uuid4())
+        self.parameters_service.update(parameters)
+        observatory.setL(parameters["L"])
+        observatory.setT(parameters["T"])
+        observatory.setAssociationLimits(parameters["W"], parameters["R"])
         self.metrics_service.refresh_derived_metrics(observatory)
         return observatory
 

@@ -14,7 +14,7 @@ const History = () => {
     return (
         <section className="mx-auto w-full max-w-5xl space-y-8 px-4 py-10">
             <header>
-                <p className="text-sm font-semibold uppercase tracking-wide text-[#0b6e69]">Trazabilidad del escenario</p>
+                <p className="text-sm font-semibold uppercase tracking-wide text-[#0b6e69]">Registro del escenario</p>
                 <h1 className="mt-2 text-3xl font-bold text-slate-900">Histórico</h1>
                 <p className="mt-2 text-slate-600">Consulta los eventos que ya no forman parte del AVL activo.</p>
             </header>

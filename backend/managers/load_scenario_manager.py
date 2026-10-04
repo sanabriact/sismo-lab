@@ -4,13 +4,15 @@ from backend.services.seismic_observatory_service import SeismicObservatoryServi
 from backend.repositories.json_scenario_repository import JsonScenarioRepository
 from backend.models.event import Event
 from backend.utils.quantities import parseDatetime
+from backend.services.parameters.scenario_parameters_service import ScenarioParametersService
 
 class LoadScenarioManager:
     
-    def __init__(self):
+    def __init__(self, parameters_service=None):
         self.errors = []
         self.eventIds = set()
         self.repository = JsonScenarioRepository()
+        self.parameters_service = parameters_service or ScenarioParametersService()
     
     # Method to load the scenario
     def load(self, data, stress_mode):
@@ -18,8 +20,28 @@ class LoadScenarioManager:
         if not isinstance(data, dict):
             self.errors.append("invalid format of the json")
             return None
-        else:
-            return self.caseScenary(data, stress_mode)
+        parameters = self._normalize_parameters(data)
+        if parameters is None:
+            return None
+        scenario = self.caseScenary(data, stress_mode)
+        if scenario is not None:
+            self.parameters_service.update(parameters)
+            # Parameters configure the scenario service; they are not events
+            # and should not appear in the loaded event payload.
+            scenario = {
+                key: value for key, value in scenario.items()
+                if key not in ("parameters", "parametros")
+            }
+        return scenario
+
+    def _normalize_parameters(self, data):
+        """Validate the optional scenario parameter object and apply defaults."""
+        try:
+            normalized_parameters = self.parameters_service.parameters_from_scenario(data)
+        except (TypeError, ValueError) as error:
+            self.errors.append(f"parameters: {error}")
+            return None
+        return normalized_parameters
     
     def loadFromFile(self, filepath, stress_mode):
         self.errors = []

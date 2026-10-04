@@ -179,7 +179,7 @@ class QueryService:
                 return
 
             event = node.getValue()
-            if event.getKey()[0] == 3 and depth > limit:
+            if self._is_expensive_access(event.getKey()[0], depth, limit):
                 results.append({
                     "event": self._event_data(node, event),
                     "depth": depth,
@@ -192,6 +192,42 @@ class QueryService:
 
         visit(observatory.getAVLTree().root, 0)
         return self._success({"events": results, "limit": limit}, 0)
+
+    def tree_characteristics(self, observatory):
+        """Describe each node using the existing Node height/depth methods."""
+        parameter_service = getattr(self, "parameters_service", None)
+        limit = parameter_service.getL() if parameter_service is not None else observatory.getL()
+        trees = {}
+        for name, tree in (("avl", observatory.getAVLTree()), ("bst", observatory.getBSTTree())):
+            nodes = {}
+
+            def visit(node):
+                if node is None:
+                    return -1
+                left_height = visit(node.getLeftChild())
+                right_height = visit(node.getRightChild())
+                event = node.getValue()
+                event_id = event.getKey()[2]
+                depth = node.getDepth(0)
+                priority = event.getKey()[0]
+                nodes[str(event_id)] = {
+                    # BST nodes do not maintain the cached AVL height, so
+                    # calculate height from their actual children here.
+                    "height": max(left_height, right_height) + 1,
+                    "depth": depth,
+                    "priority": priority,
+                    "expensive_access": self._is_expensive_access(priority, depth, limit),
+                }
+                return max(left_height, right_height) + 1
+
+            visit(tree.root)
+            trees[name] = nodes
+        return {"ok": True, "limit": limit, "trees": trees}
+
+    @staticmethod
+    def _is_expensive_access(priority, depth, limit):
+        """Use the same priority/depth rule for queries and tree annotations."""
+        return priority == 3 and depth > limit
 
     def _all_matching(self, observatory, predicate):
         """Visit each active node and keep events accepted by predicate."""
