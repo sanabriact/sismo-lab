@@ -19,6 +19,7 @@ const History = lazy(() => import('../pages/history/History'));
 const ArchivedEvents = lazy(() => import('../pages/history/ArchivedEvents'));
 const DeletedEvents = lazy(() => import('../pages/history/DeletedEvents'));
 const HistoricalIds = lazy(() => import('../pages/history/HistoricalIds'));
+const Parameters = lazy(() => import('../pages/parameters/Parameters'));
 
 /* Adding components to each route */
 const coreRoutes: AppRoute[] = [
@@ -31,6 +32,11 @@ const coreRoutes: AppRoute[] = [
         path: "/load-scenario",
         title: "Cargar escenario",
         component: LoadScenario,
+    },
+    {
+        path: "/parameters",
+        title: "Parámetros",
+        component: Parameters,
     },
     {
         path: "/reports",

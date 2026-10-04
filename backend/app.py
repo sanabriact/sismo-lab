@@ -44,6 +44,16 @@ manual_event_minimums = {}
 def getSeismicObservatory():
     return jsonify(event_engine.get_or_load_observatory().toDict())
 
+@app.route("/api/parameters", methods=["GET"])
+def get_parameters():
+    return jsonify(event_engine.get_parameters())
+
+@app.route("/api/parameters", methods=["PATCH"])
+def update_parameters():
+    result = event_engine.update_parameters(request.get_json(silent=True))
+    status_code = 200 if result.get("ok") else 400
+    return jsonify(result), status_code
+
 @app.route("/api/events", methods=["POST"])
 def createEvent():
     # The request body is the object received from the frontend.

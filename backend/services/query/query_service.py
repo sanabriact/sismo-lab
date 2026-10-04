@@ -170,7 +170,8 @@ class QueryService:
         a normal BST search would inspect to reach that node.  We calculate it
         during one traversal instead of performing a second search per event.
         """
-        limit = observatory.getL()
+        parameter_service = getattr(self, "parameters_service", None)
+        limit = parameter_service.getL() if parameter_service is not None else observatory.getL()
         results = []
 
         def visit(node, depth):

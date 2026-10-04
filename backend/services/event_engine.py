@@ -10,6 +10,7 @@ from backend.services.archive.archive_tree_service import ArchiveTreeService
 from backend.services.actions.action_stack_service import ActionStackError, ActionStackService
 from backend.services.query.query_service import QueryService
 from backend.services.history.history_service import HistoryService
+from backend.services.parameters.scenario_parameters_service import ScenarioParametersService
 
 class EventEngine:
     """
@@ -39,6 +40,8 @@ class EventEngine:
         # The engine owns the query service just like the other domain services.
         self.query_service = QueryService()
         self.history_service = HistoryService()
+        self.parameters_service = ScenarioParametersService()
+        self.query_service.parameters_service = self.parameters_service
         if hasattr(self.service, "metrics_service"):
             self.service.metrics_service.action_stack_service = self.action_stack_service
         self.report_queue_interval = 1.5
@@ -71,6 +74,7 @@ class EventEngine:
         with self.lock:
             self._stop_realtime_clock_locked()
             self.observatory = observatory
+            self._load_parameters_from_observatory(observatory)
             self.sequence = 0
             self.scenario_id = observatory.scenario_id
 
@@ -83,9 +87,69 @@ class EventEngine:
         with self.lock:
             if self.observatory is None:
                 self.observatory = self.service.getObservatory()
+                self._load_parameters_from_observatory(self.observatory)
                 self.scenario_id = self.observatory.scenario_id
                 self._start_realtime_clock_locked()
             return self.observatory
+
+    def _load_parameters_from_observatory(self, observatory):
+        """Hydrate the shared parameter service from persisted scenario values."""
+        self.parameters_service.update({
+            "L": observatory.getL(),
+            "W": observatory.getAssociationManager().getW(),
+            "R": observatory.getAssociationManager().getR(),
+            "T": observatory.getT(),
+        })
+
+    def get_parameters(self):
+        observatory = self.get_or_load_observatory()
+        with self.lock:
+            self._load_parameters_from_observatory(observatory)
+            return {"ok": True, **self.parameters_service.getAll()}
+
+    def update_parameters(self, data):
+        observatory = self.get_or_load_observatory()
+        with self.lock:
+            if self.recovering:
+                return {"ok": False, "reason": "busy"}
+            before = self.parameters_service.getAll()
+            before_version = observatory.toVersion()
+            before_indicators = (
+                self.service.metrics_service.capture_display(observatory)
+                if hasattr(self.service, "metrics_service") else {}
+            )
+            try:
+                after = self.parameters_service.update(data)
+            except (TypeError, ValueError) as error:
+                return {"ok": False, "reason": str(error), **before}
+            if before == after:
+                return {"ok": True, "changed": False, **after}
+            observatory.setL(after["L"])
+            observatory.setT(after["T"])
+            observatory.setAssociationLimits(after["W"], after["R"])
+            if hasattr(self.service, "metrics_service"):
+                self.service.metrics_service.refresh_derived_metrics(observatory)
+                self.service.metrics_service.record_operation(
+                    observatory=observatory,
+                    action_type="change_parameter",
+                    before_version=before_version,
+                    before_indicators=before_indicators,
+                    details={"parameters_before": before, "parameters_after": after},
+                )
+            self.service.saveObservatory(observatory)
+            return {"ok": True, "changed": True, **after}
+
+    def getL(self):
+        return self.parameters_service.getL()
+
+    def getW(self):
+        return self.parameters_service.getW()
+
+    def getR(self):
+        return self.parameters_service.getR()
+
+    def getT(self):
+        return self.parameters_service.getT()
     
     def get_active_events(self):
         observatory = self.get_or_load_observatory()
@@ -133,50 +197,13 @@ class EventEngine:
         with self.lock:
             if self.observatory is None:
                 return {"ok": False, "reason": "no_scenario"}
-            return {"ok": True, **self.observatory.getAssociationManager().getLimits()}
+            return {"ok": True, "W": self.getW(), "R": self.getR()}
 
     def update_association_limits(self, data):
-        """Update W/R through the engine and register one undoable action."""
-        with self.lock:
-            if self.observatory is None:
-                return {"ok": False, "reason": "no_scenario"}
-            if self.recovering:
-                return {"ok": False, "reason": "busy"}
-            if not isinstance(data, dict):
-                return {"ok": False, "reason": "invalid_parameters"}
-
-            manager = self.observatory.getAssociationManager()
-            before_limits = manager.getLimits()
-            before_version = self.observatory.toVersion()
-            before_indicators = self.service.metrics_service.capture_display(self.observatory)
-            try:
-                self.observatory.setAssociationLimits(
-                    data.get("W"),
-                    data.get("R"),
-                )
-            except (TypeError, ValueError) as error:
-                return {"ok": False, "reason": str(error)}
-
-            after_limits = manager.getLimits()
-            if before_limits == after_limits:
-                return {"ok": True, "changed": False, **after_limits}
-
-            # The previous snapshot must contain the state before the change.
-            before_version["association_manager"] = {
-                "W": before_limits["W"],
-                "R": before_limits["R"],
-                "candidates": before_version["association_manager"].get("candidates", {}),
-                "selected_references": before_version["association_manager"].get("selected_references", {}),
-            }
-            self.service.metrics_service.record_operation(
-                observatory=self.observatory,
-                action_type="change_parameter",
-                before_version=before_version,
-                before_indicators=before_indicators,
-                details={"parameter": "association_limits", "before": before_limits, "after": after_limits},
-            )
-            self.service.saveObservatory(self.observatory)
-            return {"ok": True, "changed": True, **after_limits}
+        """Compatibility endpoint for clients that only edit association limits."""
+        if not isinstance(data, dict):
+            return {"ok": False, "reason": "invalid_parameters"}
+        return self.update_parameters({key: data[key] for key in ("W", "R") if key in data})
 
     def execute_query(self, data):
         """Validate the request and delegate the read-only query to QueryService."""
@@ -207,7 +234,7 @@ class EventEngine:
                 return {"ok": False, "reason": "no_scenario"}
             if self.recovering:
                 return {"ok": False, "reason": "busy"}
-            threshold = self.observatory.t if threshold_hours is None else threshold_hours
+            threshold = self.getT() if threshold_hours is None else threshold_hours
             actual_time = self.observatory.getClock().getCurrentTime()
             return self.archive_tree_service.prepare(
                 self.observatory, actual_time, threshold, client_id
@@ -370,6 +397,7 @@ class EventEngine:
                 return {"ok": False, "reason": str(error)}
 
             self.observatory = restored
+            self._load_parameters_from_observatory(restored)
             self.scenario_id = restored.scenario_id
             if self.scenario_id is None:
                 self._stop_realtime_clock_locked()
