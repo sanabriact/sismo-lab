@@ -1,24 +1,24 @@
 {
-    "scenario_id": "11af1491-90b4-4c04-8b94-aa8c6d2f0229",
+    "scenario_id": "7dfe8adc-5199-4d5b-9e8a-88823b4b3a77",
     "avl_tree": {
         "root": {
             "value": {
                 "key": [
                     2,
-                    5.5,
-                    7
+                    4.5,
+                    3
                 ],
-                "depth": 25,
-                "epicenter_x": 520,
-                "epicenter_y": 520,
-                "datetime": "2026-07-19T23:43:34+00:00",
+                "depth": 100,
+                "epicenter_x": 300,
+                "epicenter_y": 300,
+                "datetime": "2026-09-23T04:50:21+00:00",
                 "revision": 1,
                 "reporting_stations": [
-                    2
+                    3
                 ],
                 "attention_status": "pending",
                 "event_status": "active",
-                "populated_zone": false,
+                "populated_zone": true,
                 "expensive_access": false
             },
             "height": 4,
@@ -27,54 +27,54 @@
                     "key": [
                         1,
                         3.5,
-                        4
+                        2
                     ],
-                    "depth": 10,
-                    "epicenter_x": 260,
-                    "epicenter_y": 260,
-                    "datetime": "2026-07-19T23:43:34+00:00",
+                    "depth": 200,
+                    "epicenter_x": 200,
+                    "epicenter_y": 200,
+                    "datetime": "2026-09-23T04:50:21+00:00",
                     "revision": 1,
                     "reporting_stations": [
-                        4
+                        2
                     ],
                     "attention_status": "pending",
                     "event_status": "active",
                     "populated_zone": true,
                     "expensive_access": false
                 },
-                "height": 2,
+                "height": 3,
                 "left_child": {
                     "value": {
                         "key": [
                             1,
-                            3,
-                            12
+                            2.5,
+                            5
                         ],
-                        "depth": 200,
-                        "epicenter_x": 450,
-                        "epicenter_y": 550,
-                        "datetime": "2026-07-19T23:43:34+00:00",
+                        "depth": 400,
+                        "epicenter_x": 600,
+                        "epicenter_y": 100,
+                        "datetime": "2026-09-23T04:50:21+00:00",
                         "revision": 1,
                         "reporting_stations": [
-                            6
+                            1
                         ],
                         "attention_status": "pending",
                         "event_status": "active",
-                        "populated_zone": true,
+                        "populated_zone": false,
                         "expensive_access": false
                     },
-                    "height": 1,
+                    "height": 2,
                     "left_child": {
                         "value": {
                             "key": [
                                 1,
                                 2,
-                                5
+                                1
                             ],
-                            "depth": 5,
-                            "epicenter_x": 120,
-                            "epicenter_y": 820,
-                            "datetime": "2026-07-19T23:43:34+00:00",
+                            "depth": 100,
+                            "epicenter_x": 100,
+                            "epicenter_y": 100,
+                            "datetime": "2026-09-23T04:50:21+00:00",
                             "revision": 1,
                             "reporting_stations": [
                                 1
@@ -84,46 +84,46 @@
                             "populated_zone": true,
                             "expensive_access": false
                         },
-                        "height": 0,
+                        "height": 1,
                         "left_child": null,
-                        "right_child": null,
+                        "right_child": {
+                            "value": {
+                                "key": [
+                                    1,
+                                    2,
+                                    13
+                                ],
+                                "depth": 100,
+                                "epicenter_x": 900,
+                                "epicenter_y": 900,
+                                "datetime": "2026-09-23T04:50:21+00:00",
+                                "revision": 1,
+                                "reporting_stations": [
+                                    1
+                                ],
+                                "attention_status": "pending",
+                                "event_status": "active",
+                                "populated_zone": true,
+                                "expensive_access": false
+                            },
+                            "height": 0,
+                            "left_child": null,
+                            "right_child": null,
+                            "node_creation_time": null
+                        },
                         "node_creation_time": null
                     },
-                    "right_child": null,
-                    "node_creation_time": null
-                },
-                "right_child": {
-                    "value": {
-                        "key": [
-                            2,
-                            4.5,
-                            6
-                        ],
-                        "depth": 50,
-                        "epicenter_x": 480,
-                        "epicenter_y": 480,
-                        "datetime": "2026-07-19T23:43:34+00:00",
-                        "revision": 1,
-                        "reporting_stations": [
-                            5
-                        ],
-                        "attention_status": "pending",
-                        "event_status": "active",
-                        "populated_zone": true,
-                        "expensive_access": false
-                    },
-                    "height": 1,
-                    "left_child": {
+                    "right_child": {
                         "value": {
                             "key": [
                                 1,
-                                4.2,
-                                15
+                                3,
+                                6
                             ],
-                            "depth": 5,
-                            "epicenter_x": 600,
-                            "epicenter_y": 400,
-                            "datetime": "2026-07-19T23:43:34+00:00",
+                            "depth": 500,
+                            "epicenter_x": 700,
+                            "epicenter_y": 150,
+                            "datetime": "2026-09-23T04:50:21+00:00",
                             "revision": 1,
                             "reporting_stations": [
                                 2
@@ -138,20 +138,43 @@
                         "right_child": null,
                         "node_creation_time": null
                     },
-                    "right_child": {
+                    "node_creation_time": null
+                },
+                "right_child": {
+                    "value": {
+                        "key": [
+                            1,
+                            4,
+                            7
+                        ],
+                        "depth": 600,
+                        "epicenter_x": 800,
+                        "epicenter_y": 200,
+                        "datetime": "2026-09-23T04:50:21+00:00",
+                        "revision": 1,
+                        "reporting_stations": [
+                            3
+                        ],
+                        "attention_status": "pending",
+                        "event_status": "active",
+                        "populated_zone": false,
+                        "expensive_access": false
+                    },
+                    "height": 2,
+                    "left_child": {
                         "value": {
                             "key": [
-                                2,
-                                4.5,
-                                8
+                                1,
+                                3.8,
+                                10
                             ],
-                            "depth": 35,
-                            "epicenter_x": 500,
-                            "epicenter_y": 300,
-                            "datetime": "2026-07-19T23:43:34+00:00",
+                            "depth": 30,
+                            "epicenter_x": 100,
+                            "epicenter_y": 600,
+                            "datetime": "2026-09-23T04:50:21+00:00",
                             "revision": 1,
                             "reporting_stations": [
-                                4
+                                2
                             ],
                             "attention_status": "pending",
                             "event_status": "active",
@@ -163,91 +186,20 @@
                         "right_child": null,
                         "node_creation_time": null
                     },
-                    "node_creation_time": null
-                },
-                "node_creation_time": null
-            },
-            "right_child": {
-                "value": {
-                    "key": [
-                        3,
-                        5,
-                        1
-                    ],
-                    "depth": 20,
-                    "epicenter_x": 250,
-                    "epicenter_y": 250,
-                    "datetime": "2026-07-19T23:43:34+00:00",
-                    "revision": 1,
-                    "reporting_stations": [
-                        5
-                    ],
-                    "attention_status": "pending",
-                    "event_status": "active",
-                    "populated_zone": true,
-                    "expensive_access": false
-                },
-                "height": 3,
-                "left_child": {
-                    "value": {
-                        "key": [
-                            3,
-                            4.5,
-                            3
-                        ],
-                        "depth": 30,
-                        "epicenter_x": 300,
-                        "epicenter_y": 300,
-                        "datetime": "2026-07-19T23:43:34+00:00",
-                        "revision": 1,
-                        "reporting_stations": [
-                            4
-                        ],
-                        "attention_status": "pending",
-                        "event_status": "active",
-                        "populated_zone": true,
-                        "expensive_access": false
-                    },
-                    "height": 2,
-                    "left_child": {
-                        "value": {
-                            "key": [
-                                2,
-                                5.5,
-                                11
-                            ],
-                            "depth": 10,
-                            "epicenter_x": 620,
-                            "epicenter_y": 120,
-                            "datetime": "2026-07-19T23:43:34+00:00",
-                            "revision": 1,
-                            "reporting_stations": [
-                                7
-                            ],
-                            "attention_status": "pending",
-                            "event_status": "active",
-                            "populated_zone": false,
-                            "expensive_access": false
-                        },
-                        "height": 0,
-                        "left_child": null,
-                        "right_child": null,
-                        "node_creation_time": null
-                    },
                     "right_child": {
                         "value": {
                             "key": [
-                                3,
-                                4.8,
-                                10
+                                1,
+                                4.2,
+                                11
                             ],
-                            "depth": 15,
-                            "epicenter_x": 350,
-                            "epicenter_y": 750,
-                            "datetime": "2026-07-19T23:43:34+00:00",
+                            "depth": 35,
+                            "epicenter_x": 200,
+                            "epicenter_y": 650,
+                            "datetime": "2026-09-23T04:50:21+00:00",
                             "revision": 1,
                             "reporting_stations": [
-                                6
+                                3
                             ],
                             "attention_status": "pending",
                             "event_status": "active",
@@ -258,17 +210,17 @@
                         "left_child": {
                             "value": {
                                 "key": [
-                                    3,
-                                    4.5,
-                                    13
+                                    1,
+                                    4,
+                                    15
                                 ],
                                 "depth": 30,
                                 "epicenter_x": 500,
                                 "epicenter_y": 500,
-                                "datetime": "2026-07-19T23:43:34+00:00",
+                                "datetime": "2026-09-23T04:50:21+00:00",
                                 "revision": 1,
                                 "reporting_stations": [
-                                    5
+                                    3
                                 ],
                                 "attention_status": "pending",
                                 "event_status": "active",
@@ -285,45 +237,68 @@
                     },
                     "node_creation_time": null
                 },
-                "right_child": {
+                "node_creation_time": null
+            },
+            "right_child": {
+                "value": {
+                    "key": [
+                        3,
+                        5.5,
+                        9
+                    ],
+                    "depth": 25,
+                    "epicenter_x": 500,
+                    "epicenter_y": 250,
+                    "datetime": "2026-09-23T04:50:21+00:00",
+                    "revision": 1,
+                    "reporting_stations": [
+                        1
+                    ],
+                    "attention_status": "pending",
+                    "event_status": "active",
+                    "populated_zone": true,
+                    "expensive_access": false
+                },
+                "height": 2,
+                "left_child": {
                     "value": {
                         "key": [
                             3,
-                            6.2,
-                            2
+                            4.5,
+                            12
                         ],
-                        "depth": 100,
-                        "epicenter_x": 750,
-                        "epicenter_y": 250,
-                        "datetime": "2026-07-19T23:43:34+00:00",
+                        "depth": 30,
+                        "epicenter_x": 300,
+                        "epicenter_y": 750,
+                        "datetime": "2026-09-23T04:50:21+00:00",
                         "revision": 1,
                         "reporting_stations": [
-                            3
+                            4
                         ],
                         "attention_status": "pending",
                         "event_status": "active",
-                        "populated_zone": false,
+                        "populated_zone": true,
                         "expensive_access": false
                     },
                     "height": 1,
                     "left_child": {
                         "value": {
                             "key": [
-                                3,
-                                6,
-                                9
+                                2,
+                                5,
+                                14
                             ],
-                            "depth": 400,
-                            "epicenter_x": 850,
-                            "epicenter_y": 150,
-                            "datetime": "2026-07-19T23:43:34+00:00",
+                            "depth": 50,
+                            "epicenter_x": 950,
+                            "epicenter_y": 950,
+                            "datetime": "2026-09-23T04:50:21+00:00",
                             "revision": 1,
                             "reporting_stations": [
-                                7
+                                2
                             ],
                             "attention_status": "pending",
                             "event_status": "active",
-                            "populated_zone": false,
+                            "populated_zone": true,
                             "expensive_access": false
                         },
                         "height": 0,
@@ -335,13 +310,135 @@
                         "value": {
                             "key": [
                                 3,
-                                7.1,
-                                14
+                                5,
+                                4
                             ],
-                            "depth": 50,
-                            "epicenter_x": 200,
-                            "epicenter_y": 800,
-                            "datetime": "2026-07-19T23:43:34+00:00",
+                            "depth": 20,
+                            "epicenter_x": 400,
+                            "epicenter_y": 400,
+                            "datetime": "2026-09-23T04:50:21+00:00",
+                            "revision": 1,
+                            "reporting_stations": [
+                                4
+                            ],
+                            "attention_status": "pending",
+                            "event_status": "active",
+                            "populated_zone": true,
+                            "expensive_access": false
+                        },
+                        "height": 0,
+                        "left_child": null,
+                        "right_child": null,
+                        "node_creation_time": null
+                    },
+                    "node_creation_time": null
+                },
+                "right_child": {
+                    "value": {
+                        "key": [
+                            3,
+                            6,
+                            8
+                        ],
+                        "depth": 10,
+                        "epicenter_x": 250,
+                        "epicenter_y": 250,
+                        "datetime": "2026-09-23T04:50:21+00:00",
+                        "revision": 1,
+                        "reporting_stations": [
+                            4
+                        ],
+                        "attention_status": "pending",
+                        "event_status": "active",
+                        "populated_zone": true,
+                        "expensive_access": false
+                    },
+                    "height": 0,
+                    "left_child": null,
+                    "right_child": null,
+                    "node_creation_time": null
+                },
+                "node_creation_time": null
+            },
+            "node_creation_time": null
+        }
+    },
+    "bst_tree": {
+        "root": {
+            "value": {
+                "key": [
+                    1,
+                    2,
+                    1
+                ],
+                "depth": 100,
+                "epicenter_x": 100,
+                "epicenter_y": 100,
+                "datetime": "2026-09-23T04:50:21+00:00",
+                "revision": 1,
+                "reporting_stations": [
+                    1
+                ],
+                "attention_status": "pending",
+                "event_status": "active",
+                "populated_zone": true,
+                "expensive_access": false
+            },
+            "height": 0,
+            "left_child": null,
+            "right_child": {
+                "value": {
+                    "key": [
+                        1,
+                        3.5,
+                        2
+                    ],
+                    "depth": 200,
+                    "epicenter_x": 200,
+                    "epicenter_y": 200,
+                    "datetime": "2026-09-23T04:50:21+00:00",
+                    "revision": 1,
+                    "reporting_stations": [
+                        2
+                    ],
+                    "attention_status": "pending",
+                    "event_status": "active",
+                    "populated_zone": true,
+                    "expensive_access": false
+                },
+                "height": 0,
+                "left_child": {
+                    "value": {
+                        "key": [
+                            1,
+                            2.5,
+                            5
+                        ],
+                        "depth": 400,
+                        "epicenter_x": 600,
+                        "epicenter_y": 100,
+                        "datetime": "2026-09-23T04:50:21+00:00",
+                        "revision": 1,
+                        "reporting_stations": [
+                            1
+                        ],
+                        "attention_status": "pending",
+                        "event_status": "active",
+                        "populated_zone": false,
+                        "expensive_access": false
+                    },
+                    "height": 0,
+                    "left_child": {
+                        "value": {
+                            "key": [
+                                1,
+                                2,
+                                13
+                            ],
+                            "depth": 100,
+                            "epicenter_x": 900,
+                            "epicenter_y": 900,
+                            "datetime": "2026-09-23T04:50:21+00:00",
                             "revision": 1,
                             "reporting_stations": [
                                 1
@@ -356,71 +453,47 @@
                         "right_child": null,
                         "node_creation_time": null
                     },
+                    "right_child": {
+                        "value": {
+                            "key": [
+                                1,
+                                3,
+                                6
+                            ],
+                            "depth": 500,
+                            "epicenter_x": 700,
+                            "epicenter_y": 150,
+                            "datetime": "2026-09-23T04:50:21+00:00",
+                            "revision": 1,
+                            "reporting_stations": [
+                                2
+                            ],
+                            "attention_status": "pending",
+                            "event_status": "active",
+                            "populated_zone": false,
+                            "expensive_access": false
+                        },
+                        "height": 0,
+                        "left_child": null,
+                        "right_child": null,
+                        "node_creation_time": null
+                    },
                     "node_creation_time": null
                 },
-                "node_creation_time": null
-            },
-            "node_creation_time": null
-        }
-    },
-    "bst_tree": {
-        "root": {
-            "value": {
-                "key": [
-                    3,
-                    6.2,
-                    2
-                ],
-                "depth": 100,
-                "epicenter_x": 750,
-                "epicenter_y": 250,
-                "datetime": "2026-07-19T23:43:34+00:00",
-                "revision": 1,
-                "reporting_stations": [
-                    3
-                ],
-                "attention_status": "pending",
-                "event_status": "active",
-                "populated_zone": false,
-                "expensive_access": false
-            },
-            "height": 0,
-            "left_child": {
-                "value": {
-                    "key": [
-                        1,
-                        2,
-                        5
-                    ],
-                    "depth": 5,
-                    "epicenter_x": 120,
-                    "epicenter_y": 820,
-                    "datetime": "2026-07-19T23:43:34+00:00",
-                    "revision": 1,
-                    "reporting_stations": [
-                        1
-                    ],
-                    "attention_status": "pending",
-                    "event_status": "active",
-                    "populated_zone": true,
-                    "expensive_access": false
-                },
-                "height": 0,
-                "left_child": null,
                 "right_child": {
                     "value": {
                         "key": [
                             2,
                             4.5,
-                            6
+                            3
                         ],
-                        "depth": 50,
-                        "epicenter_x": 480,
-                        "epicenter_y": 480,
-                        "datetime": "2026-07-19T23:43:34+00:00",
+                        "depth": 100,
+                        "epicenter_x": 300,
+                        "epicenter_y": 300,
+                        "datetime": "2026-09-23T04:50:21+00:00",
                         "revision": 1,
                         "reporting_stations": [
-                            5
+                            3
                         ],
                         "attention_status": "pending",
                         "event_status": "active",
@@ -432,20 +505,20 @@
                         "value": {
                             "key": [
                                 1,
-                                3.5,
-                                4
+                                4,
+                                7
                             ],
-                            "depth": 10,
-                            "epicenter_x": 260,
-                            "epicenter_y": 260,
-                            "datetime": "2026-07-19T23:43:34+00:00",
+                            "depth": 600,
+                            "epicenter_x": 800,
+                            "epicenter_y": 200,
+                            "datetime": "2026-09-23T04:50:21+00:00",
                             "revision": 1,
                             "reporting_stations": [
-                                4
+                                3
                             ],
                             "attention_status": "pending",
                             "event_status": "active",
-                            "populated_zone": true,
+                            "populated_zone": false,
                             "expensive_access": false
                         },
                         "height": 0,
@@ -453,16 +526,16 @@
                             "value": {
                                 "key": [
                                     1,
-                                    3,
-                                    12
+                                    3.8,
+                                    10
                                 ],
-                                "depth": 200,
-                                "epicenter_x": 450,
-                                "epicenter_y": 550,
-                                "datetime": "2026-07-19T23:43:34+00:00",
+                                "depth": 30,
+                                "epicenter_x": 100,
+                                "epicenter_y": 600,
+                                "datetime": "2026-09-23T04:50:21+00:00",
                                 "revision": 1,
                                 "reporting_stations": [
-                                    6
+                                    2
                                 ],
                                 "attention_status": "pending",
                                 "event_status": "active",
@@ -479,23 +552,47 @@
                                 "key": [
                                     1,
                                     4.2,
-                                    15
+                                    11
                                 ],
-                                "depth": 5,
-                                "epicenter_x": 600,
-                                "epicenter_y": 400,
-                                "datetime": "2026-07-19T23:43:34+00:00",
+                                "depth": 35,
+                                "epicenter_x": 200,
+                                "epicenter_y": 650,
+                                "datetime": "2026-09-23T04:50:21+00:00",
                                 "revision": 1,
                                 "reporting_stations": [
-                                    2
+                                    3
                                 ],
                                 "attention_status": "pending",
                                 "event_status": "active",
-                                "populated_zone": false,
+                                "populated_zone": true,
                                 "expensive_access": false
                             },
                             "height": 0,
-                            "left_child": null,
+                            "left_child": {
+                                "value": {
+                                    "key": [
+                                        1,
+                                        4,
+                                        15
+                                    ],
+                                    "depth": 30,
+                                    "epicenter_x": 500,
+                                    "epicenter_y": 500,
+                                    "datetime": "2026-09-23T04:50:21+00:00",
+                                    "revision": 1,
+                                    "reporting_stations": [
+                                        3
+                                    ],
+                                    "attention_status": "pending",
+                                    "event_status": "active",
+                                    "populated_zone": true,
+                                    "expensive_access": false
+                                },
+                                "height": 0,
+                                "left_child": null,
+                                "right_child": null,
+                                "node_creation_time": null
+                            },
                             "right_child": null,
                             "node_creation_time": null
                         },
@@ -504,35 +601,35 @@
                     "right_child": {
                         "value": {
                             "key": [
-                                2,
-                                5.5,
-                                7
+                                3,
+                                5,
+                                4
                             ],
-                            "depth": 25,
-                            "epicenter_x": 520,
-                            "epicenter_y": 520,
-                            "datetime": "2026-07-19T23:43:34+00:00",
+                            "depth": 20,
+                            "epicenter_x": 400,
+                            "epicenter_y": 400,
+                            "datetime": "2026-09-23T04:50:21+00:00",
                             "revision": 1,
                             "reporting_stations": [
-                                2
+                                4
                             ],
                             "attention_status": "pending",
                             "event_status": "active",
-                            "populated_zone": false,
+                            "populated_zone": true,
                             "expensive_access": false
                         },
                         "height": 0,
                         "left_child": {
                             "value": {
                                 "key": [
-                                    2,
+                                    3,
                                     4.5,
-                                    8
+                                    12
                                 ],
-                                "depth": 35,
-                                "epicenter_x": 500,
-                                "epicenter_y": 300,
-                                "datetime": "2026-07-19T23:43:34+00:00",
+                                "depth": 30,
+                                "epicenter_x": 300,
+                                "epicenter_y": 750,
+                                "datetime": "2026-09-23T04:50:21+00:00",
                                 "revision": 1,
                                 "reporting_stations": [
                                     4
@@ -543,7 +640,31 @@
                                 "expensive_access": false
                             },
                             "height": 0,
-                            "left_child": null,
+                            "left_child": {
+                                "value": {
+                                    "key": [
+                                        2,
+                                        5,
+                                        14
+                                    ],
+                                    "depth": 50,
+                                    "epicenter_x": 950,
+                                    "epicenter_y": 950,
+                                    "datetime": "2026-09-23T04:50:21+00:00",
+                                    "revision": 1,
+                                    "reporting_stations": [
+                                        2
+                                    ],
+                                    "attention_status": "pending",
+                                    "event_status": "active",
+                                    "populated_zone": true,
+                                    "expensive_access": false
+                                },
+                                "height": 0,
+                                "left_child": null,
+                                "right_child": null,
+                                "node_creation_time": null
+                            },
                             "right_child": null,
                             "node_creation_time": null
                         },
@@ -551,16 +672,16 @@
                             "value": {
                                 "key": [
                                     3,
-                                    5,
-                                    1
+                                    6,
+                                    8
                                 ],
-                                "depth": 20,
+                                "depth": 10,
                                 "epicenter_x": 250,
                                 "epicenter_y": 250,
-                                "datetime": "2026-07-19T23:43:34+00:00",
+                                "datetime": "2026-09-23T04:50:21+00:00",
                                 "revision": 1,
                                 "reporting_stations": [
-                                    5
+                                    4
                                 ],
                                 "attention_status": "pending",
                                 "event_status": "active",
@@ -572,16 +693,16 @@
                                 "value": {
                                     "key": [
                                         3,
-                                        4.5,
-                                        3
+                                        5.5,
+                                        9
                                     ],
-                                    "depth": 30,
-                                    "epicenter_x": 300,
-                                    "epicenter_y": 300,
-                                    "datetime": "2026-07-19T23:43:34+00:00",
+                                    "depth": 25,
+                                    "epicenter_x": 500,
+                                    "epicenter_y": 250,
+                                    "datetime": "2026-09-23T04:50:21+00:00",
                                     "revision": 1,
                                     "reporting_stations": [
-                                        4
+                                        1
                                     ],
                                     "attention_status": "pending",
                                     "event_status": "active",
@@ -589,107 +710,11 @@
                                     "expensive_access": false
                                 },
                                 "height": 0,
-                                "left_child": {
-                                    "value": {
-                                        "key": [
-                                            2,
-                                            5.5,
-                                            11
-                                        ],
-                                        "depth": 10,
-                                        "epicenter_x": 620,
-                                        "epicenter_y": 120,
-                                        "datetime": "2026-07-19T23:43:34+00:00",
-                                        "revision": 1,
-                                        "reporting_stations": [
-                                            7
-                                        ],
-                                        "attention_status": "pending",
-                                        "event_status": "active",
-                                        "populated_zone": false,
-                                        "expensive_access": false
-                                    },
-                                    "height": 0,
-                                    "left_child": null,
-                                    "right_child": null,
-                                    "node_creation_time": null
-                                },
-                                "right_child": {
-                                    "value": {
-                                        "key": [
-                                            3,
-                                            4.8,
-                                            10
-                                        ],
-                                        "depth": 15,
-                                        "epicenter_x": 350,
-                                        "epicenter_y": 750,
-                                        "datetime": "2026-07-19T23:43:34+00:00",
-                                        "revision": 1,
-                                        "reporting_stations": [
-                                            6
-                                        ],
-                                        "attention_status": "pending",
-                                        "event_status": "active",
-                                        "populated_zone": true,
-                                        "expensive_access": false
-                                    },
-                                    "height": 0,
-                                    "left_child": {
-                                        "value": {
-                                            "key": [
-                                                3,
-                                                4.5,
-                                                13
-                                            ],
-                                            "depth": 30,
-                                            "epicenter_x": 500,
-                                            "epicenter_y": 500,
-                                            "datetime": "2026-07-19T23:43:34+00:00",
-                                            "revision": 1,
-                                            "reporting_stations": [
-                                                5
-                                            ],
-                                            "attention_status": "pending",
-                                            "event_status": "active",
-                                            "populated_zone": true,
-                                            "expensive_access": false
-                                        },
-                                        "height": 0,
-                                        "left_child": null,
-                                        "right_child": null,
-                                        "node_creation_time": null
-                                    },
-                                    "right_child": null,
-                                    "node_creation_time": null
-                                },
-                                "node_creation_time": null
-                            },
-                            "right_child": {
-                                "value": {
-                                    "key": [
-                                        3,
-                                        6,
-                                        9
-                                    ],
-                                    "depth": 400,
-                                    "epicenter_x": 850,
-                                    "epicenter_y": 150,
-                                    "datetime": "2026-07-19T23:43:34+00:00",
-                                    "revision": 1,
-                                    "reporting_stations": [
-                                        7
-                                    ],
-                                    "attention_status": "pending",
-                                    "event_status": "active",
-                                    "populated_zone": false,
-                                    "expensive_access": false
-                                },
-                                "height": 0,
                                 "left_child": null,
                                 "right_child": null,
                                 "node_creation_time": null
                             },
+                            "right_child": null,
                             "node_creation_time": null
                         },
                         "node_creation_time": null
@@ -698,88 +723,39 @@
                 },
                 "node_creation_time": null
             },
-            "right_child": {
-                "value": {
-                    "key": [
-                        3,
-                        7.1,
-                        14
-                    ],
-                    "depth": 50,
-                    "epicenter_x": 200,
-                    "epicenter_y": 800,
-                    "datetime": "2026-07-19T23:43:34+00:00",
-                    "revision": 1,
-                    "reporting_stations": [
-                        1
-                    ],
-                    "attention_status": "pending",
-                    "event_status": "active",
-                    "populated_zone": true,
-                    "expensive_access": false
-                },
-                "height": 0,
-                "left_child": null,
-                "right_child": null,
-                "node_creation_time": null
-            },
             "node_creation_time": null
         }
     },
     "stations": [
         {
             "id": 1,
-            "name": "Estación Norte",
+            "name": "Station Alpha",
             "x": 100,
-            "y": 800
-        },
-        {
-            "id": 2,
-            "name": "Estación Sur",
-            "x": 900,
-            "y": 200
-        },
-        {
-            "id": 3,
-            "name": "Estación Este",
-            "x": 800,
-            "y": 500
-        },
-        {
-            "id": 4,
-            "name": "Estación Oeste",
-            "x": 200,
-            "y": 300
-        },
-        {
-            "id": 5,
-            "name": "Estación Centro",
-            "x": 500,
-            "y": 500
-        },
-        {
-            "id": 6,
-            "name": "Estación Alto",
-            "x": 400,
-            "y": 700
-        },
-        {
-            "id": 7,
-            "name": "Estación Bajo",
-            "x": 600,
             "y": 100
         },
         {
-            "id": 8,
-            "name": "Estación Río",
-            "x": 300,
+            "id": 2,
+            "name": "Station Beta",
+            "x": 400,
+            "y": 800
+        },
+        {
+            "id": 3,
+            "name": "Station Gamma",
+            "x": 750,
+            "y": 250
+        },
+        {
+            "id": 4,
+            "name": "Station Delta",
+            "x": 250,
             "y": 600
         }
     ],
     "zones": [
         {
             "id": 1,
-            "name": "Zona A",
+            "name": "North",
             "x_min": 0,
             "x_max": 500,
             "y_min": 0,
@@ -788,7 +764,7 @@
         },
         {
             "id": 2,
-            "name": "Zona B",
+            "name": "South",
             "x_min": 500,
             "x_max": 1000,
             "y_min": 0,
@@ -797,21 +773,12 @@
         },
         {
             "id": 3,
-            "name": "Zona C",
+            "name": "East",
             "x_min": 0,
-            "x_max": 500,
-            "y_min": 500,
-            "y_max": 1000,
-            "is_populated": true
-        },
-        {
-            "id": 4,
-            "name": "Zona D",
-            "x_min": 500,
             "x_max": 1000,
             "y_min": 500,
             "y_max": 1000,
-            "is_populated": false
+            "is_populated": true
         }
     ],
     "history": {
@@ -844,7 +811,7 @@
         "items": [
             {
                 "action_type": "LOAD_SCENARIO",
-                "datetime": "2026-07-19T23:43:34+00:00",
+                "datetime": "2026-09-23T04:50:21+00:00",
                 "before_snapshot": null,
                 "inverse_action": "CLEAR_SCENARIO",
                 "undo_data": {
@@ -858,7 +825,7 @@
         ]
     },
     "clock": {
-        "current_time": "2026-07-19T23:44:04Z"
+        "current_time": "2026-09-23T04:54:13Z"
     },
     "l": 3,
     "t": 72.0,
@@ -866,14 +833,14 @@
         "W": 48.0,
         "R": 40.0,
         "candidates": {
+            "1": [],
             "2": [],
+            "3": [],
+            "4": [],
             "5": [],
             "6": [],
             "7": [],
             "8": [],
-            "1": [],
-            "3": [],
-            "4": [],
             "9": [],
             "10": [],
             "11": [],
@@ -889,9 +856,9 @@
         "active_events": 15,
         "historical_events": 0,
         "events_by_priority": {
-            "1": 4,
-            "2": 4,
-            "3": 7
+            "1": 9,
+            "2": 2,
+            "3": 4
         },
         "pending_attention": 15,
         "high_cost_access_events": 0,
@@ -900,12 +867,12 @@
         "conflicts": 0,
         "mass_archives": 0,
         "archived_events": 0,
-        "ll_cases": 2,
-        "rr_cases": 1,
+        "ll_cases": 1,
+        "rr_cases": 3,
         "rl_cases": 1,
-        "lr_cases": 2,
+        "lr_cases": 0,
         "simple_left_rotations": 4,
-        "simple_right_rotations": 5
+        "simple_right_rotations": 2
     },
     "saved_versions": [],
     "execution_mode": "normal"
