@@ -84,6 +84,30 @@ def load_scenario():
 def getEvents():
     return jsonify(event_engine.get_active_events())
 
+@app.route("/api/history", methods=["GET"])
+def get_history_summary():
+    result = event_engine.get_history_summary()
+    status_code = 200 if result.get("ok") else 404
+    return jsonify(result), status_code
+
+@app.route("/api/history/archived-events", methods=["GET"])
+def get_archived_events():
+    result = event_engine.get_archived_events()
+    status_code = 200 if result.get("ok") else 404
+    return jsonify(result), status_code
+
+@app.route("/api/history/deleted-events", methods=["GET"])
+def get_deleted_events():
+    result = event_engine.get_deleted_events()
+    status_code = 200 if result.get("ok") else 404
+    return jsonify(result), status_code
+
+@app.route("/api/history/identifiers", methods=["GET"])
+def get_historical_ids():
+    result = event_engine.get_historical_ids()
+    status_code = 200 if result.get("ok") else 404
+    return jsonify(result), status_code
+
 @app.route("/api/associations/limits", methods=["GET"])
 def get_association_limits():
     result = event_engine.get_association_limits()

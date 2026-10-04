@@ -15,6 +15,10 @@ const VerifyStructure = lazy(() => import('../pages/events/verify/VerifyStructur
 const EventList = lazy(() => import('../pages/events/list/EventList'));
 const Reports = lazy(() => import('../pages/reports/Reports'));
 const Associations = lazy(() => import('../pages/events/associations/Associations'));
+const History = lazy(() => import('../pages/history/History'));
+const ArchivedEvents = lazy(() => import('../pages/history/ArchivedEvents'));
+const DeletedEvents = lazy(() => import('../pages/history/DeletedEvents'));
+const HistoricalIds = lazy(() => import('../pages/history/HistoricalIds'));
 
 /* Adding components to each route */
 const coreRoutes: AppRoute[] = [
@@ -33,6 +37,33 @@ const coreRoutes: AppRoute[] = [
         title: "Reportes",
         component: Reports,
         requiresScenario: true,
+    },
+    {
+        path: "/history",
+        title: "Histórico",
+        component: History,
+        requiresScenario: true,
+    },
+    {
+        path: "/history/archived-events",
+        title: "Eventos archivados",
+        component: ArchivedEvents,
+        requiresScenario: true,
+        hideInSidebar: true,
+    },
+    {
+        path: "/history/deleted-events",
+        title: "Eventos eliminados",
+        component: DeletedEvents,
+        requiresScenario: true,
+        hideInSidebar: true,
+    },
+    {
+        path: "/history/identifiers",
+        title: "Identificadores históricos",
+        component: HistoricalIds,
+        requiresScenario: true,
+        hideInSidebar: true,
     },
     {
         path: "/scenario",
