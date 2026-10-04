@@ -4,6 +4,7 @@ from backend.services.seismic_observatory_service import SeismicObservatoryServi
 from backend.repositories.json_scenario_repository import JsonScenarioRepository
 from backend.models.event import Event
 from backend.utils.quantities import parseDatetime
+
 class LoadScenarioManager:
     
     def __init__(self):
