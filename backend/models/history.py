@@ -107,6 +107,9 @@ class History:
                 start = half + 1
         return False
     
+    def deleteLastAddedId(self):
+        self.listHistoricIds.pop()
+        
     def toDict(self):
         return {
             "archived": {k: e.toDict() for k, e in self.archived.items()},
