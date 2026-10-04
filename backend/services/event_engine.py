@@ -8,6 +8,7 @@ from backend.services.reports.report_queue_service import ReportQueueService
 from backend.services.seismic_observatory_service import ScenarioValidationError
 from backend.services.archive.archive_tree_service import ArchiveTreeService
 from backend.services.actions.action_stack_service import ActionStackError, ActionStackService
+from backend.services.query.query_service import QueryService
 
 class EventEngine:
     """
@@ -34,6 +35,8 @@ class EventEngine:
         self.report_processor = ReportProcessor()
         self.archive_tree_service = ArchiveTreeService()
         self.action_stack_service = ActionStackService()
+        # The engine owns the query service just like the other domain services.
+        self.query_service = QueryService()
         if hasattr(self.service, "metrics_service"):
             self.service.metrics_service.action_stack_service = self.action_stack_service
         self.report_queue_interval = 1.5
@@ -88,6 +91,28 @@ class EventEngine:
             return {
                 "events": self.service.getActiveEvents(observatory)
             }
+
+    def execute_query(self, data):
+        """Validate the request and delegate the read-only query to QueryService."""
+        with self.lock:
+            if self.observatory is None:
+                return {"ok": False, "reason": "no_scenario"}
+            if not isinstance(data, dict):
+                return {"ok": False, "reason": "invalid_query"}
+
+            query_type = data.get("type")
+            parameters = data.get("parameters", {})
+            if not isinstance(parameters, dict):
+                return {"ok": False, "reason": "invalid_parameters"}
+
+            try:
+                return self.query_service.execute(
+                    self.observatory,
+                    query_type,
+                    parameters,
+                )
+            except (TypeError, ValueError) as error:
+                return {"ok": False, "reason": str(error)}
 
     def prepare_archive_tree(self, threshold_hours=None, client_id=None):
         """Select and preview an archivable branch without changing the AVL."""

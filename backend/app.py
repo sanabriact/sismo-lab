@@ -84,6 +84,15 @@ def load_scenario():
 def getEvents():
     return jsonify(event_engine.get_active_events())
 
+# Read-only query endpoint. The engine remains the single application coordinator.
+@app.route("/api/queries", methods=["POST"])
+def execute_query():
+    result = event_engine.execute_query(request.get_json(silent=True))
+    if not result.get("ok"):
+        status_code = 404 if result.get("reason") == "no_scenario" else 400
+        return jsonify(result), status_code
+    return jsonify(result)
+
 # Route for editing a event based on its id
 @app.route("/api/events/<int:event_id>", methods=["GET"])
 def get_event_by_id(event_id):
