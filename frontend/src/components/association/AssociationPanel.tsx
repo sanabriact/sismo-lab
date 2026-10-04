@@ -49,7 +49,7 @@ const AssociationPanel = ({
             <h2 className="text-lg font-semibold text-slate-900">Resultado</h2>
             {!response && <p className="mt-6 text-sm text-slate-500">Consulta un evento para ver sus candidatos y referencias.</p>}
             {response && !response.ok && <p className="mt-6 rounded-lg bg-red-50 p-4 text-sm text-red-800">{response.reason}</p>}
-            {response?.ok && <div className="mt-4 space-y-4"><p className="text-sm text-slate-600">Ventana: {response.window_hours} horas · Distancia máxima: {response.distance_limit_km} km</p><EventList title="Candidatos a referencia" events={response.candidates ?? []} /><EventList title="Referencia seleccionada" events={response.selected_reference ? [response.selected_reference] : []} /><EventList title="Eventos que lo usan como referencia" events={response.used_by ?? []} /></div>}
+            {response?.ok && <div className="mt-4 space-y-4"><p className="text-sm text-slate-600">Nodos AVL examinados: {response.examined_nodes ?? 0} · Ventana: {response.window_hours} horas · Distancia máxima: {response.distance_limit_km} km</p><EventList title="Candidatos a referencia" events={response.candidates ?? []} /><EventList title="Referencia seleccionada" events={response.selected_reference ? [response.selected_reference] : []} /><EventList title="Eventos que lo usan como referencia" events={response.used_by ?? []} /></div>}
         </div>
     </div>
 );
