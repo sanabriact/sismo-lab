@@ -39526,7 +39526,7 @@
         ]
     },
     "clock": {
-        "current_time": "2026-09-29T20:04:46Z"
+        "current_time": "2026-09-29T23:30:49Z"
     },
     "l": 3,
     "t": 72.0,
@@ -39534,7 +39534,8 @@
         "W": 48.0,
         "R": 40.0,
         "candidates": {},
-        "selected_references": {}
+        "selected_references": {},
+        "selection_policy": "highest_magnitude_then_earliest_time_then_lowest_id"
     },
     "metrics": {
         "active_events": 12,

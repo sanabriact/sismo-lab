@@ -93,7 +93,7 @@ class AssociationManager:
         return (-cls._magnitude(event), cls._time(event), cls._event_id(event))
 
     def recalculate(self, active_events, archived_events):
-        """Rebuild all candidate and selected-reference maps atomically."""
+        """ Rebuild all candidate and selected-reference maps atomically """
         events_by_id = {}
         for event in list(active_events) + list(archived_events):
             if event.getEventStatus() != "deleted":
@@ -115,7 +115,6 @@ class AssociationManager:
 
         self.candidates = candidates
         self.selected_references = references
-
     def toDict(self):
         return {
             "W": self.W,

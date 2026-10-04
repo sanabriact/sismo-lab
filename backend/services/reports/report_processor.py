@@ -125,6 +125,7 @@ class ReportProcessor:
         if not observatory.getAVLTree().insert(event) or not observatory.getBSTTree().insert(event):
             history.addArchived(event_id, event)
             raise ValueError("No se pudo reactivar el evento archivado")
+        observatory.recalculateAssociations()
         observatory.getMetrics().incrementAcceptedCorrections()
         self.on_event_changed(observatory, event_id)
         return StepResult("reactivated", "Evento archivado reactivado correctamente", event_id, report.getRevision(), station_id, key_before, list(event.getKey()), tree_changed=True)
