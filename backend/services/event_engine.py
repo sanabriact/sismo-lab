@@ -413,6 +413,22 @@ class EventEngine:
         self.socketio.emit("queue:updated", snapshot)
         return {**result, "snapshot": snapshot}
 
+    def create_manual_report(self, raw_report):
+        """Validate and enqueue one report submitted by the manual form."""
+        with self.lock:
+            if self.observatory is None:
+                return {"ok": False, "reason": "no_scenario", "enqueued": 0, "issues": []}
+
+            # Use the same report service as JSON batches so both entry points
+            # have identical validation and FIFO behavior.
+            result = self.report_queue_service.prepare(self.observatory, [raw_report])
+            snapshot = self.report_queue_service.snapshot(self.observatory)
+            if result["ok"]:
+                self.service.saveObservatory(self.observatory)
+
+        self.socketio.emit("queue:updated", snapshot)
+        return {**result, "snapshot": snapshot}
+
     def process_report_step(self):
         """Process exactly one queued report while owning the full lifecycle."""
         with self.lock:

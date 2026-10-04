@@ -1,4 +1,4 @@
-import { useState, type FormEvent, type ReactNode } from "react";
+import { useState, type FormEvent } from "react";
 import { useObservable } from "../../../stores/useObservable";
 import { scenarioStore } from "../../../stores/scenario/ScenarioStore";
 import { eventCreationService } from "../../../services/socket/eventCreationService";
@@ -49,16 +49,6 @@ const CreateEvent = () => {
         setView("manual");
     };
 
-    const startGeneration = async () => {
-        setSubmitting(true);
-        setMessage(null);
-        const response = await eventCreationService.startGeneration();
-        setSubmitting(false);
-        setMessage(response.ok
-            ? "La generación de reportes con IA está activa. Los árboles se actualizarán en tiempo real."
-            : response.reason ?? "No se pudo iniciar la generación.");
-    };
-
     const submitManual = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         setSubmitting(true);
@@ -90,11 +80,7 @@ const CreateEvent = () => {
                         <h1 className="text-3xl font-bold text-gray-900">Crear evento</h1>
                         <p className="mt-1 text-gray-600">Elige cómo deseas incorporar eventos al escenario activo.</p>
                     </div>
-                    <div className="grid gap-5 md:grid-cols-2">
-                        <button type="button" disabled={submitting} onClick={startGeneration} className="rounded-lg border border-gray-200 bg-white p-6 text-left shadow-sm transition hover:border-[#04172f] hover:shadow-md disabled:opacity-60">
-                            <h2 className="text-xl font-semibold text-gray-900">Iniciar generación de reportes, eventos con IA</h2>
-                            <p className="mt-2 text-sm text-gray-600">Genera eventos automáticamente desde las estaciones del escenario y actualiza los árboles en vivo.</p>
-                        </button>
+                    <div className="grid gap-5">
                         <button type="button" disabled={submitting} onClick={openManualForm} className="rounded-lg bg-[#04172f] p-6 text-left text-white shadow-sm transition hover:bg-[#08264d] disabled:opacity-60">
                             <h2 className="text-xl font-semibold">Crear manualmente</h2>
                             <p className="mt-2 text-sm text-white/80">Registra un evento con sus datos, fecha y una estación vigente.</p>

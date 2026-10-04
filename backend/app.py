@@ -335,6 +335,11 @@ def prepare_reports(data):
         }
     return report_queue_runner.prepare_reports(data["reports"])
 
+@socketio.on("reports:create")
+def create_manual_report(data=None):
+    """Receive one manual report through the same engine queue flow."""
+    return event_engine.create_manual_report(data)
+
 
 @socketio.on("reports:step")
 def process_report_step(data=None):
