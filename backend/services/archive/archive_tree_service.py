@@ -105,8 +105,14 @@ class ArchiveTreeService:
             if not avl_removed or not bst_removed:
                 return {"ok": False, "reason": "archive_failed", "eventId": event_id}
             event.setEventStatus("archived")
-        observatory.getHistory().addArchivedTree(
-        pending["root_id"], pending["ids"], pending["tree"]
+
+        # Keep the complete branch record for audit/undo and index every event
+        # separately so history queries and report reactivation remain O(1).
+        history = observatory.getHistory()
+        for event in events:
+            history.addArchived(event.getKey()[2], event)
+        history.addArchivedTree(
+            pending["root_id"], pending["ids"], pending["tree"]
         )
         self.pending.pop(client_id, None)
 

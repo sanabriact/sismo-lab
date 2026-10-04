@@ -498,6 +498,7 @@ class EventEngine:
             "message": message,
         })
 
+    # ===================== Tree CRUD operations (with undo options) =====================
     def create_manual_event(self, data):
         """Create one manual event atomically and publish its tree patch."""
         with self.lock:
@@ -746,6 +747,69 @@ class EventEngine:
                 "event": event.toDict(),
             }
             
+    def delete_event_by_id(self, eventId):
+        with self.lock:
+            if self.observatory is None:
+                return {
+                    "ok": False,
+                    "reason": "no_scenario"
+                }
+            
+            if self.recovering:
+                return {
+                    "ok": False,
+                    "reason": "recovering"
+                }
+            
+            if not isinstance(eventId, int):
+                return {
+                    "ok": False,
+                    "reason": "invalid_id"
+                }
+                
+            event = self.observatory.searchEventById(eventId)
+            if event is None:
+                return {
+                    "ok": False,
+                    "reason": "event_not_found"
+                }
+                
+            before_version = self.observatory.toVersion()
+            before_indicators = self.service.metrics_service.capture_display(self.observatory)
+            
+            try:
+                deleted = self.observatory.deleteEventById(eventId)
+                
+                if not deleted:
+                    return {
+                        "ok": False,
+                        "reason": "delete_failed"
+                    }
+                
+                self.service.metrics_service.refresh_derived_metrics(self.observatory)
+                self.service.metrics_service.record_operation(
+                    self.observatory,
+                    "delete_event",
+                    before_version,
+                    before_indicators,
+                    {
+                        "event_id": eventId,
+                        "deleted_event": event.toDict()
+                    }
+                )
+                
+                self.service.saveObservatory(self.observatory)
+                return {
+                    "ok": True,
+                    "event_id": eventId
+                }
+            
+            except (ValueError, KeyError) as error:
+                return {
+                    "ok": False,
+                    "reason": str(error)
+                }
+      
     # ===================== Execution mode (normal / stress) =====================
 
     def announce_mode(self):

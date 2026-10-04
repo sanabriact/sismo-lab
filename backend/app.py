@@ -116,6 +116,20 @@ def update_event_attention_status(event_id):
         return jsonify(result), status_code
     
     return jsonify(result["event"])
+
+@app.route("/api/events/<int:event_id>", methods=["DELETE"])
+def delete_event(event_id):
+    result = event_engine.delete_event_by_id(event_id)
+    
+    if not result["ok"]:
+        if result["reason"] == "event_not_found":
+            return jsonify(result), 404
+        if result["reason"] in ["busy", "no_scenario"]:
+            return jsonify(result), 404
+        
+        return jsonify(result), 400
+    
+    return jsonify(result), 200
     
 @socketio.on("connect")
 def handle_connect():
