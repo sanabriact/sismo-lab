@@ -7,10 +7,12 @@ import axios from "axios";
 import { Download, FileJson2 } from "lucide-react";
 import { jsonExportService } from "../../services/export/jsonExportService";
 
+// Page for downloading a JSON snapshot of the current active scenario
 const ExportJson = () => {
     const [busy, setBusy] = useState(false);
     const [message, setMessage] = useState<{ text: string; error: boolean } | null>(null);
 
+    // Triggers scenario export; extracts backend error reason if axios error, otherwise generic fallback
     const exportJson = async () => {
         if (busy) return;
         setBusy(true);

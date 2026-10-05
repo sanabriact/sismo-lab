@@ -1,5 +1,6 @@
 import axios from "axios";
 import type { SeismicObservatory } from "../../models/interfaces/observatory/SeismicObservatory";
+import type { SeismicEvent } from "../../models/interfaces/tree/SeismicEvent";
 
 /* Define the API url that connects with backend, via the .env file */
 const API_URL = import.meta.env.VITE_API_URL;
@@ -17,6 +18,16 @@ class SeismicObservatoryService {
         }
     }
 
+    /* Asynchronous function for calling the API when updating the observatory is necessary. */
+    async updateObservatory(data: SeismicEvent): Promise<boolean> {
+        try {
+            await axios.post<SeismicEvent>(`${API_URL}/api/seismic-observatory`);
+            return true;
+        } catch(error) {
+            console.log("Error while updating the observatory: " + error);
+            return false
+        }
+    }
 }
 
 /* Export the service as a instance of the class. */

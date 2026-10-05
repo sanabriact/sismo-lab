@@ -1,6 +1,9 @@
+/* Inter font from Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+/* Tailwind CSS */
 @import "tailwindcss";
 
+/* Default app font with system fallbacks */
 #root {
   font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }

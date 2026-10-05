@@ -6,9 +6,15 @@ import { useEffect, useState } from "react";
 import type { EventFormValues } from "../../models/types/event/EventFormValues";
 import type { EventFormProps } from "../../models/types/event/EventFormProps";
 
+/* Input TailWind CSS className */
 const inputBase =
     "w-full rounded border border-gray-300 px-3 py-2 transition-colors";
 
+/**
+ * EventForm Component
+ * Generic reusable form for creating and editing seismic event entries.
+ * Tracks which fields have been modified in edit mode to apply visual distinction (faded color).
+ */
 const EventForm = ({
     mode,
     values,
@@ -19,19 +25,33 @@ const EventForm = ({
     onChange,
     onSubmit,
 }: EventFormProps) => {
+    // Tracks which form fields have been modified by the user to handle edit-mode styling
     const [touched, setTouched] = useState<Set<keyof EventFormValues>>(
         new Set(),
     );
 
+    // Reset touched fields when form mode changes (create → edit) or event ID changes
     useEffect(() => {
         setTouched(new Set());
     }, [mode, values.id]);
 
+    /**
+     * Updates a single field value and marks it as touched.
+     * Triggers parent onChange with updated form state.
+     *  -The field name being modified
+     *  -The new string value for the field
+     */
     const changeField = (field: keyof EventFormValues, value: string) => {
         setTouched((current) => new Set(current).add(field));
         onChange({ ...values, [field]: value });
     };
 
+    /**
+     * Determines conditional styling for input fields based on edit mode and touched state.
+     * In edit mode, untouched fields appear faded (gray-400) to distinguish them from modified fields.
+     * - The field to check styling for
+     * returns a CSS class string with appropriate colors
+     */
     const fieldClass = (field: keyof EventFormValues) => {
         const faded = mode === "edit" && !touched.has(field);
         return `${inputBase} ${faded ? "text-gray-400" : "text-gray-900"}`;
@@ -42,6 +62,7 @@ const EventForm = ({
             onSubmit={onSubmit}
             className="grid gap-5 rounded-lg border border-gray-200 bg-white p-6 shadow-sm md:grid-cols-2"
         >
+            {/* Event ID field - disabled in edit mode to prevent ID modification */}
             <Field label="ID numérico">
                 <input
                     required
@@ -60,6 +81,7 @@ const EventForm = ({
                 />
             </Field>
 
+            {/* Magnitude field - accepts decimal values between -2 and 10 */}
             <Field label="Magnitud">
                 <input
                     required
@@ -73,6 +95,7 @@ const EventForm = ({
                 />
             </Field>
 
+            {/* Depth field in kilometers */}
             <Field label="Profundidad (km)">
                 <input
                     required
@@ -86,6 +109,7 @@ const EventForm = ({
                 />
             </Field>
 
+            {/* Epicenter X coordinate field */}
             <Field label="Coordenada X (km)">
                 <input
                     required
@@ -99,6 +123,7 @@ const EventForm = ({
                 />
             </Field>
 
+            {/* Epicenter Y coordinate field */}
             <Field label="Coordenada Y (km)">
                 <input
                     required
@@ -112,6 +137,7 @@ const EventForm = ({
                 />
             </Field>
 
+            {/* Date and time field */}
             <Field label="Fecha y hora">
                 <input
                     required
@@ -123,6 +149,7 @@ const EventForm = ({
                 />
             </Field>
 
+            {/* Station selector */}
             <Field label="Estación">
                 <select
                     required
@@ -139,6 +166,7 @@ const EventForm = ({
                 </select>
             </Field>
 
+            {/* Submit button - spans full width and shows loading state during form submission */}
             <div className="flex items-end">
                 <button
                     disabled={submitting}
@@ -152,13 +180,13 @@ const EventForm = ({
     );
 };
 
-const Field = ({
-    label,
-    children,
-}: {
-    label: string;
-    children: React.ReactNode;
-}) => (
+/**
+ * Field Component
+ * Wrapper for form field labels and inputs. Provides consistent styling and layout.
+ *  - Display text for the field label
+ *  - Input element(s) to be rendered below the label
+ */
+const Field = ({ label, children,}: { label: string; children: React.ReactNode; }) => (
     <label className="grid gap-1 text-sm font-medium text-gray-700">
         {label}
         {children}

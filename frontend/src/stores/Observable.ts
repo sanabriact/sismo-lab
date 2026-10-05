@@ -10,7 +10,9 @@ export class Observable<T> {
         this.value = initial
     }
 
+    // Returns the current value
     getSnapshot = (): T => this.value
+    // Registers a listener; returns an unsubscribe function
     subscribe = (listener: () => void): (() => void) => {
         this.listeners.add(listener);
         return () => {
@@ -18,6 +20,7 @@ export class Observable<T> {
         };
     };
 
+    // Updates the value and notifies listeners only if it changed
     set(next: T): void {
         if (Object.is(next, this.value)) return;
         this.value = next;

@@ -10,7 +10,7 @@ const DefaultLayout = () => {
     <div className="flex">
       <Sidebar />
       <main className="flex-1 ml-64">
-         {/* Outlet sirve para indicarle a react que renderice cada página */}
+         {/* Outlet for indicating React for renderize each page */}
         <Outlet />
       </main>
     </div>

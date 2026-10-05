@@ -1,15 +1,13 @@
-// ------------------------------------------------------------------
-// H is to ri ca lE ve nt sT ab le
-// ------------------------------------------------------------------
+import type { HistoricalEventsTableProps } from "../../models/interfaces/table/HistoricalEventTableProps";
 
-import type { ArchivedEvent } from "../../models/interfaces/history/History";
-import { formatDateTime } from "../../utils/formatDateTime";
+// Formats datetime to es-CO locale with explicit UTC timezone
+const formatDateTime = (value: string) => `${new Date(value).toLocaleString("es-CO", {
+    timeZone: "UTC",
+    dateStyle: "short",
+    timeStyle: "medium",
+})} UTC`;
 
-interface HistoricalEventsTableProps {
-    events: ArchivedEvent[];
-    emptyMessage: string;
-}
-
+// Table displaying historical seismic events with customizable empty state message
 const HistoricalEventsTable = ({ events, emptyMessage }: HistoricalEventsTableProps) => (
     <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
         <table className="min-w-full text-left text-sm">
@@ -26,6 +24,7 @@ const HistoricalEventsTable = ({ events, emptyMessage }: HistoricalEventsTablePr
             </thead>
             <tbody className="divide-y divide-slate-100">
                 {events.length === 0 ? (
+                    // Custom empty state message from props
                     <tr><td colSpan={7} className="px-4 py-10 text-center text-slate-500">{emptyMessage}</td></tr>
                 ) : events.map((event) => (
                     <tr key={event.event_id} className="hover:bg-slate-50">
@@ -33,6 +32,7 @@ const HistoricalEventsTable = ({ events, emptyMessage }: HistoricalEventsTablePr
                         <td className="px-4 py-3">{event.magnitude.toFixed(1)}</td>
                         <td className="px-4 py-3">{event.depth.toFixed(1)} km</td>
                         <td className="px-4 py-3">({event.epicenter_x.toFixed(1)}, {event.epicenter_y.toFixed(1)})</td>
+                        {/* Nowrap prevents line breaks in timestamp */}
                         <td className="whitespace-nowrap px-4 py-3">{formatDateTime(event.datetime)}</td>
                         <td className="px-4 py-3">{event.revision}</td>
                         <td className="px-4 py-3 capitalize">{event.event_status}</td>

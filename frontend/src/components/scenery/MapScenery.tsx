@@ -8,15 +8,17 @@ const SIZE = 1000;
 const MARGIN = { top: 24, right: 24, bottom: 48, left: 64 };
 const VIEW_W = MARGIN.left + SIZE + MARGIN.right;
 const VIEW_H = MARGIN.top + SIZE + MARGIN.bottom;
+// Grid ticks at 100km intervals (0-1000 km)
 const TICKS = Array.from({ length: 11 }, (_, i) => i * 100);
 
+// Color scheme by event priority (1: low, 2: medium, 3: high)
 const PRIORITY_COLOR: Record<number, string> = {
     1: "#7fbf8e",
     2: "#f0b64a",
     3: "#ef5b45"
 }
 
-/* Palette used only for presentation of the plane. */
+// Visualization palette for the seismic plot
 const PLOT = {
     axis: "#8a9bb8",
     tick: "#6f7f9c",
@@ -38,12 +40,13 @@ export default function MapScenery({
     events,
     selectedEventId = null,
     onSelectEvent }: SeismicMapProps) {
+    // Track hovered event for UI feedback
     const [hoverId, setOnHover] = useState<number | null>(null);
 
     return (
-        <div className="flex h-screen w-full flex-col gap-5 bg-gradient-to-br from-[#0b1426] via-[#060b17] to-[#03060d] p-5 lg:flex-row">
+        <div className="flex h-screen w-full flex-col gap-5 bg-linear-to-br from-[#0b1426] via-[#060b17] to-[#03060d] p-5 lg:flex-row">
             <div
-                className="relative flex min-h-0 min-w-0 flex-1 items-center justify-center overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-slate-900 via-slate-950 to-[#070c18] p-4 shadow-2xl shadow-black/50 ring-1 ring-inset ring-white/5"
+                className="relative flex min-h-0 min-w-0 flex-1 items-center justify-center overflow-hidden rounded-3xl border border-white/10 bg-linear-to-br from-slate-900 via-slate-950 to-[#070c18] p-4 shadow-2xl shadow-black/50 ring-1 ring-inset ring-white/5"
             >
                 <svg
                     viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
@@ -52,6 +55,7 @@ export default function MapScenery({
                     aria-label="Plano geográfico del observatorio sísmico"
                 >
                     <defs>
+                        {/* Glow filter for high-priority active events */}
                         <filter id="glow" x="-100%" y="-100%" width="300%" height="300%">
                             <feGaussianBlur stdDeviation="5" result="blur" />
                             <feMerge>
@@ -65,6 +69,7 @@ export default function MapScenery({
                             <stop offset="100%" stopColor="#0a1120" />
                         </radialGradient>
 
+                        {/* Hatching pattern for unpopulated zones */}
                         <pattern id="zone-hatch" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
                             <line x1="0" y1="0" x2="0" y2="10" stroke="#64748b" strokeOpacity="0.22" strokeWidth="1.5" />
                         </pattern>
@@ -80,7 +85,7 @@ export default function MapScenery({
                         fill="url(#plot-bg)"
                     />
 
-                    {/* Grid */}
+                    {/* Major (500km) and minor (100km) grid lines */}
                     {TICKS.map((t) => (
                         <g key={`grid-${t}`}>
                             <line
@@ -102,7 +107,7 @@ export default function MapScenery({
                         </g>
                     ))}
 
-                    {/* Axes */}
+                    {/* X and Y axes */}
                     <line
                         x1={MARGIN.left}
                         y1={MARGIN.top + SIZE}
@@ -122,6 +127,7 @@ export default function MapScenery({
                         strokeLinecap="round"
                     />
 
+                    {/* X-axis tick labels (horizontal distance) */}
                     {TICKS.map((t) => (
                         <text
                             key={`xt-${t}`}
@@ -136,6 +142,7 @@ export default function MapScenery({
                             {t}
                         </text>
                     ))}
+                    {/* Y-axis tick labels (vertical distance, inverted by yScreen) */}
                     {TICKS.map((t) => (
                         <text
                             key={`yt-${t}`}
@@ -173,7 +180,7 @@ export default function MapScenery({
                         Y (km)
                     </text>
 
-                    {/* Zones */}
+                    {/* Seismic zones with populated/unpopulated distinction */}
                     {zones.map((zone) => (
                         <g key={zone.id}>
                             <rect
@@ -205,7 +212,7 @@ export default function MapScenery({
                             </text>
                         </g>
                     ))} 
-                    {/* Stations */}
+                    {/* Seismic stations (observation points) */}
                     {stations.map((station) => {
                         const cx = MARGIN.left + station.x;
                         const cy = MARGIN.top + yScreen(SIZE, station.y);
@@ -239,7 +246,7 @@ export default function MapScenery({
                         );
                     })}
 
-                    {/* Events */}
+                    {/* Seismic events with visual encoding: radius by magnitude, color by priority, stroke by attention status */}
                     {events
                         .filter((e) => e.event_status !== "deleted")
                         .map((ev) => {
@@ -254,7 +261,7 @@ export default function MapScenery({
 
                             return (
                                 <g key={ev.key[2]}>
-                                    {/* Soft ripple around the epicenter */}
+                                    {/* Soft ripple effect around active epicenter */}
                                     <circle
                                         cx={cx}
                                         cy={cy}
@@ -266,6 +273,7 @@ export default function MapScenery({
                                         pointerEvents="none"
                                     />
 
+                                    {/* Main event marker: color by priority, opacity by archive status, glow if high-priority and active */}
                                     <circle
                                         cx={cx}
                                         cy={cy}
@@ -290,6 +298,7 @@ export default function MapScenery({
                                         onClick={() => onSelectEvent?.(ev.key[2])}
                                     />
 
+                                    {/* Expensive access indicator ring */}
                                     {ev.expensive_access && (
                                         <circle
                                             cx={cx}
@@ -304,6 +313,7 @@ export default function MapScenery({
                                         />
                                     )}
 
+                                    {/* Tooltip showing event ID and magnitude on hover/select */}
                                     {isActive && (
                                         <g pointerEvents="none">
                                             <rect
@@ -336,7 +346,7 @@ export default function MapScenery({
                 </svg>
             </div>
 
-            {/* Legend */}
+            {/* Legend panel: priority levels and event states */}
             <div className="w-full shrink-0 rounded-3xl border border-white/10 bg-slate-900/70 p-6 text-sm text-slate-300 shadow-xl shadow-black/30 ring-1 ring-inset ring-white/5 backdrop-blur lg:w-64 lg:self-start">
                 <p className="mb-4 text-sm font-semibold text-slate-100">Prioridad</p>
                 <div className="flex flex-col gap-3">

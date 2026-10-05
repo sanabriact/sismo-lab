@@ -7,11 +7,13 @@ import AssociationPanel from "../../../components/association/AssociationPanel";
 import { associationService } from "../../../services/events/associationService";
 import type { AssociationQueryResponse } from "../../../models/interfaces/association/Association";
 
+// Page for querying event associations: candidates, selected references, and related events
 const Associations = () => {
     const [eventId, setEventId] = useState("");
     const [response, setResponse] = useState<AssociationQueryResponse | null>(null);
     const [loading, setLoading] = useState(false);
 
+    // Validates event ID and queries associations for that event
     const search = async () => {
         const numericId = Number(eventId);
         if (!Number.isInteger(numericId) || numericId <= 0) return;

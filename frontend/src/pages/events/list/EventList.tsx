@@ -7,6 +7,7 @@ import type { SeismicEvent } from "../../../models/interfaces/tree/SeismicEvent"
 import { eventService } from "../../../services/events/eventService";
 import EventsTable from "../../../components/events/list/EventsTable";
 
+// Page listing all active seismic events with sorting by event ID
 const EventList = () => {
     const [events, setActiveEvents] = useState<SeismicEvent[] | null>(null);
 
@@ -14,6 +15,7 @@ const EventList = () => {
         getAllActiveEvents();
     }, [])
 
+    // Fetches active events from backend with error handling
     const getAllActiveEvents = useCallback(async () => {
         try {
             const activeEvents = await eventService.getAll();
@@ -28,6 +30,7 @@ const EventList = () => {
         }
     }, [])
 
+    // Sorts events by ID (key[2]) without mutating original array
     const sortedEvents = useMemo(
         () => [...(events ?? [])].sort((a, b) => a.key[2] - b.key[2]),
         [events]

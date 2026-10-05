@@ -11,17 +11,19 @@ import type {
     ReportsResponse,
 } from "../../models/interfaces/reports/Report";
 
+// Formats issue object as readable string for display
 const issueText = (issue: ReportsResponse["issues"][number]) => (
     typeof issue === "string" ? issue : `Reporte ${issue.report ?? ""}: ${issue.reason ?? issue.message ?? "problema no especificado"}`
 );
 
+// Page for managing report queue: upload files, AI generation, and processing with FIFO controls
 const Reports = () => {
     const [fileName, setFileName] = useState<string | null>(null);
     const [validationError, setValidationError] = useState<string | null>(null);
     const [response, setResponse] = useState<ReportsResponse | null>(null);
     const [loading, setLoading] = useState(false);
     const [queueSnapshot, setQueueSnapshot] = useState<ReportQueueSnapshot | undefined>();
-    const [processing, setProcessing] = useState(false);
+    const [processing, setProcessing] = useState(() => reportService.isProcessing());
     const [processingAction, setProcessingAction] = useState<"step" | "start" | "pause" | null>(null);
     const [stepResult, setStepResult] = useState<ReportStepResponse | null>(null);
     const [aiRunning, setAiRunning] = useState(false);
@@ -30,6 +32,7 @@ const Reports = () => {
     const navigate = useNavigate();
     const fileInputRef = useRef<HTMLInputElement>(null);
 
+    // Subscribes to real-time queue updates, step results, and completion events
     useEffect(() => reportService.subscribeToQueue(
         (nextSnapshot) => {
             setQueueSnapshot(nextSnapshot);
@@ -39,10 +42,16 @@ const Reports = () => {
         () => setProcessing(false),
     ), []);
 
+    // Fetches initial queue snapshot on mount
     useEffect(() => {
-        void reportService.getSnapshot().then(setQueueSnapshot);
+        void reportService.getSnapshot().then((nextSnapshot) => {
+            setQueueSnapshot(nextSnapshot);
+            // An empty queue means a previous continuous run has finished.
+            if (nextSnapshot.size === 0) setProcessing(false);
+        });
     }, []);
 
+    // Subscribes to AI generation status changes and errors; fetches initial status
     useEffect(() => {
         const unsubscribe = reportService.subscribeToAIGeneration(
             ({ running }) => {
@@ -72,6 +81,7 @@ const Reports = () => {
         return unsubscribe;
     }, []);
 
+    // Parses JSON file and enqueues reports; updates UI with validation errors or success
     const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         event.target.value = "";
@@ -94,6 +104,7 @@ const Reports = () => {
         }
     };
 
+    // Toggles AI generation on/off; updates state based on backend response
     const handleAIReportGenerator = async () => {
         if (aiAction) return;
 
@@ -118,7 +129,7 @@ const Reports = () => {
         setAiAction(null);
     };
 
-
+    // Processes next single report from queue; updates step result with decision or error
     const processNext = async () => {
         if (processingAction || !queueSnapshot?.size) return;
         setProcessingAction("step");
@@ -128,6 +139,7 @@ const Reports = () => {
         setProcessingAction(null);
     };
 
+    // Starts continuous processing of entire queue
     const startContinuous = async () => {
         if (processingAction || processing || !queueSnapshot?.size) return;
         setProcessingAction("start");
@@ -137,6 +149,7 @@ const Reports = () => {
         setProcessingAction(null);
     };
 
+    // Pauses continuous processing
     const pauseContinuous = async () => {
         if (processingAction) return;
         setProcessingAction("pause");
@@ -146,6 +159,7 @@ const Reports = () => {
         setProcessingAction(null);
     };
 
+    // Maps backend reason codes to user-facing error messages
     const snapshot: ReportQueueSnapshot | undefined = queueSnapshot ?? response?.snapshot;
     const responseReason = (reason?: string) => ({
         no_scenario: "Carga un escenario antes de procesar reportes.",
@@ -163,6 +177,7 @@ const Reports = () => {
                 <p className="mt-1 text-gray-600">Carga reportes JSON para agregarlos a la cola FIFO.</p>
             </div>
 
+            {/* Action buttons: AI generation, file upload, manual creation */}
             <div className="grid gap-3 md:grid-cols-3">
                 <button
                     type="button"
@@ -180,6 +195,7 @@ const Reports = () => {
                 <button type="button" onClick={() => navigate("/reports/create")} className="flex items-center gap-3 rounded-lg bg-[#04172f] p-4 text-left text-white shadow-sm transition hover:bg-[#08264d]"><FilePlus2 size={21} /><span><strong className="block text-sm">Crear manualmente</strong><small className="text-xs text-white/75">Nuevo reporte</small></span></button>
             </div>
 
+            {/* Hidden file input for JSON upload */}
             <input
                 ref={fileInputRef}
                 type="file"
@@ -191,12 +207,14 @@ const Reports = () => {
 
             <ReportsUploader selectedFileName={fileName} error={validationError} />
 
+            {/* AI error feedback */}
             {aiError && (
                 <div className="rounded-lg border border-red-300 bg-red-50 p-4 text-sm text-red-800">
                     {aiError}
                 </div>
             )}
 
+            {/* Upload result: shows enqueued count or validation issues */}
             {response && (
                 <div className={`space-y-4 rounded-lg border p-6 ${response.ok ? "border-emerald-300 bg-emerald-50 text-emerald-900" : "border-red-300 bg-red-50 text-red-900"}`}>
                     <h2 className="text-xl font-semibold">Resultado</h2>
@@ -209,6 +227,7 @@ const Reports = () => {
                 </div>
             )}
 
+            {/* Queue display with step/continuous processing controls */}
             {snapshot && (
                 <div className="space-y-4">
                     <div className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
@@ -218,9 +237,10 @@ const Reports = () => {
                                 <h2 className="text-xl font-semibold">Cola FIFO</h2>
                             </div>
                             <p className="mt-1 text-sm text-slate-500">
-                                {processing ? "Procesamiento continuo activo" : `${snapshot.size} reporte${snapshot.size === 1 ? "" : "s"} pendiente${snapshot.size === 1 ? "" : "s"}`}
+                                {processing ? "Procesando la cola" : `${snapshot.size} reporte${snapshot.size === 1 ? "" : "s"} pendiente${snapshot.size === 1 ? "" : "s"}`}
                             </p>
                         </div>
+                        {/* Processing control buttons: next step, start/pause continuous */}
                         <div className="flex flex-wrap gap-2">
                             <button
                                 type="button"
@@ -239,7 +259,7 @@ const Reports = () => {
                                     className="inline-flex items-center gap-2 rounded-lg bg-amber-500 px-3 py-2 text-sm font-semibold text-white transition hover:bg-amber-600 disabled:cursor-not-allowed disabled:opacity-60"
                                 >
                                     {processingAction === "pause" ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Pause className="h-4 w-4" />}
-                                    Pausar
+                                    Detener
                                 </button>
                             ) : (
                                 <button
@@ -255,6 +275,7 @@ const Reports = () => {
                         </div>
                     </div>
 
+                    {/* Step result: shows success with event/revision or error with reason */}
                     {stepResult && (
                         <div className={`flex items-start gap-3 rounded-xl border p-4 text-sm ${stepResult.ok ? "border-emerald-200 bg-emerald-50 text-emerald-900" : "border-red-200 bg-red-50 text-red-800"}`}>
                             {stepResult.ok ? <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0" /> : <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />}
@@ -265,6 +286,7 @@ const Reports = () => {
                         </div>
                     )}
 
+                    {/* Queue table: shows pending reports with all attributes */}
                     <div className="overflow-auto rounded-lg border border-gray-200 bg-white">
                         <table className="min-w-full text-left text-sm">
                             <thead className="border-b border-gray-200 bg-gray-50 text-gray-700">
