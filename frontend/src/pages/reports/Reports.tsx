@@ -24,6 +24,9 @@ const Reports = () => {
     const [processing, setProcessing] = useState(false);
     const [processingAction, setProcessingAction] = useState<"step" | "start" | "pause" | null>(null);
     const [stepResult, setStepResult] = useState<ReportStepResponse | null>(null);
+    const [aiRunning, setAiRunning] = useState(false);
+    const [aiAction, setAiAction] = useState<"start" | "stop" | null>(null);
+    const [aiError, setAiError] = useState<string | null>(null);
     const navigate = useNavigate();
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -38,6 +41,35 @@ const Reports = () => {
 
     useEffect(() => {
         void reportService.getSnapshot().then(setQueueSnapshot);
+    }, []);
+
+    useEffect(() => {
+        const unsubscribe = reportService.subscribeToAIGeneration(
+            ({ running }) => {
+                setAiRunning(running);
+                if (!running) setAiAction(null);
+            },
+            () => {
+                // The backend already emits queue:updated after enqueueing the AI batch.
+                // The generated event is intentionally informational only.
+            },
+            (payload) => {
+                setAiError(payload.message ?? "No se pudo generar el lote de reportes con IA.");
+                setAiAction(null);
+            },
+        );
+
+        void reportService.getAIGenerationStatus().then((status) => {
+            if (status.ok) {
+                setAiRunning(status.running);
+            } else {
+                setAiError(status.reason === "no_response"
+                    ? "El servidor no respondió al consultar el estado de la IA."
+                    : status.reason ?? "No se pudo consultar el estado de la generación con IA.");
+            }
+        });
+
+        return unsubscribe;
     }, []);
 
     const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -60,6 +92,30 @@ const Reports = () => {
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleAIReportGenerator = async () => {
+        if (aiAction) return;
+
+        setAiError(null);
+        setAiAction(aiRunning ? "stop" : "start");
+
+        const result = aiRunning
+            ? await reportService.stopAIGeneration()
+            : await reportService.startAIGeneration();
+
+        if (!result.ok) {
+            setAiError(
+                result.reason === "no_response"
+                    ? "El servidor no respondió al iniciar/detener la generación con IA."
+                    : result.reason ?? "No se pudo cambiar el estado de la generación con IA.",
+            );
+            setAiAction(null);
+            return;
+        }
+
+        setAiRunning(result.running);
+        setAiAction(null);
     };
 
 
@@ -93,6 +149,7 @@ const Reports = () => {
     const snapshot: ReportQueueSnapshot | undefined = queueSnapshot ?? response?.snapshot;
     const responseReason = (reason?: string) => ({
         no_scenario: "Carga un escenario antes de procesar reportes.",
+        no_valid_stations: "El escenario no tiene estaciones válidas para generar reportes.",
         empty_queue: "No hay reportes pendientes en la cola.",
         already_running: "El procesamiento continuo ya está activo.",
         recovering: "El escenario está ocupado recuperando su estructura.",
@@ -107,7 +164,18 @@ const Reports = () => {
             </div>
 
             <div className="grid gap-3 md:grid-cols-3">
-                <button type="button" disabled title="La generación con IA estará disponible próximamente" className="flex items-center gap-3 rounded-lg border border-slate-200 bg-white p-4 text-left shadow-sm transition hover:border-slate-300 disabled:cursor-not-allowed disabled:opacity-60"><Sparkles className="text-violet-500" size={21} /><span><strong className="block text-sm text-slate-900">Generar con IA</strong><small className="text-xs text-slate-500">Próximamente</small></span></button>
+                <button
+                    type="button"
+                    onClick={() => void handleAIReportGenerator()}
+                    disabled={Boolean(aiAction)}
+                    className={`flex items-center gap-3 rounded-lg border p-4 text-left shadow-sm transition disabled:cursor-not-allowed disabled:opacity-60 ${aiRunning ? "border-amber-300 bg-amber-50 hover:bg-amber-100" : "border-slate-200 bg-white hover:bg-gray-200"}`}
+                >
+                    {aiAction ? <LoaderCircle className="animate-spin text-violet-500" size={21} /> : <Sparkles className={aiRunning ? "text-amber-500" : "text-violet-500"} size={21} />}
+                    <span>
+                        <strong className="block text-sm text-slate-900">{aiRunning ? "Detener generación IA" : "Generar con IA"}</strong>
+                        <small className="text-xs text-slate-500">{aiRunning ? "Generación automática activa" : "Iniciar generación automática"}</small>
+                    </span>
+                </button>
                 <button type="button" onClick={() => fileInputRef.current?.click()} disabled={loading} className="flex items-center gap-3 rounded-lg border border-[#0b6e69] bg-[#e7f5f2] p-4 text-left shadow-sm transition hover:bg-[#d8efeb] disabled:cursor-not-allowed disabled:opacity-60"><FilePlus2 className="text-[#0b6e69]" size={21} /><span><strong className="block text-sm text-slate-900">Cargar archivo</strong><small className="text-xs text-slate-600">Importar JSON</small></span></button>
                 <button type="button" onClick={() => navigate("/reports/create")} className="flex items-center gap-3 rounded-lg bg-[#04172f] p-4 text-left text-white shadow-sm transition hover:bg-[#08264d]"><FilePlus2 size={21} /><span><strong className="block text-sm">Crear manualmente</strong><small className="text-xs text-white/75">Nuevo reporte</small></span></button>
             </div>
@@ -122,6 +190,12 @@ const Reports = () => {
             />
 
             <ReportsUploader selectedFileName={fileName} error={validationError} />
+
+            {aiError && (
+                <div className="rounded-lg border border-red-300 bg-red-50 p-4 text-sm text-red-800">
+                    {aiError}
+                </div>
+            )}
 
             {response && (
                 <div className={`space-y-4 rounded-lg border p-6 ${response.ok ? "border-emerald-300 bg-emerald-50 text-emerald-900" : "border-red-300 bg-red-50 text-red-900"}`}>

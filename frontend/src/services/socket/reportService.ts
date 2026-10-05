@@ -1,5 +1,11 @@
 import { socketService } from "./socketService";
 import type {
+    AIReportStartPayload,
+    AIReportStatusResponse,
+    AIReportStatusEvent,
+    AIGeneratedReportsEvent,
+    GenerateReportsPayload,
+    GenerateReportsResponse,
     ReportQueueEvent,
     ReportQueueSnapshot,
     ReportStepResponse,
@@ -48,6 +54,39 @@ class ReportService {
 
     getSnapshot(): Promise<ReportQueueSnapshot> {
         return this.emit<ReportQueueSnapshot>("reports:snapshot");
+    }
+
+    generateReports(payload: GenerateReportsPayload): Promise<GenerateReportsResponse> {
+        return this.emit<GenerateReportsResponse>("reports:generate", payload);
+    }
+
+    startAIGeneration(payload: AIReportStartPayload = {}): Promise<AIReportStatusResponse> {
+        return this.emit<AIReportStatusResponse>("reports:ai_start", payload);
+    }
+
+    stopAIGeneration(): Promise<AIReportStatusResponse> {
+        return this.emit<AIReportStatusResponse>("reports:ai_stop");
+    }
+
+    getAIGenerationStatus(): Promise<AIReportStatusResponse> {
+        return this.emit<AIReportStatusResponse>("reports:ai_status_get");
+    }
+
+    subscribeToAIGeneration(
+        onStatus: (status: AIReportStatusEvent) => void,
+        onGenerated?: (event: AIGeneratedReportsEvent) => void,
+        onError?: (payload: { tick?: number; message?: string }) => void,
+    ): () => void {
+        const socket = socketService.connect();
+        socket.on("reports:ai_status", onStatus);
+        if (onGenerated) socket.on("reports:generated", onGenerated);
+        if (onError) socket.on("reports:generation_error", onError);
+
+        return () => {
+            socket.off("reports:ai_status", onStatus);
+            if (onGenerated) socket.off("reports:generated", onGenerated);
+            if (onError) socket.off("reports:generation_error", onError);
+        };
     }
 
     subscribeToQueue(

@@ -12,7 +12,7 @@ import { toVIZ } from "../../utils/viznode/toHierarchy";
     r its the node circle radius.
     Each of them are in pixels units.
 */
-const NODE_W = 72;
+const NODE_W = 100;
 const NODE_H = 90;
 const R = 25;
 const CHARACTERISTICS_W = 122;
