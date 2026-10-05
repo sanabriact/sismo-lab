@@ -12,6 +12,7 @@ import { eventCreationService } from "../../../services/socket/eventCreationServ
 import type { EventFormValues } from "../../../models/types/event/EventFormValues";
 import type { UpdateEventPayload } from "../../../models/interfaces/events/UpdateEventPayload";
 
+// Converts ISO datetime to local datetime-local input format, adjusting for timezone offset
 const toLocalInputValue = (iso: string) => {
     const date = new Date(iso);
 
@@ -20,6 +21,7 @@ const toLocalInputValue = (iso: string) => {
         .slice(0, 16);
 };
 
+// Page for editing active seismic events by ID
 const CorrectEvent = () => {
     const { eventId } = useParams();
     const navigate = useNavigate();
@@ -29,6 +31,7 @@ const CorrectEvent = () => {
     const [message, setMessage] = useState<string | null>(null);
     const [submitting, setSubmitting] = useState(false);
 
+    // Fetches event data on mount and populates form with converted datetime
     useEffect(() => {
         const loadEvent = async () => {
             const id = Number(eventId);
@@ -59,6 +62,7 @@ const CorrectEvent = () => {
         void loadEvent();
     }, [eventId]);
 
+    // Converts form values to UpdateEventPayload and sends to backend; may queue or execute immediately
     const submitEdit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 

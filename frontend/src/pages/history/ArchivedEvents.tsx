@@ -9,10 +9,12 @@ import ArchivedEventsTable from "../../components/history/ArchivedEventsTable";
 import type { ArchivedEvent } from "../../models/interfaces/history/History";
 import { historyService } from "../../services/events/historyService";
 
+// Page displaying seismic events removed from AVL tree via branch archival
 const ArchivedEvents = () => {
     const [events, setEvents] = useState<ArchivedEvent[]>([]);
     const [message, setMessage] = useState("Cargando eventos archivados...");
 
+    // Fetches archived events on mount; message shows loading state or error
     useEffect(() => {
         void historyService.getArchivedEvents().then((response) => {
             if (!response.ok) {

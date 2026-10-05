@@ -10,6 +10,7 @@ import type {
 
 const TIMEOUT_MS = 5_000;
 
+// Emits a socket event; resolves null on timeout or empty response
 function emit<T>(event: string, payload: unknown): Promise<T | null> {
     return new Promise((resolve) => {
         socketService.connect().timeout(TIMEOUT_MS).emit(
@@ -23,7 +24,9 @@ function emit<T>(event: string, payload: unknown): Promise<T | null> {
 }
 
 export const archiveTreeService = {
+    // Asks the server to prepare the tree for archiving
     prepare: () => emit<PrepareArchiveTreeResponse>("paint:tree", {}),
+    // Sends the user's decision on whether to archive
     decide: (archive: boolean) => emit<ArchiveDecisionResponse>(
         "archive:decision",
         { archive },

@@ -3,23 +3,26 @@ import QueryPanel from "../../../components/query/QueryPanel";
 import { queryService } from "../../../services/events/queryService";
 import type { QueryRequest, QueryResponse, QueryType } from "../../../models/interfaces/query/Query";
 
+// Page for executing traceable queries on active and historical AVL trees
 const ConsultEvent = () => {
     const [queryType, setQueryType] = useState<QueryType>("by_id");
     const [values, setValues] = useState<Record<string, string>>({});
     const [response, setResponse] = useState<QueryResponse | null>(null);
     const [loading, setLoading] = useState(false);
 
-    // Keep form values local to the page and send only the selected query fields.
+    // Form values stay at page level; QueryPanel only sends selected fields based on query type
     const updateValue = (name: string, value: string) => {
         setValues((current) => ({ ...current, [name]: value }));
     };
 
+    // Resets form and response when query type changes
     const changeQueryType = (type: QueryType) => {
         setQueryType(type);
         setValues({});
         setResponse(null);
     };
 
+    // Sends query to backend and updates response state
     const execute = async (request: QueryRequest) => {
         setLoading(true);
         setResponse(await queryService.execute(request));

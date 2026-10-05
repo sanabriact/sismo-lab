@@ -11,10 +11,12 @@ import type { TreeOperation } from "../../models/interfaces/realTime/TreeOperati
 import { toScenarioMap } from "./toScenarioMap";
 import { clockService } from "../../services/socket/clockService";
 
+// Loads map data (zones, stations, events) into the store if the scenario is still current
 async function hydrateScenarioMap(scenarioId: string): Promise<void> {
     const observatory = await ObservatoryService.getObservatory();
     const current = scenarioStore.getSnapshot();
 
+    // Ignore stale responses (scenario changed while fetching)
     if (!observatory || observatory.scenario_id !== scenarioId || current.scenarioId !== scenarioId) return;
 
     scenarioStore.set({
@@ -23,6 +25,7 @@ async function hydrateScenarioMap(scenarioId: string): Promise<void> {
     });
 }
 
+// Marks a scenario load as in progress
 export function applyScenarioPending(source: ScenarioSource): void {
     const current = scenarioStore.getSnapshot();
     scenarioStore.set({
@@ -34,6 +37,7 @@ export function applyScenarioPending(source: ScenarioSource): void {
     });
 }
 
+// Applies a successfully loaded scenario, syncs the clock and hydrates the map
 export async function applyScenarioPayload(payload: ScenarioLoadedPayload): Promise<void> {
     const current = scenarioStore.getSnapshot();
     scenarioStore.set({
@@ -54,6 +58,7 @@ export async function applyScenarioPayload(payload: ScenarioLoadedPayload): Prom
     await hydrateScenarioMap(payload.scenarioId);
 }
 
+// Marks a scenario load as failed with a message and issue list
 export function applyScenarioFailed(message: string, issues: string[] = []): void {
     const current = scenarioStore.getSnapshot();
     scenarioStore.set({
@@ -64,8 +69,10 @@ export function applyScenarioFailed(message: string, issues: string[] = []): voi
     })
 }
 
+// Syncs the store with the server's scenario status (null = no response)
 export async function applyScenarioStatus(status: ScenarioStatusResponse | null): Promise<void> {
     const current = scenarioStore.getSnapshot();
+    // A load is in progress: only mark the store as hydrated
     if (current.operation === "validating") {
         scenarioStore.set({
             ...current,
@@ -78,19 +85,23 @@ export async function applyScenarioStatus(status: ScenarioStatusResponse | null)
         hydrated: true,
         loaded: status?.loaded ?? false,
         scenarioId: status?.scenarioId ?? null,
+        // Keep map data only when a scenario is loaded
         zones: status?.loaded ? current.zones : [],
         stations: status?.loaded ? current.stations : [],
         events: status?.loaded ? current.events : [],
     });
 
+    // Fetch the map data for the loaded scenario
     if (status?.loaded && status.scenarioId) {
         await hydrateScenarioMap(status.scenarioId);
     }
 }
 
+// Upserts an event from a tree operation (matched by event id)
 export function applyScenarioEvent(operation: TreeOperation): void {
     if (!operation.event) return;
 
+    // Ignore operations from another scenario
     const current = scenarioStore.getSnapshot();
     if (current.scenarioId !== operation.scenarioId) return;
 

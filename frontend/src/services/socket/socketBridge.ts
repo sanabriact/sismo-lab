@@ -16,20 +16,27 @@ import { actionStackService } from "./actionStackService";
 
 let started = false;
 
+// Fetches the observatory and syncs execution mode and tree imbalance
 async function loadSnapshot(): Promise<void> {
     const observatory = await ObservatoryService.getObservatory()
     if (!observatory) return;
     applySnapshot(observatory.execution_mode, maxImbalance(observatory.avl_tree?.root ?? null));
 }
 
+// Registers all real-time socket listeners; runs only once
 export function startSocketBridge(): void {
     if (started) return;
     started = true;
 
     const socket = socketService.connect();
+    // Undo updates
     actionStackService.subscribeToUpdates();
+    // Execution mode changes
     socket.on("mode:changed", (payload: ModeChangedPayload) => applyModeChanged(payload));
+    // Tree operations
     socket.on("tree:operation", (operation: TreeOperation) => applyScenarioEvent(operation));
+    // Clock updates
     socket.on("clock:updated", (payload: ClockUpdatedPayload) => clockService.applyUpdate(payload));
+    // Resync state on every (re)connect
     socket.on("connect", loadSnapshot)
 }

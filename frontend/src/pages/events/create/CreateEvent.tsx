@@ -8,6 +8,7 @@ import type { ManualEventPayload } from "../../../models/interfaces/events/Manua
 
 type View = "options" | "manual";
 
+// Converts ISO datetime to local datetime-local input format; sets seconds to zero to align with simulation clock
 const toLocalInputValue = (iso: string) => {
     const value = new Date(iso);
     // datetime-local has no seconds. Use the start of the current minute so
@@ -18,6 +19,7 @@ const toLocalInputValue = (iso: string) => {
         .slice(0, 16);
 };
 
+// Page for creating new seismic events with view toggle between options and manual form
 const CreateEvent = () => {
     const scenario = useObservable(scenarioStore);
     const [view, setView] = useState<View>("options");
@@ -34,6 +36,7 @@ const CreateEvent = () => {
         station: "",
     });
 
+    // Requests server to initialize manual form and receives minimum datetime constraint
     const openManualForm = async () => {
         setSubmitting(true);
         setMessage(null);
@@ -49,6 +52,7 @@ const CreateEvent = () => {
         setView("manual");
     };
 
+    // Converts form values to ManualEventPayload and sends to backend for tree insertion
     const submitManual = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         setSubmitting(true);
@@ -72,6 +76,7 @@ const CreateEvent = () => {
         setForm((current) => ({ ...current, id: "", magnitude: "", depth: "", epicenter_x: "", epicenter_y: "" }));
     };
 
+    // Options view: selection screen for event creation methods
     if (view === "options") {
         return (
             <section className="p-8">
@@ -92,6 +97,7 @@ const CreateEvent = () => {
         );
     }
 
+    // Manual form view: captures event data for insertion into active scenario
     return (
         <section className="p-8">
             <div className="mx-auto max-w-3xl space-y-6">

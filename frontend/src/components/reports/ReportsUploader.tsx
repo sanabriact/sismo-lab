@@ -1,11 +1,4 @@
-// ------------------------------------------------------------------
-// R ep or ts Up lo ad er
-// ------------------------------------------------------------------
-
-interface ReportsUploaderProps {
-    selectedFileName: string | null;
-    error?: string | null;
-}
+import type { ReportsUploaderProps } from "../../models/interfaces/reports/ReportsUploaderProps";
 
 const ReportsUploader = ({
     selectedFileName,

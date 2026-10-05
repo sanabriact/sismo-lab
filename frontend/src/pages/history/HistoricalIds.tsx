@@ -8,10 +8,12 @@ import { Link } from "react-router-dom";
 import HistoricalIdsList from "../../components/history/HistoricalIdsList";
 import { historyService } from "../../services/events/historyService";
 
+// Page displaying all event IDs the observatory has ever recorded
 const HistoricalIds = () => {
     const [identifiers, setIdentifiers] = useState<number[]>([]);
     const [message, setMessage] = useState("Cargando identificadores históricos...");
 
+    // Fetches historical IDs on mount; message shows loading state or error
     useEffect(() => {
         void historyService.getHistoricalIds().then((response) => {
             if (!response.ok) {
