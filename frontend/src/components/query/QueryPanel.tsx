@@ -1,6 +1,6 @@
 import { Search, SlidersHorizontal } from "lucide-react";
 import type { FormEvent } from "react";
-import type { QueryRequest, QueryResponse, QueryType } from "../../models/interfaces/query/Query";
+import type { ExpensiveAccessItem, QueryEvent, QueryRequest, QueryResponse, QueryType } from "../../models/interfaces/query/Query";
 
 interface QueryPanelProps {
     queryType: QueryType;
@@ -100,7 +100,7 @@ const QueryPanel = ({
                         </div>
                     )}
                     {queryType === "expensive_access" && <p className="rounded-lg bg-slate-50 p-3 text-sm text-slate-600">Busca eventos de prioridad alta cuya profundidad supera el límite L configurado en el escenario.</p>}
-                    {queryType === "tree_comparison" && <p className="rounded-lg bg-slate-50 p-3 text-sm text-slate-600">Construye ambos árboles con los mismos eventos en tres órdenes reproducibles y busca las mismas claves K en cada uno.</p>}
+                    {queryType === "tree_comparison" && <p className="rounded-lg bg-slate-50 p-3 text-sm text-slate-600">Construye ambos árboles con los mismos eventos en siete órdenes reproducibles y busca las mismas claves K en cada uno.</p>}
                 </div>
 
                 <div className="mt-5 rounded-lg bg-slate-50 p-3 text-xs leading-5 text-slate-600">
@@ -120,52 +120,81 @@ const QueryPanel = ({
     );
 };
 
+const isExpensiveAccessItem = (item: QueryEvent | ExpensiveAccessItem): item is ExpensiveAccessItem => (
+    "event" in item && item.event !== null && typeof item.depth === "number"
+);
+
 const QueryResults = ({ response }: { response: QueryResponse | null }) => {
     if (!response) return <div className="flex min-h-64 items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center text-sm text-slate-500">Los resultados aparecerán aquí.</div>;
     if (!response.ok) return <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-red-800"><p className="font-semibold">No se pudo ejecutar la consulta.</p><p className="mt-1 text-sm">{response.reason}</p></div>;
 
     if (response.comparison) {
         const orderLabels = {
+            current_order: "Orden actual",
             ascending_key: "K ascendente",
             descending_key: "K descendente",
             ascending_id: "ID ascendente",
+            descending_id: "ID descendente",
+            ascending_magnitude: "Magnitud ascendente",
+            descending_magnitude: "Magnitud descendente",
         };
         return (
-            <div className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-                <div>
-                    <h2 className="text-lg font-semibold text-slate-900">Comparación AVL y BST</h2>
-                    <p className="text-sm text-slate-500">{response.comparison.event_count} eventos · {response.comparison.comparison_definition}</p>
+            <div className="space-y-5 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-100 pb-4">
+                    <div>
+                        <h2 className="text-lg font-semibold text-slate-900">Comparación AVL y BST</h2>
+                        <p className="mt-1 text-sm text-slate-500">{response.comparison.event_count} eventos · {response.comparison.comparison_definition}</p>
+                    </div>
+                    <span className="rounded-full bg-[#e7f5f2] px-3 py-1 text-xs font-semibold text-[#0b6e69]">{response.examined_nodes ?? 0} nodos examinados</span>
                 </div>
-                <div className="overflow-auto">
-                    <table className="min-w-full text-left text-sm">
-                        <thead className="border-b border-slate-200 text-xs uppercase text-slate-500">
-                            <tr><th className="px-2 py-2">Inserción</th><th className="px-2 py-2">Árbol</th><th className="px-2 py-2">Raíz</th><th className="px-2 py-2">Altura</th><th className="px-2 py-2">Hojas</th><th className="px-2 py-2">Comparaciones</th><th className="px-2 py-2">Promedio/búsqueda</th></tr>
-                        </thead>
-                        <tbody>
-                            {response.comparison.runs.flatMap((run) => (["avl", "bst"] as const).map((treeName) => {
-                                const metrics = run[treeName];
-                                return (
-                                    <tr key={`${run.order}-${treeName}`} className="border-b border-slate-100 last:border-0">
-                                        <td className="px-2 py-3">{orderLabels[run.order]}</td>
-                                        <td className="px-2 py-3 font-semibold">{treeName.toUpperCase()}</td>
-                                        <td className="px-2 py-3">{metrics.root_id ?? "—"}</td>
-                                        <td className="px-2 py-3">{metrics.height}</td>
-                                        <td className="px-2 py-3">{metrics.leaves}</td>
-                                        <td className="px-2 py-3">{metrics.search_comparisons}</td>
-                                        <td className="px-2 py-3">{metrics.average_comparisons.toFixed(2)}</td>
-                                    </tr>
-                                );
-                            }))}
-                        </tbody>
-                    </table>
+                <div className="grid gap-4 md:grid-cols-2">
+                    {response.comparison.runs.map((run) => (
+                        <article key={run.order} className="overflow-hidden rounded-xl border border-slate-200 bg-slate-50/60">
+                            <div className="flex items-center justify-between gap-3 border-b border-slate-200 bg-white px-4 py-3">
+                                <h3 className="font-semibold text-slate-800">{orderLabels[run.order]}</h3>
+                                <span className="text-xs text-slate-500">{run.searches_per_tree} búsquedas</span>
+                            </div>
+                            <div className="overflow-auto">
+                                <table className="min-w-full text-left text-sm">
+                                    <thead className="text-xs uppercase text-slate-500">
+                                        <tr><th className="px-4 py-2">Árbol</th><th className="px-2 py-2">Raíz</th><th className="px-2 py-2">Altura</th><th className="px-2 py-2">Hojas</th><th className="px-2 py-2">Promedio</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        {(["avl", "bst"] as const).map((treeName) => {
+                                            const metrics = run[treeName];
+                                            return <tr key={`${run.order}-${treeName}`} className="border-t border-slate-200">
+                                                <td className={`px-4 py-3 font-semibold ${treeName === "avl" ? "text-[#0b6e69]" : "text-slate-700"}`}>{treeName.toUpperCase()}</td>
+                                                <td className="px-2 py-3">{metrics.root_id ?? "—"}</td>
+                                                <td className="px-2 py-3">{metrics.height}</td>
+                                                <td className="px-2 py-3">{metrics.leaves}</td>
+                                                <td className="px-2 py-3 font-medium">{metrics.average_comparisons.toFixed(2)}</td>
+                                            </tr>;
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </article>
+                    ))}
                 </div>
-                <p className="text-xs text-slate-500">En cada orden, se consultan las mismas claves K existentes en ambos árboles. La altura se mide en aristas; un árbol vacío tiene altura -1.</p>
+                <p className="text-xs text-slate-500">Cada orden usa las mismas claves K en ambos árboles. La altura se mide en aristas; un árbol vacío tiene altura -1. Las comparaciones totales quedan disponibles en cada búsqueda del backend.</p>
             </div>
         );
     }
 
     // Single-event responses and list responses share the same compact table.
-    const events = response.events ?? (response.event ? [response.event] : []);
+    const rawEvents = response.events ?? (response.event ? [response.event] : []);
+    const expensiveEvents = rawEvents.filter(isExpensiveAccessItem);
+    if (expensiveEvents.length > 0) {
+        return <div className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
+                <div><h2 className="text-lg font-semibold text-slate-900">Accesos costosos</h2><p className="text-sm text-slate-500">Nodos AVL examinados: {response.examined_nodes ?? 0}</p></div>
+                <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">{expensiveEvents.length} evento(s)</span>
+            </div>
+            <div className="overflow-auto"><table className="min-w-full text-left text-sm"><thead className="border-b border-slate-200 text-xs uppercase text-slate-500"><tr><th className="px-3 py-2">Evento</th><th className="px-3 py-2">Prioridad</th><th className="px-3 py-2">Profundidad</th><th className="px-3 py-2">Límite L</th><th className="px-3 py-2">Nodos visitados</th></tr></thead><tbody>{expensiveEvents.map((item) => <tr key={item.event.event_id} className="border-b border-slate-100 last:border-0"><td className="px-3 py-3 font-semibold">{item.event.event_id}</td><td className="px-3 py-3">{item.event.priority}</td><td className="px-3 py-3">{item.depth}</td><td className="px-3 py-3">{item.limit}</td><td className="px-3 py-3 font-semibold text-amber-700">{item.nodes_visited}</td></tr>)}</tbody></table></div>
+        </div>;
+    }
+
+    const events = rawEvents as QueryEvent[];
     return (
         <div className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="flex items-center justify-between gap-3 border-b border-slate-100 pb-4">

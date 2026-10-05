@@ -27,7 +27,7 @@ export interface QueryResponse {
     examined_nodes?: number;
     status?: "active" | "archived" | "deleted" | "not_found";
     event?: QueryEvent | null;
-    events?: QueryEvent[];
+    events?: QueryEvent[] | ExpensiveAccessItem[];
     requested?: number;
     limit?: number;
     event_id?: number;
@@ -44,11 +44,25 @@ export interface QueryResponse {
 }
 
 export interface TreeComparisonRun {
-    order: "ascending_key" | "descending_key" | "ascending_id";
+    order:
+        | "current_order"
+        | "ascending_key"
+        | "descending_key"
+        | "ascending_id"
+        | "descending_id"
+        | "ascending_magnitude"
+        | "descending_magnitude";
     event_count: number;
     searches_per_tree: number;
     avl: TreeComparisonMetrics;
     bst: TreeComparisonMetrics;
+}
+
+export interface ExpensiveAccessItem {
+    event: QueryEvent;
+    depth: number;
+    limit: number;
+    nodes_visited: number;
 }
 
 export interface TreeComparisonMetrics {

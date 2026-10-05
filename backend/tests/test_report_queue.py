@@ -117,14 +117,14 @@ def test_prepare_rejects_future_dates_and_extra_precision():
     assert runner.process_next()["decision"] == "rejected_invalid"
 
 
-def test_unknown_id_requires_revision_one():
+def test_unknown_id_accepts_a_first_revision_greater_than_one():
     observatory = make_observatory()
     result = ReportProcessor().apply(
         observatory,
         report_from(raw(7, revision=3), observatory),
     )
-    assert result.decision == "rejected_invalid"
-    assert observatory.searchEventById(7) is None
+    assert result.decision == "created"
+    assert observatory.searchEventById(7).getCurrentRevision() == 3
 
 
 def test_unknown_id_revision_one_creates_event():

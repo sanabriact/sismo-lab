@@ -205,9 +205,24 @@ class QueryService:
         events = [node.getValue() for node in observatory.getAVLTree().index.values()]
         by_key = sorted(events, key=lambda event: tuple(event.getKey()))
         insertion_orders = (
+            ("current_order", list(events)),
             ("ascending_key", by_key),
             ("descending_key", list(reversed(by_key))),
             ("ascending_id", sorted(events, key=lambda event: event.getKey()[2])),
+            ("descending_id", sorted(
+                events,
+                key=lambda event: event.getKey()[2],
+                reverse=True,
+            )),
+            ("ascending_magnitude", sorted(
+                events,
+                key=lambda event: (event.getKey()[1], event.getKey()[2]),
+            )),
+            ("descending_magnitude", sorted(
+                events,
+                key=lambda event: (event.getKey()[1], event.getKey()[2]),
+                reverse=True,
+            )),
         )
         runs = []
 
@@ -229,6 +244,10 @@ class QueryService:
 
         return {
             "ok": True,
+            # The comparison first reads the active AVL index once to build
+            # the common data set.  Reporting this count keeps the same
+            # observable cost contract as the other query operations.
+            "examined_nodes": len(events),
             "comparison": {
                 "event_count": len(events),
                 "comparison_definition": "Una comparación por cada nodo visitado al buscar una clave K.",

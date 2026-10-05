@@ -1,6 +1,5 @@
 import json
 from datetime import datetime
-from backend.services.seismic_observatory_service import SeismicObservatoryService
 from backend.repositories.json_scenario_repository import JsonScenarioRepository
 from backend.models.event import Event
 from backend.models.report import Report
@@ -8,7 +7,7 @@ from backend.models.station import Station
 from backend.utils.quantities import parseDatetime
 from backend.services.parameters.scenario_parameters_service import ScenarioParametersService
 
-class LoadScenarioManager:
+class ScenarioValidator:
     
     def __init__(self, parameters_service=None):
         self.errors = []
@@ -67,7 +66,7 @@ class LoadScenarioManager:
             self.errors.append("the json file is empty")
             return None
         try:
-            data = json.loads(content, object_pairs_hook=self.repository._rejectDuplicateKeys)
+            data = self.repository.parse_text(content)
         except json.JSONDecodeError as error:
             self.errors.append(
                 f"Invalid JSON at line {error.lineno}, column {error.colno}: {error.msg}"
@@ -108,7 +107,6 @@ class LoadScenarioManager:
                 if valid:
                     if "tree" in data:
                         events = self.getEvents(data["tree"]["root"], [])
-                        self.addEvents(events)
                         result = self.createArchive(data, events)
                         return result
                 return None
@@ -319,19 +317,6 @@ class LoadScenarioManager:
                 valid = False
         return valid
 
-    # Method to add events to trees
-    def addEvents(self, event_list):
-        observatory_service = SeismicObservatoryService()
-        observatory = observatory_service.getObservatory()
-        history = observatory.getHistory()
-        avl = observatory.getAVLTree()
-        bst = observatory.getBSTTree()
-        for e in event_list:
-            event = Event.fromDict(e)
-            history.addIdEvent(e["key"][2])
-            avl.insert(event)
-            bst.insert(event)
-    
     # Method to comprobate if tree is usable
     def comprobateTree(self, data, stress_mode):
         self.eventIds = []

@@ -81,7 +81,7 @@ const VisualizeTrees = () => {
     }, [fetchData]);
 
     return (
-        <section className="space-y-8 p-8">
+        <section className="min-h-screen space-y-8 overflow-y-auto p-8">
             {error ? (
                 <p className="text-red-600" role="alert">{error}</p>
             ) : !data ? (
@@ -123,14 +123,18 @@ const VisualizeTrees = () => {
                     />
                     <div>
                         <h2 className="mb-2 text-xl font-semibold">AVL</h2>
-                        <div className="overflow-auto rounded-lg border border-gray-200">
-                            <TreeView data={data.avl_tree} type="avl" highlightIds={highlightedIdSet} showCharacteristics={showCharacteristics} characteristics={characteristics?.trees?.avl} />
+                        <div className="max-h-[70vh] max-w-full overflow-auto rounded-lg border border-gray-200 bg-white">
+                            <div className="w-max min-w-full p-4">
+                                <TreeView data={data.avl_tree} type="avl" highlightIds={highlightedIdSet} showCharacteristics={showCharacteristics} characteristics={characteristics?.trees?.avl} />
+                            </div>
                         </div>
                     </div>
                     <div>
                         <h2 className="mb-2 text-xl font-semibold">BST</h2>
-                        <div className="overflow-auto rounded-lg border border-gray-200">
-                            <TreeView data={data.bst_tree} type="bst" highlightIds={highlightedIdSet} />
+                        <div className="max-h-[70vh] max-w-full overflow-auto rounded-lg border border-gray-200 bg-white">
+                            <div className="w-max min-w-full p-4">
+                                <TreeView data={data.bst_tree} type="bst" highlightIds={highlightedIdSet} />
+                            </div>
                         </div>
                     </div>
                 </>

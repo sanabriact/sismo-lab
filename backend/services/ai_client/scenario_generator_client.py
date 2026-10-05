@@ -175,7 +175,7 @@ def generate_random_clock():
     clock = start + timedelta(seconds=random.randint(0, span_seconds))
     return clock.strftime("%Y-%m-%dT%H:%M:%SZ")
 
-class ScenarioGeneratorService:
+class AIScenarioGeneratorService:
     def __init__(self):
         api_key = os.getenv("GROQ_API_KEY_SCENARIO")
         model = os.getenv("GROQ_MODEL")

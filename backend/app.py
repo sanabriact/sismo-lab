@@ -3,19 +3,19 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 from flask_socketio import SocketIO
 from backend.services.reports.report_queue_runner import ReportQueueRunner
-from backend.utils.json_utils import objectToDict
-from backend.services.seismic_observatory_service import SeismicObservatoryService, ScenarioValidationError
+from backend.services.seismic_observatory_service import SeismicObservatoryService
+from backend.services.scenario.scenario_errors import ScenarioValidationError
 from backend.services.socket.realtime_service import init_realtime
 from backend.services.event_engine import EventEngine
 from backend.services.ai_client.event_generator_client import AIEventClient 
-from backend.managers.stress_mode_manager import StressModeManager
-from backend.managers.scenario_generator_manager import ScenarioGeneratorManager
-from backend.managers.load_scenario_manager import LoadScenarioManager
+from backend.services.stress.stress_mode_service import StressModeService
+from backend.services.scenario.scenario_generator_service import ScenarioGeneratorService
+from backend.services.scenario.scenario_validator import ScenarioValidator
 from backend.services.socket.socket_broadcaster import SocketBroadcaster
 from backend.services.ai_client.event_bus import mode_changed, scenario_loaded
 from backend.services.parameters.scenario_parameters_service import ScenarioParametersService
 from backend.services.json_export_service import JSONExportService
-from backend.helpers.ai_generation_loop import AiGenerationLoop
+from backend.services.ai_client.ai_generation_loop import AiGenerationLoop
 
 app = Flask(__name__)
 CORS(app)
@@ -28,19 +28,19 @@ event_engine = EventEngine(
     socketio=socketio,
     service=obs_service,
     mode_changed=mode_changed,
-    stress_mode_manager=StressModeManager(),
+    stress_mode_manager=StressModeService(),
     parameters_service=parameters_service,
 )
 socket_broadcaster = SocketBroadcaster(mode_changed, scenario_loaded)
 ai_client = AIEventClient()
 ai_loop = AiGenerationLoop(socketio, event_engine)
-MIN_INTERVAL_SECONDS = 2
-load_scenario_manager = LoadScenarioManager(parameters_service=parameters_service)
+event_engine.set_ai_generation_loop(ai_loop)
+scenario_validator = ScenarioValidator(parameters_service=parameters_service)
 json_export_service = JSONExportService(parameters_service=parameters_service)
 
-generator_manager = ScenarioGeneratorManager( ai_client=ai_client, engine=event_engine)
+generator_manager = ScenarioGeneratorService(ai_client=ai_client, engine=event_engine)
 event_engine.set_scenario_manager(generator_manager)
-event_engine.set_scenario_validator(load_scenario_manager)
+event_engine.set_scenario_validator(scenario_validator)
 event_engine.set_scenario_loaded_notifier(scenario_loaded)
 
 # Keep one queue facade attached to the active EventEngine.
@@ -74,7 +74,13 @@ def update_parameters():
 @app.route("/api/events", methods=["POST"])
 def createEvent():
     # The request body is the object received from the frontend.
-    data = request.json
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        return jsonify({
+            "success": False,
+            "reason": "Request body must be a JSON object",
+        }), 400
+
     # Validate the transport-level required fields before entering the engine.
     required_fields = [
         "id",
@@ -103,8 +109,10 @@ def createEvent():
 # Legacy JSON loading endpoint retained for API compatibility.
 @app.route("/api/scenario", methods=["GET"])
 def load_scenario():
-    data = request.get_json()
-    result = load_scenario_manager.load(data)
+    # Keep this legacy endpoint compatible while using the active validator.
+    data = request.get_json(silent=True)
+    stress_mode = isinstance(data, dict) and data.get("execution_mode") == "stress"
+    result = scenario_validator.load(data, stress_mode)
     return jsonify(result)
 
 @app.route("/api/events-list", methods=["GET"])
@@ -375,58 +383,18 @@ def create_manual_report(data=None):
 
 @socketio.on("reports:ai_start")
 def handle_ai_generation_start(payload=None):
-    """Validate the configuration and start the continuous AI generation."""
-    payload = payload if isinstance(payload, dict) else {}
-
-    interval = max(
-        MIN_INTERVAL_SECONDS,
-        float(payload.get("intervalSeconds", 10))
-    )
-
-    known_stations = event_engine.observatory.getStations()
-    known_ids = [station.getId() for station in known_stations]
-
-    requested_ids = payload.get("stationIds")
-
-    station_ids = (
-        [station_id for station_id in requested_ids if station_id in known_ids]
-        if requested_ids
-        else known_ids
-    )
-
-    if not station_ids:
-        return {
-            "ok": False,
-            "running": ai_loop.is_running(),
-            "reason": "no_valid_stations"
-        }
-
-    started = ai_loop.start({
-        "interval": interval,
-        "station_ids": station_ids,
-        "scenario": payload.get("scenario"),
-        "seed": int(payload.get("seed", 42)),
-    })
-
-    socketio.emit("reports:ai_status", {"running": True})
-
-    return {
-        "ok": True,
-        "running": True,
-        "alreadyRunning": not started
-    }
+    """Start continuous AI report generation through the EventEngine."""
+    return event_engine.start_ai_report_generation(payload)
 
 @socketio.on("reports:ai_stop")
 def handle_ai_generation_stop(_data = None):
-    """Stop the continuous AI generation."""
-    ai_loop.stop()
-    socketio.emit("reports:ai_status", {"running": False})
-    return {"ok": True, "running": False}
+    """Stop continuous AI report generation through the EventEngine."""
+    return event_engine.stop_ai_report_generation()
 
 @socketio.on("reports:ai_status_get")
 def handle_ai_generation_status(_data = None):
-    """Return whether the generator is running (used when a client reloads the page)."""
-    return {"ok": True, "running": ai_loop.is_running()}
+    """Return the AI report worker status through the EventEngine."""
+    return event_engine.ai_report_generation_status()
 
 @socketio.on("reports:step")
 def process_report_step(data=None):

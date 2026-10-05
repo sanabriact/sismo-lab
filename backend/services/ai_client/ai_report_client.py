@@ -6,7 +6,7 @@ from datetime import timedelta
 from dotenv import load_dotenv
 from groq import Groq
 
-from backend.utils.quantities import hasAtMostOneDecimal, parseDatetime
+from backend.utils.quantities import hasAtMostOneDecimal, normalizeDatetime, parseDatetime
 
 load_dotenv()
 
@@ -111,14 +111,14 @@ class AIReportClient:
                 {context["deleted_ids"]}
 
                 REGLAS DE IDENTIDAD:
-                1. Un reporte crea un evento ÚNICAMENTE si su event_id no existe entre los eventos
-                activos ni archivados Y revision = 1.
+                1. Un reporte crea un evento si su event_id no existe entre los eventos
+                activos ni archivados. La primera revision puede ser cualquier entero positivo.
                 2. Si event_id ya existe en activos o archivados, el reporte debe usar ese mismo id.
                 3. Para un evento existente puedes generar:
                 - revision igual a la actual y exactamente los mismos datos: confirmación;
                 - revision menor que la actual: reporte antiguo;
                 - revision mayor que la actual: corrección.
-                4. Nunca generes revision > 1 para un event_id que no exista en activos o archivados.
+                4. Para un event_id nuevo, conserva la revision positiva que genere el reporte.
                 5. No uses IDs eliminados.
 
                 REGLAS DE DATOS:
@@ -133,7 +133,8 @@ class AIReportClient:
                 - Para confirmaciones, conserva exactamente magnitud, profundidad, epicentro y fecha
                 del evento existente y cambia solamente la estación si quieres representar otra estación.
                 - Para correcciones, aumenta la revisión y modifica al menos un dato del evento.
-                - Prioriza una mezcla natural de creaciones, confirmaciones y correcciones.
+                - Incluye al menos una creación con un event_id nuevo y revision 1.
+                - Completa el lote con una mezcla natural de creaciones, confirmaciones y correcciones.
                 - Si no hay eventos existentes, genera creaciones nuevas con revision 1.
 
                 CONTEXTO OPCIONAL:
@@ -148,7 +149,7 @@ def request_reports_from_llm(context, count, scenario_hint=None):
     return AIReportClient().generate(context, count, scenario_hint)
 
 
-def generate_deterministic_reports(context, count, seed):
+def generate_deterministic_reports(context, count, seed, include_new=False):
     """Deterministic fallback that respects active/archived identity semantics."""
     rng = random.Random(seed)
     clock = context["clock"]
@@ -161,7 +162,9 @@ def generate_deterministic_reports(context, count, seed):
         if not stations:
             break
 
-        if not existing:
+        if include_new and not reports:
+            kind = "new"
+        elif not existing:
             kind = "new"
         else:
             kind = rng.choice(["new", "new", "confirm", "stale", "correct"])
@@ -256,7 +259,15 @@ def validate_generated_report_shape(report, station_ids, clock):
     except (TypeError, ValueError, KeyError):
         return "datetime inválido"
 
-    if not clock.canOccurAt(date):
+    # The detached AI context stores the current clock value as a datetime.
+    # Accept a SimulationClock too, because this validator is also useful for
+    # callers that validate a report before detaching the context.
+    if hasattr(clock, "canOccurAt"):
+        can_occur = clock.canOccurAt(date)
+    else:
+        can_occur = date <= normalizeDatetime(clock)
+
+    if not can_occur:
         return "La fecha del reporte supera el reloj del escenario"
 
     return None

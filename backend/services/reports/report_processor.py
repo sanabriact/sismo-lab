@@ -63,19 +63,8 @@ class ReportProcessor:
         if archived is not None:
             return self._apply_archived(observatory, archived, report)
 
-        # An unknown identity is a creation only for its first revision.
-        # A higher revision without an active/archived event has no base event
-        # to correct, so it must not silently create one.
-        if revision != 1:
-            observatory.getMetrics().incrementDiscardedReports()
-            return StepResult(
-                "rejected_invalid",
-                "Un evento inexistente solo puede crearse con revision 1",
-                event_id,
-                revision,
-                station_id,
-            )
-
+        # The first received report may start at any positive revision. The
+        # specification treats it as the initial known state for that id.
         result = observatory.createEvent(
             id=event_id, magnitude=report.getMagnitude(), depth=report.getDepth(),
             epicenter_x=report.getEpicenterX(), epicenter_y=report.getEpicenterY(),

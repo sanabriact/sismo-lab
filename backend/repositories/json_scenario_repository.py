@@ -23,6 +23,13 @@ class JsonScenarioRepository:
 
         return None
 
+    def parse_text(self, content):
+        """Parse scenario text using the same duplicate-key rule as file loads."""
+        return json.loads(
+            content.lstrip("\ufeff"),
+            object_pairs_hook=self._rejectDuplicateKeys,
+        )
+
     @staticmethod
     def _rejectDuplicateKeys(archive):
         result = {}

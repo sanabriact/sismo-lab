@@ -1,6 +1,5 @@
 from backend.structures.node import Node
 from backend.utils.json_utils import objectToDict
-from backend.services.audit.structure_audit_service import StructureAuditService
 
 class AVL:
     def __init__(self):
@@ -597,6 +596,9 @@ class AVL:
             self._checkBalance(parent, 0)
     
     def audit(self, mode="normal"):
+        """Keep the legacy audit entry point for existing callers."""
+        from backend.services.audit.structure_audit_service import StructureAuditService
+
         audit_service = StructureAuditService()
         return audit_service.audit_avl(self, mode)
     

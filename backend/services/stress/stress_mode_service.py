@@ -1,5 +1,8 @@
 
-class StressModeManager:
+from backend.services.audit.structure_audit_service import StructureAuditService
+
+
+class StressModeService:
     
     """Coordinates execution mode changes for the active observatory."""
 
@@ -20,7 +23,7 @@ class StressModeManager:
         avl_tree.recover_balance()
         steps = observatory.finish_visual_operation()
 
-        audit = avl_tree.audit()
+        audit = StructureAuditService().audit_avl(avl_tree)
 
         if audit["ok"]:
             avl_tree.setBalance(True)
@@ -36,7 +39,7 @@ class StressModeManager:
 
     def _createReport(self, observatory, audit=None):
         if audit is None:
-            audit = observatory.getAVLTree().audit()
+            audit = StructureAuditService().audit_avl(observatory.getAVLTree())
 
         return {
             "ok": audit["ok"],

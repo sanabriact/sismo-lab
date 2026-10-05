@@ -10,7 +10,7 @@ from backend.models.event import Event
 from backend.models.report import Report
 from backend.models.seismic_observatory import SeismicObservatory
 from backend.models.station import Station
-from backend.managers.stress_mode_manager import StressModeManager
+from backend.services.stress.stress_mode_service import StressModeService
 from backend.services.reports.report_processor import ReportProcessor
 from backend.utils.quantities import parseDatetime
 
@@ -104,7 +104,7 @@ def test_stress_recovery_preserves_event_identity_order_and_associations():
     assert stress_audit["warnings"]
     assert associations_before["selected_references"]
 
-    recovery = StressModeManager().deactivateStressMode(observatory)
+    recovery = StressModeService().deactivateStressMode(observatory)
     steps = recovery["steps"]
     normal_audit = tree.audit("normal")
     order_after = [event.getKey() for event in tree.inorder()]

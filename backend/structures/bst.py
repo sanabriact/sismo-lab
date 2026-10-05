@@ -6,6 +6,7 @@ class BST:
         self.root = None
         self.index = {}
         self._dirty_ids = set()
+        self._removed_ids = set()
         self._visual_steps = []
     
     def _touch(self, node):
@@ -15,12 +16,15 @@ class BST:
     
     def begin_visual_operation(self):
         self._dirty_ids.clear()
+        self._removed_ids.clear()
 
     def finish_visual_operation(self):
         upserted = []
 
         for event_id in self._dirty_ids:
-            node = self.index[event_id]
+            node = self.index.get(event_id)
+            if node is None:
+                continue
 
             upserted.append({
                 "id": event_id,
@@ -48,12 +52,14 @@ class BST:
         if self.root is not None:
             root_id = self.root.getValue().getKey()[2]
 
+        removed_ids = list(self._removed_ids)
         self._dirty_ids.clear()
+        self._removed_ids.clear()
 
         return {
-            "operation": "insert",
+            "operation": "delete" if removed_ids else "insert",
             "upserted": upserted,
-            "removedIds": [],
+            "removedIds": removed_ids,
             "rootId": root_id,
         }
 
@@ -85,10 +91,15 @@ class BST:
 
     # Public method of inserting
     def insert(self, data):
+        event_id = data.getKey()[2]
+        # Event identity is unique independently from the ordering key.
+        if event_id in self.index:
+            return False
+
         node = Node(data)
         if self.root is None:
             self.root = node
-            self.index[node.getValue().getKey()[2]] = node
+            self.index[event_id] = node
             self._touch(node)
             return True
         else:
@@ -105,6 +116,7 @@ class BST:
             inserted, child = self._tryInsertRightChild(currentRoot, node)
 
         if inserted:
+            self._refresh_heights(self.root)
             return True
         return self._insert(node, child)
 
@@ -137,7 +149,6 @@ class BST:
     # Search an element by its id
     def searchById(self, id):
         if self.root is None:
-            print("The tree is empty.")
             return None
         else:
             return self._searchById(id)
@@ -272,10 +283,13 @@ class BST:
                 node.setRightChild(None)
                 node.setParent(None)
 
-        # CHANGE 1 (end): clean the index and the dirty set
-        if removed_id != (node.getValue().getKey()[2] if False else None):
-            self.index.pop(removed_id, None)
-            self._dirty_ids.discard(removed_id)
+        # Remove the original identity from the auxiliary index.  In the
+        # two-child case the predecessor identity now points to the old node.
+        self.index.pop(removed_id, None)
+        self._dirty_ids.discard(removed_id)
+        self._removed_ids.add(removed_id)
+        self._touch(node.getParent())
+        self._refresh_heights(self.root)
 
             
     # Private method for getting a predeccesor of a root.
@@ -292,6 +306,19 @@ class BST:
     # Private method for exchanging values (used in delete method.)
     def _updateNodeValue(self, oldNode, newNode):
         oldNode.setValue(newNode.getValue())
+
+    def _refresh_heights(self, node):
+        """Keep node heights accurate without applying AVL rotations."""
+        if node is None:
+            return -1
+
+        left_height = self._refresh_heights(node.getLeftChild())
+        right_height = self._refresh_heights(node.getRightChild())
+        height = max(left_height, right_height) + 1
+        if node.getHeight() != height:
+            node.setHeight(height)
+            self._touch(node)
+        return height
     
     # Public method for drawing a tree (For test instances)
     def draw(self):

@@ -7,7 +7,7 @@ from backend.structures.queue import Queue
 from backend.structures.stack import Stack
 from backend.models.history import History
 from backend.models.clock import SimulationClock
-from backend.managers.association_manager import AssociationManager
+from backend.models.association_manager import AssociationManager
 from backend.models.metrics import Metrics
 from backend.models.event import Event
 from backend.models.station import Station

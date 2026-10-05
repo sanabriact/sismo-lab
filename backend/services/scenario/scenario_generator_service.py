@@ -2,7 +2,7 @@ import threading
 import time
 from backend.services.ai_client.event_generator_client import validate_ai_response
 
-class ScenarioGeneratorManager:
+class ScenarioGeneratorService:
     
     def __init__(self, ai_client, engine):
         self.ai_client = ai_client
