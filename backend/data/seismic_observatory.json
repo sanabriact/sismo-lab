@@ -1,5 +1,5 @@
 {
-    "scenario_id": "25eed6b9-e8c1-45d9-8a0a-38d3a312444b",
+    "scenario_id": "822890a4-62eb-47d4-8cff-d4baabee6377",
     "avl_tree": {
         "root": {
             "value": {
@@ -645,7 +645,7 @@
         "items": [
             {
                 "action_type": "LOAD_SCENARIO",
-                "datetime": "2026-09-29T20:03:38+00:00",
+                "datetime": "2026-09-29T20:03:33+00:00",
                 "before_snapshot": null,
                 "inverse_action": "CLEAR_SCENARIO",
                 "undo_data": {
@@ -659,7 +659,7 @@
         ]
     },
     "clock": {
-        "current_time": "2026-09-29T21:42:24Z"
+        "current_time": "2026-09-29T20:17:43Z"
     },
     "l": 3,
     "t": 72,
@@ -706,5 +706,5 @@
         "simple_right_rotations": 4
     },
     "saved_versions": [],
-    "execution_mode": "stress"
+    "execution_mode": "normal"
 }
