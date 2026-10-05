@@ -48,16 +48,16 @@ response_format={
 # inside the prompt (an f-string would break on them).
 SCENARIO_PROMPT_TEMPLATE = """Eres un generador de escenarios de prueba para SismoLab AVL, un simulador académico
 de un observatorio sísmico ficticio. Tu ÚNICA salida es un objeto JSON válido.
-No escribas texto antes ni después, no uses bloques de markdown (```), no pongas
+No escribas texto antes ni después, no uses bloques de código markdown, no pongas
 comentarios dentro del JSON.
 
 PARÁMETROS DE ESTA SOLICITUD
 - MODE: <<MODE>>                      (insertion | topology | empty)
-- CLOCK: <<CLOCK>>                    (reloj de simulación, úsalo tal cual)
+- CLOCK: <<CLOCK>>                    (reloj de simulación)
 - N_STATIONS: <<N_STATIONS>>
 - N_ZONES: <<N_ZONES>>
 - N_EVENTS: <<N_EVENTS>>              (0 si MODE es empty)
-- EXECUTION_MODE: <<EXECUTION_MODE>>  (solo aplica a topology: normal | stress)
+- EXECUTION_MODE: <<EXECUTION_MODE>>  (normal | stress)
 
 ========================================================
 PARTE 1. REGLAS COMUNES (se aplican a los tres modos)
@@ -67,10 +67,10 @@ Plano: el territorio es un plano de 0 a 1000 km en X y en Y.
 Todo número decimal tiene como máximo UN decimal (ej. 4.5 sí, 4.55 no).
 Usa punto como separador decimal.
 
-1) "datetime" (reloj de simulación)
-   - Debe ser EXACTAMENTE el valor de CLOCK: <<CLOCK>>
-   - Ningún evento puede ocurrir DESPUÉS de este reloj. Reparte los eventos en los
-     10 días anteriores al reloj.
+1) Reloj de simulación (CLOCK = <<CLOCK>>)
+   - Ningún evento puede ocurrir DESPUÉS de CLOCK.
+   - Reparte las fechas de los eventos en los 10 días anteriores a CLOCK.
+   - CLOCK NO se escribe en la salida: lo agrega el sistema.
 
 2) "stations" (exactamente N_STATIONS)
    - Cada una: {"id": int, "name": str, "x": num, "y": num}
@@ -98,16 +98,21 @@ Usa punto como separador decimal.
    - magnitude: -2.0 a 10.0
    - depth (profundidad del hipocentro en km): 0.0 a 700.0
    - epicenter_x, epicenter_y: 0.0 a 1000.0
-   - datetime: ISO 8601 UTC con segundos y sufijo Z, <= reloj del escenario
-   - revision: entero positivo
+   - datetime: ISO 8601 UTC con segundos y sufijo Z, por ejemplo "2026-03-22T08:00:00Z",
+     y siempre <= CLOCK
+   - revision: siempre 1
+   - station: id de una estación que exista en "stations"
 
-6) Prioridad (se DERIVA, nunca se inventa). Aplica en este orden:
+6) Prioridad (solo para que ordenes y diseñes los datos; NO se escribe en la salida)
+   Aplica en este orden:
    - 3 (alta):  M >= 6.0, o bien (M >= 4.5 y H <= 30.0 y epicentro poblado)
    - 2 (media): no es alta y M >= 4.5
    - 1 (baja):  todo lo demás
    Los límites son inclusivos (M=4.5, H=30.0 en zona poblada => prioridad 3).
+   La clave de un evento es (P, M, id) y se compara en ese orden: primero P,
+   luego M, luego id. (P=2 siempre es menor que P=3, aunque su M sea mayor.)
 
-7) Variedad (aplica a los modos con eventos)
+7) Variedad (aplica cuando N_EVENTS > 0)
    Genera datos realistas y diversos. Incluye de forma natural, sin exagerar:
    - magnitudes en los tres rangos de prioridad,
    - al menos un evento con M exactamente 4.5, uno con M 6.0 y uno con H 30.0,
@@ -117,109 +122,50 @@ Usa punto como separador decimal.
      tenga mayor magnitud, para que existan candidatos a réplica.
 
 ========================================================
-PARTE 2. FORMA DE LA SALIDA SEGÚN MODE
+PARTE 2. FORMA DE LA SALIDA (igual para los tres modos)
 ========================================================
 
---- MODE = "empty" ---
-Genera SOLO el escenario base, sin eventos:
+Devuelve un único objeto con EXACTAMENTE estas tres claves:
 {
-  "execution_mode": "normal",
-  "datetime": "<<CLOCK>>",
   "stations": [...],
   "zones": [...],
-  "events": []
+  "events": [...]
 }
-No incluyas la clave "tree".
-
---- MODE = "insertion" ---
-Igual que "empty" pero con N_EVENTS eventos en "events".
-- "execution_mode" siempre "normal".
-- El ORDEN del arreglo es el orden de inserción: mézclalo (no lo dejes ordenado).
-  Incluye una subsecuencia de 3 o 4 eventos cuyas claves (prioridad, magnitud, id)
-  vayan en orden ascendente, para que el BST se degrade frente al AVL.
+- No agregues ninguna otra clave: ni "tree", ni "execution_mode", ni "datetime".
+- Cada estación tiene EXACTAMENTE: {"id": int, "name": str, "x": num, "y": num}
+  (sin "emmited_events" ni otros campos).
 - Cada evento tiene EXACTAMENTE estos campos:
   {"id": int, "magnitude": num, "depth": num, "epicenter_x": num,
    "epicenter_y": num, "datetime": "...Z", "revision": 1, "station": int}
-- "station" debe ser el id de una estación existente.
-- Ids únicos dentro del archivo (un id repetido invalida todo el escenario).
-- No incluyas la clave "tree" ni campos derivados (prioridad, clave, etc.).
+- No incluyas prioridad, clave, zona poblada ni ningún campo derivado:
+  el sistema los calcula.
+- Ids de eventos únicos dentro del archivo (un id repetido invalida el escenario).
 
---- MODE = "topology" ---
-Genera el escenario base (sin la clave "events") y en su lugar la clave "tree"
-con la topología explícita del árbol, de N_EVENTS nodos:
-{
-  "execution_mode": "<<EXECUTION_MODE>>",
-  "datetime": "<<CLOCK>>",
-  "stations": [...],
-  "zones": [...],
-  "tree": { "root": <nodo o null> }
-}
-En este modo cada estación lleva además "emmited_events": [] (lista vacía):
-{"id": int, "name": str, "x": num, "y": num, "emmited_events": []}
+Número de eventos y orden del arreglo "events" según MODE:
 
-Cada nodo tiene la forma:
-{ "event": {...}, "left_child": <nodo o null>, "right_child": <nodo o null> }
-Un enlace vacío se escribe null. No escribas alturas ni factores de balance
-(el sistema los calcula).
+--- MODE = "empty" ---
+"events" es una lista vacía [].
 
-Cada "event" tiene EXACTAMENTE estos campos:
-{
-  "key": [P, M, I],                 // prioridad, magnitud, id numérico
-  "epicenter_x": num, "epicenter_y": num,
-  "depth": num,                     // km del hipocentro
-  "datetime": "...Z",
-  "revision": 1,
-  "reporting_stations": [int],      // ids de estaciones existentes
-  "attention_status": "pending" | "revised",
-  "event_status": "active",
-  "populated_zone": bool,           // según la regla 4
-  "expensive_acces": bool,          // ver paso 6
-  "eliminated": false,
-  "archived": false
-}
-
-PROCEDIMIENTO OBLIGATORIO (síguelo en orden antes de escribir el JSON):
- 1. Genera los N_EVENTS eventos con ids únicos y datos válidos.
- 2. Para cada uno calcula populated_zone (regla 4) y luego P (regla 6).
-    "key" = [P, M, id]. Debe coincidir EXACTAMENTE con lo calculado.
- 3. Ordena los eventos de menor a mayor clave, comparando en este orden:
-    P, luego M, luego id. (P=2 siempre va antes que P=3, aunque su M sea mayor.)
- 4. Construye el árbol según EXECUTION_MODE:
-    - "normal": árbol BST perfectamente equilibrado. Con la lista ordenada, la raíz
-      es el elemento del medio (si hay dos centrales, el de la izquierda); repite
-      recursivamente en cada mitad. Resultado: en todo nodo, la diferencia de
-      altura entre subárbol izquierdo y derecho es -1, 0 o 1.
-    - "stress": árbol BST válido pero DESBALANCEADO a propósito. Inserta las claves
-      en un orden que degrade el árbol (por ejemplo, la mitad de ellas en orden
-      ascendente, una tras otra, SIN rotaciones) hasta que al menos un nodo tenga
-      una diferencia de alturas de 2 o más. El orden BST debe seguir siendo correcto.
- 5. Verifica el orden global: todo nodo del subárbol izquierdo tiene clave menor
-    que la raíz de ese subárbol, y todo nodo del derecho, clave mayor (no basta
-    con comparar al hijo inmediato). Cada evento aparece UNA sola vez en el árbol.
- 6. expensive_acces = true solo si P = 3 y la profundidad del nodo en el árbol
-    (raíz = 0) es estrictamente mayor que 3. En caso contrario, false.
-
-EJEMPLO MÍNIMO de "tree" (3 nodos, árbol normal; claves A < B < C):
-"tree": {"root": {
-  "event": {"key": [2, 5.1, 2], "epicenter_x": 210.0, "epicenter_y": 150.0,
-            "depth": 45.0, "datetime": "2026-09-27T14:40:00Z", "revision": 1,
-            "reporting_stations": [2], "attention_status": "pending",
-            "event_status": "active", "populated_zone": true,
-            "expensive_acces": false, "eliminated": false, "archived": false},
-  "left_child": {"event": {"key": [1, 2.4, 1], ...}, "left_child": null, "right_child": null},
-  "right_child": {"event": {"key": [3, 6.3, 3], ...}, "left_child": null, "right_child": null}
-}}
-(Los "..." son solo para abreviar este ejemplo; en tu salida escribe todos los campos.)
+--- MODE = "insertion" o MODE = "topology" ---
+"events" tiene exactamente N_EVENTS eventos. El ORDEN del arreglo es el orden
+en que el sistema los inserta en el árbol, así que depende de EXECUTION_MODE:
+- EXECUTION_MODE = "normal": mezcla el orden (no lo dejes ordenado). Incluye una
+  subsecuencia de 3 o 4 eventos con claves (P, M, id) en orden ascendente, para
+  que un árbol sin balanceo se degrade frente a uno AVL.
+- EXECUTION_MODE = "stress": ordena la mayor parte del arreglo (al menos la mitad
+  inicial) de menor a mayor clave (P, luego M, luego id), una tras otra. Así el
+  árbol queda desbalanceado a propósito, con diferencias de altura de 2 o más.
+  Los eventos restantes pueden ir al final en cualquier orden.
 
 ========================================================
 AUTOVERIFICACIÓN FINAL (hazla en silencio antes de responder)
 ========================================================
-- ¿El JSON parsea? ¿Hay solo UN objeto raíz y nada de texto fuera de él?
+- ¿El JSON parsea? ¿Hay solo UN objeto con las claves stations, zones y events?
 - ¿Número exacto de estaciones, zonas y eventos pedidos?
 - ¿Todos los números con máximo un decimal y dentro de rango?
-- ¿Ningún evento posterior al reloj? ¿Ids únicos? ¿Estaciones referenciadas existentes?
-- Si es topology: ¿las claves coinciden con la prioridad calculada? ¿Orden BST global
-  correcto? ¿Balance acorde a EXECUTION_MODE?
+- ¿Ningún evento posterior a CLOCK? ¿Ids únicos? ¿Cada "station" existe?
+- ¿Hay al menos una zona poblada y una no poblada, sin solapar interiores?
+- ¿El orden del arreglo "events" respeta EXECUTION_MODE?
 Si alguna comprobación falla, corrige antes de responder.
 """
 def generate_random_clock():

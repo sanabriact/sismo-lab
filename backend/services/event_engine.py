@@ -11,6 +11,11 @@ from backend.services.actions.action_stack_service import ActionStackError, Acti
 from backend.services.query.query_service import QueryService
 from backend.services.history.history_service import HistoryService
 from backend.services.parameters.scenario_parameters_service import ScenarioParametersService
+from backend.helpers.ai_reports import (
+    generate_deterministic_reports,
+    request_reports_from_llm,
+    validate_generated_report_shape,
+)
 
 class EventEngine:
     """
@@ -355,7 +360,7 @@ class EventEngine:
         return {"ok": True, "clock": payload, "currentTime": current_time.isoformat()}
 
     def load_scenario_from_text(self, content):
-        """Validate, build, activate and persist a text-based scenario."""
+        """Validate and build before persisting or activating a new scenario."""
         previous = self.observatory
         previous_snapshot = self._snapshot_for_load(previous)
         with self.lock:
@@ -374,6 +379,7 @@ class EventEngine:
                             f"Secciones opcionales inválidas: {error}"
                         ]) from error
                     self.service.metrics_service.refresh_derived_metrics(observatory)
+                if hasattr(self.service, "saveObservatory"):
                     self.service.saveObservatory(observatory)
             except Exception:
                 self.parameters_service.update(previous_parameters)
@@ -387,6 +393,175 @@ class EventEngine:
         self._record_loaded_scenario(observatory, previous_snapshot)
         return observatory
 
+    MAX_AI_REPORTS = 25
+
+    def pending_count(self):
+        """Return the number of reports currently waiting in the FIFO queue."""
+        with self.lock:
+            if self.observatory is None:
+                return 0
+            return len(self.observatory.getReportQueue().items)
+
+    def _build_generation_context(self):
+        """Build a detached snapshot used by the AI report generator."""
+        observatory = self.observatory
+        if observatory is None:
+            raise ValueError("no_scenario")
+
+        active = []
+        for event in observatory.getAVLTree().index.values():
+            event = event.getValue()
+            
+            data = event.toDict()
+            data["event_id"] = event.getKey()[2]
+            data.pop("key", None)
+            active.append(data)
+
+        archived = []
+        for event_id, event in observatory.getHistory().getArchived().items():
+            data = event.toDict()
+            data["event_id"] = event_id
+            data.pop("key", None)
+            archived.append(data)
+
+        deleted_ids = observatory.getHistory().getDeletedIds()
+        existing_ids = {item["event_id"] for item in active + archived}
+
+        return {
+            "clock": observatory.getClock().getCurrentTime(),
+            "station_ids": [station.getId() for station in observatory.getStations()],
+            "events": active + archived,
+            "deleted_ids": sorted(deleted_ids),
+            "used_ids": existing_ids.union(deleted_ids),
+        }
+
+    def _validate_report(self, report, context):
+        """Validate an AI candidate against the active scenario snapshot."""
+        try:
+            problem = validate_generated_report_shape(
+                report,
+                set(context["station_ids"]),
+                self.observatory.getClock(),
+            )
+        except (AttributeError, TypeError, ValueError) as error:
+            return str(error)
+
+        if problem:
+            return problem
+
+        known_ids = {event["event_id"] for event in context["events"]}
+        deleted_ids = set(context["deleted_ids"])
+        event_id = report["event_id"]
+        revision = report["revision"]
+
+        if event_id in deleted_ids:
+            return "El event_id pertenece a un evento eliminado"
+        if event_id not in known_ids and revision != 1:
+            return "Un evento inexistente solo puede crearse con revision 1"
+
+        return None
+
+    def generate_reports_from_ai(self, payload):
+        """Generate, validate and enqueue one AI batch through the normal report flow."""
+        payload = payload if isinstance(payload, dict) else {}
+        count = max(1, min(int(payload.get("count", 5)), self.MAX_AI_REPORTS))
+        seed = int(payload.get("seed", 42))
+
+        with self.lock:
+            if self.observatory is None:
+                return {"ok": False, "reports": [], "issues": ["no_scenario"]}
+            scenario_id = self.scenario_id
+            context = self._build_generation_context()
+
+        try:
+            candidates = request_reports_from_llm(
+                context,
+                count,
+                payload.get("scenario"),
+            )
+        except Exception as error:
+            candidates = []
+            llm_issue = str(error)
+        else:
+            llm_issue = None
+
+        valid = []
+        issues = []
+
+        if llm_issue:
+            issues.append({"source": "ai", "reason": llm_issue})
+
+        for report in candidates:
+            problem = self._validate_report(report, context)
+            if problem:
+                issues.append({"source": "ai", "reason": problem, "report": report})
+            else:
+                valid.append(report)
+
+        missing = count - len(valid)
+        fallback_count = 0
+        if missing > 0:
+            fallback = generate_deterministic_reports(context, missing, seed)
+            for report in fallback:
+                problem = self._validate_report(report, context)
+                if problem:
+                    issues.append({"source": "fallback", "reason": problem, "report": report})
+                else:
+                    valid.append(report)
+                    fallback_count += 1
+                if len(valid) >= count:
+                    break
+
+        valid = valid[:count]
+
+        if not valid:
+            return {
+                "ok": False,
+                "reports": [],
+                "issues": issues or ["No se pudieron generar reportes válidos"],
+            }
+
+        with self.lock:
+            if self.observatory is None or self.scenario_id != scenario_id:
+                return {
+                    "ok": False,
+                    "reports": [],
+                    "issues": ["El escenario cambió durante la generación"],
+                }
+
+            queue_reports = [
+                self._normalize_ai_report(report)
+                for report in valid
+            ]
+
+        enqueue_result = self.prepare_reports(queue_reports)
+        if not enqueue_result.get("ok", False):
+            return {
+                "ok": False,
+                "reports": [],
+                "issues": enqueue_result.get("issues", []) + issues,
+            }
+
+        return {
+            "ok": True,
+            "reports": valid,
+            "issues": issues,
+            "fallback_count": fallback_count,
+            "snapshot": enqueue_result.get("snapshot"),
+        }
+
+    def _normalize_ai_report(self, report):
+        """Convert an AI report into the exact payload expected by ReportQueueService."""
+        return {
+            "event_id": int(report["event_id"]),
+            "revision": int(report["revision"]),
+            "station": int(report["station"]),
+            "magnitude": report["magnitude"],
+            "depth": report["depth"],
+            "epicenter_x": report["epicenter_x"],
+            "epicenter_y": report["epicenter_y"],
+            "datetime": report["datetime"],
+        }
     def create_event_from_api(self, data):
         """Create a manual event while keeping the active state in the engine."""
         try:
@@ -706,8 +881,10 @@ class EventEngine:
                     "reason": "invalid_event_id"
                 }
 
-            # The event must still be active in the observatory.
+            # The event can still be active or archived in history.
             event = self.observatory.searchEventById(event_id)
+            if event is None:
+                event = self.observatory.getHistory().getArchived().get(event_id)
             if event is None:
                 return {
                     "ok": False,
@@ -777,7 +954,7 @@ class EventEngine:
                     # Always close the visual operation.
                     steps = self.observatory.finish_visual_operation()
 
-                if result.decision != "updated":
+                if result.decision not in ("updated", "reactivated"):
                     return {
                         "ok": False,
                         "reason": result.reason,
@@ -808,6 +985,7 @@ class EventEngine:
 
                 self.service.saveObservatory(self.observatory)
                 snapshot = self.report_queue_service.snapshot(self.observatory)
+                event = self.observatory.searchEventById(event_id)
 
                 response = {
                     "ok": True,

@@ -14,17 +14,18 @@ import type { TreeCharacteristicsResponse } from "../../../models/interfaces/tre
 const VisualizeTrees = () => {
     const [data, setData] = useState<SeismicObservatory | null>(null);
     const [error, setError] = useState<string | null>(null);
-    const [characteristics, setCharacteristics] = useState<TreeCharacteristicsResponse["trees"] | null>(null);
+    const [characteristics, setCharacteristics] = useState<TreeCharacteristicsResponse | null>(null);
     const [characteristicsLimit, setCharacteristicsLimit] = useState<number | null>(null);
     const [characteristicsError, setCharacteristicsError] = useState<string | null>(null);
     const [showCharacteristics, setShowCharacteristics] = useState(false);
     const [highlightedIds, setHighlightedIds] = useState<number[]>([]);
     const highlightedIdSet = useMemo(() => new Set(highlightedIds), [highlightedIds]);
+    const treeSummaries = characteristics?.tree_summaries;
 
     const refreshCharacteristics = useCallback(async () => {
         const result = await treeCharacteristicsService.get();
         if (result.ok && result.trees) {
-            setCharacteristics(result.trees);
+            setCharacteristics(result);
             setCharacteristicsLimit(result.limit ?? null);
             setCharacteristicsError(null);
         } else {
@@ -88,6 +89,21 @@ const VisualizeTrees = () => {
             ) : (
                 <>
                     <h1 className="text-3xl font-bold text-gray-900">Visualizar eventos</h1>
+                    {treeSummaries && (
+                        <div className="grid gap-4 md:grid-cols-2">
+                            {(["avl", "bst"] as const).map((name) => {
+                                const summary = treeSummaries[name];
+                                return (
+                                    <article key={name} className="rounded-xl border border-slate-200 bg-white p-4">
+                                        <h2 className="font-semibold text-slate-900">Resumen {name.toUpperCase()}</h2>
+                                        <p className="mt-2 text-sm text-slate-600">
+                                            Raíz: {summary.root_id ?? "árbol vacío"} · Altura: {summary.height} · Profundidad máxima: {summary.max_depth} · Hojas: {summary.leaves}
+                                        </p>
+                                    </article>
+                                );
+                            })}
+                        </div>
+                    )}
                     <div className="flex flex-wrap items-center gap-3">
                         <button
                             type="button"
@@ -108,7 +124,7 @@ const VisualizeTrees = () => {
                     <div>
                         <h2 className="mb-2 text-xl font-semibold">AVL</h2>
                         <div className="overflow-auto rounded-lg border border-gray-200">
-                            <TreeView data={data.avl_tree} type="avl" highlightIds={highlightedIdSet} showCharacteristics={showCharacteristics} characteristics={characteristics?.avl} />
+                            <TreeView data={data.avl_tree} type="avl" highlightIds={highlightedIdSet} showCharacteristics={showCharacteristics} characteristics={characteristics?.trees?.avl} />
                         </div>
                     </div>
                     <div>

@@ -12,6 +12,7 @@ from backend.services.reports.report_processor import ReportProcessor
 from backend.services.reports.report_queue_runner import ReportQueueRunner
 from backend.services.reports.report_queue_service import ReportQueueService
 from backend.services.event_engine import EventEngine
+from backend.services.seismic_observatory_service import SeismicObservatoryService
 from backend.utils.quantities import parseDatetime
 
 
@@ -40,6 +41,9 @@ class FakeService:
     def saveObservatory(self, _observatory):
         self.saved += 1
         return True
+
+    def build_manual_update_report(self, observatory, event_id, data):
+        return SeismicObservatoryService.build_manual_update_report(self, observatory, event_id, data)
 
 
 class FakeEngine(EventEngine):
@@ -113,13 +117,25 @@ def test_prepare_rejects_future_dates_and_extra_precision():
     assert runner.process_next()["decision"] == "rejected_invalid"
 
 
-def test_unknown_id_uses_report_revision():
+def test_unknown_id_requires_revision_one():
     observatory = make_observatory()
-    report = report_from(raw(7, revision=3), observatory)
-    result = ReportProcessor().apply(observatory, report)
+    result = ReportProcessor().apply(
+        observatory,
+        report_from(raw(7, revision=3), observatory),
+    )
+    assert result.decision == "rejected_invalid"
+    assert observatory.searchEventById(7) is None
+
+
+def test_unknown_id_revision_one_creates_event():
+    observatory = make_observatory()
+    result = ReportProcessor().apply(
+        observatory,
+        report_from(raw(7, revision=1), observatory),
+    )
     event = observatory.searchEventById(7)
     assert result.decision == "created"
-    assert event.getCurrentRevision() == 3
+    assert event.getCurrentRevision() == 1
     assert event.getAttentionStatus() == "pending"
 
 
@@ -203,7 +219,42 @@ def test_archived_event_can_be_reactivated():
     observatory.getHistory().addArchived(7, event)
     result = ReportProcessor().apply(observatory, report_from(raw(7, revision=2, magnitude=6.2, depth=15.0), observatory))
     assert result.decision == "reactivated"
-    assert observatory.searchEventById(7).getAttentionStatus() == "pending"
+    updated = observatory.searchEventById(7)
+    assert updated.getAttentionStatus() == "pending"
+    assert updated.getCurrentRevision() == 2
+    assert updated.getKey() == (3, 6.2, 7)
+    assert updated.getEventStatus() == "active"
+    assert observatory.getHistory().getArchived().get(7) is None
+
+
+def test_manual_edit_updates_archived_event_with_higher_revision():
+    observatory = make_observatory()
+    observatory.createEvent(7, 4.8, 70.0, 200.0, 200.0, parseDatetime("2026-09-07T08:00:00Z"), 1, 1)
+    archived = observatory.searchEventById(7)
+    observatory.getAVLTree().delete(7)
+    observatory.getBSTTree().delete(7)
+    archived.setEventStatus("archived")
+    observatory.getHistory().addArchived(7, archived)
+
+    engine = FakeEngine(observatory)
+    response = engine.update_manual_event({
+        "event_id": 7,
+        "magnitude": 6.2,
+        "depth": 15.0,
+        "epicenter_x": 220.0,
+        "epicenter_y": 210.0,
+        "datetime": "2026-09-07T08:30:00Z",
+        "station": 2,
+    })
+
+    updated = observatory.searchEventById(7)
+    assert response["ok"] is True
+    assert response["queued"] is False
+    assert updated is not None
+    assert updated.getCurrentRevision() == 2
+    assert updated.getKey() == (3, 6.2, 7)
+    assert updated.getEventStatus() == "active"
+    assert observatory.getHistory().getArchived().get(7) is None
 
 
 def test_main():

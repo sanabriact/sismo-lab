@@ -64,3 +64,46 @@ export interface ReportQueueEvent {
     rotations?: string[];
     remaining?: number;
 }
+
+export interface GenerateReportsPayload {
+    count: number;                 // cuántos reportes generar
+    scenario?: string;             // prompt/semilla opcional ("ráfaga con altas y antiguos")
+    stationIds?: number[];
+}
+
+export interface GenerateReportsResponse {
+    ok: boolean;
+    jobId?: string;
+    reason?: string;
+}
+
+export interface GeneratedReportEvent {
+    jobId: string;
+    report: ReportsPayload["reports"][number];
+    index: number;
+    total: number;
+}
+
+export interface AIReportStartPayload {
+    intervalSeconds?: number;
+    stationIds?: number[];
+    scenario?: string;
+    seed?: number;
+}
+
+export interface AIReportStatusResponse {
+    ok: boolean;
+    running: boolean;
+    alreadyRunning?: boolean;
+    reason?: string;
+}
+
+export interface AIReportStatusEvent {
+    running: boolean;
+}
+
+export interface AIGeneratedReportsEvent {
+    tick: number;
+    reports: ReportsPayload["reports"];
+    fallbackCount?: number;
+}
