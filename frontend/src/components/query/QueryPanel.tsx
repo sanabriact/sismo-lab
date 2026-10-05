@@ -1,16 +1,8 @@
 import { Search, SlidersHorizontal } from "lucide-react";
 import type { FormEvent } from "react";
-import type { ExpensiveAccessItem, QueryEvent, QueryRequest, QueryResponse, QueryType } from "../../models/interfaces/query/Query";
+import type { ExpensiveAccessItem, QueryEvent, QueryResponse, QueryType } from "../../models/interfaces/query/Query";
+import type { QueryPanelProps } from "../../models/interfaces/query/QueryPanelProps";
 
-interface QueryPanelProps {
-    queryType: QueryType;
-    values: Record<string, string>;
-    response: QueryResponse | null;
-    loading: boolean;
-    onTypeChange: (type: QueryType) => void;
-    onValueChange: (name: string, value: string) => void;
-    onSubmit: (request: QueryRequest) => void;
-}
 
 const labels: Record<QueryType, string> = {
     by_id: "Buscar por identificador",
@@ -21,6 +13,7 @@ const labels: Record<QueryType, string> = {
     tree_comparison: "Comparar AVL y BST",
 };
 
+// Event ID input field used by by_id query type
 const eventIdField = (values: Record<string, string>, onValueChange: QueryPanelProps["onValueChange"]) => (
     <label className="space-y-1 text-sm font-medium text-slate-700">
         Identificador del evento
@@ -35,6 +28,7 @@ const eventIdField = (values: Record<string, string>, onValueChange: QueryPanelP
     </label>
 );
 
+// Query builder panel with dynamic fields based on query type selection
 const QueryPanel = ({
     queryType,
     values,
@@ -44,6 +38,7 @@ const QueryPanel = ({
     onValueChange,
     onSubmit,
 }: QueryPanelProps) => {
+    // Converts form values to typed parameters, preserving dates as strings
     const submit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         const parameters: Record<string, number | string> = {};
@@ -66,7 +61,7 @@ const QueryPanel = ({
                     </div>
                 </div>
 
-                {/* The select is the only control that changes the query shape. */}
+                {/* Query type selector drives the entire form shape */}
                 <label className="mt-6 block space-y-1 text-sm font-medium text-slate-700">
                     Tipo de consulta
                     <select
@@ -78,7 +73,7 @@ const QueryPanel = ({
                     </select>
                 </label>
 
-                {/* Render only the fields required by the selected query. */}
+                {/* Conditional fields rendered based on selected query type */}
                 <div className="mt-4 space-y-4">
                     {queryType === "by_id" && eventIdField(values, onValueChange)}
                     {queryType === "top_pending" && (
@@ -120,14 +115,17 @@ const QueryPanel = ({
     );
 };
 
+// Type guard to distinguish ExpensiveAccessItem from QueryEvent
 const isExpensiveAccessItem = (item: QueryEvent | ExpensiveAccessItem): item is ExpensiveAccessItem => (
     "event" in item && item.event !== null && typeof item.depth === "number"
 );
 
+// Renders different response types: comparison, expensive access, or standard event list
 const QueryResults = ({ response }: { response: QueryResponse | null }) => {
     if (!response) return <div className="flex min-h-64 items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center text-sm text-slate-500">Los resultados aparecerán aquí.</div>;
     if (!response.ok) return <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-red-800"><p className="font-semibold">No se pudo ejecutar la consulta.</p><p className="mt-1 text-sm">{response.reason}</p></div>;
 
+    // AVL vs BST comparison view with multiple traversal orders
     if (response.comparison) {
         const orderLabels = {
             current_order: "Orden actual",
@@ -181,8 +179,9 @@ const QueryResults = ({ response }: { response: QueryResponse | null }) => {
         );
     }
 
-    // Single-event responses and list responses share the same compact table.
+    // Extract events from single or multi-event response
     const rawEvents = response.events ?? (response.event ? [response.event] : []);
+    // Expensive access items include depth and nodes_visited metadata
     const expensiveEvents = rawEvents.filter(isExpensiveAccessItem);
     if (expensiveEvents.length > 0) {
         return <div className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -194,6 +193,7 @@ const QueryResults = ({ response }: { response: QueryResponse | null }) => {
         </div>;
     }
 
+    // Standard event results table
     const events = rawEvents as QueryEvent[];
     return (
         <div className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">

@@ -1,15 +1,14 @@
+/*
+    Define all the required inputs, including icons and interfaces
+*/
+
 import { Link2, Search } from "lucide-react";
 import type { QueryEvent } from "../../models/interfaces/query/Query";
-import type { AssociationQueryResponse } from "../../models/interfaces/association/Association";
+import type { AssociationPanelProps } from "../../models/interfaces/association/AssociationPanelProps";
 
-interface AssociationPanelProps {
-    eventId: string;
-    response: AssociationQueryResponse | null;
-    loading: boolean;
-    onEventIdChange: (value: string) => void;
-    onSearch: () => void;
-}
-
+/* 
+    Here a list of events will be shown depending if events has elements or not.
+*/
 const EventList = ({ title, events }: { title: string; events: QueryEvent[] }) => (
     <div className="rounded-xl border border-slate-200 p-4">
         <h3 className="font-semibold text-slate-900">{title}</h3>
@@ -26,6 +25,9 @@ const EventList = ({ title, events }: { title: string; events: QueryEvent[] }) =
     </div>
 );
 
+/* 
+    Principal HTML view of the page
+*/
 const AssociationPanel = ({
     eventId,
     response,
@@ -34,6 +36,9 @@ const AssociationPanel = ({
     onSearch,
 }: AssociationPanelProps) => (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
+        {/* 
+            Consult events part
+        */}
         <div>
             <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
                 <div className="flex items-center gap-3">
@@ -44,7 +49,9 @@ const AssociationPanel = ({
                 <button type="button" onClick={onSearch} disabled={loading || !eventId} className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#0b6e69] px-4 py-2.5 font-semibold text-white hover:bg-[#095b57] disabled:cursor-not-allowed disabled:opacity-50"><Search size={18} />{loading ? "Consultando…" : "Consultar asociaciones"}</button>
             </div>
         </div>
-
+        {/* 
+            HTML result after processing the query
+        */}
         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             <h2 className="text-lg font-semibold text-slate-900">Resultado</h2>
             {!response && <p className="mt-6 text-sm text-slate-500">Consulta un evento para ver sus candidatos y referencias.</p>}

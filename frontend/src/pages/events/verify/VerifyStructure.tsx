@@ -2,11 +2,13 @@ import { useEffect, useState } from "react";
 import { structureAuditService } from "../../../services/socket/structureAuditService";
 import type { StructureAuditReport } from "../../../models/interfaces/realTime/StructureAudit";
 
+// Page displaying AVL tree structure audit results including balance, counters, and detected issues
 const VerifyStructure = () => {
     const [report, setReport] = useState<StructureAuditReport | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
+    // Requests audit from backend and updates state; error state shows retry button
     const verifyStructure = async () => {
         setLoading(true);
         setError(null);
@@ -24,6 +26,7 @@ const VerifyStructure = () => {
         setLoading(false);
     };
 
+    // Fetches audit report on mount
     useEffect(() => {
         verifyStructure();
     }, []);
@@ -75,6 +78,7 @@ const VerifyStructure = () => {
                 </button>
             </div>
 
+            {/* Audit result card: shows balance status and max imbalance */}
             <div
                 className={
                     audit.ok
@@ -93,6 +97,7 @@ const VerifyStructure = () => {
                 </p>
             </div>
 
+            {/* Key metrics: active events, height, leaves, counters */}
             <div className="grid gap-4 md:grid-cols-3">
                 <Indicator title="Eventos activos" value={indicators.tree.active_events} />
                 <Indicator title="Eventos históricos" value={counters.historical_events} />
@@ -102,6 +107,7 @@ const VerifyStructure = () => {
                 <Indicator title="Acceso costoso" value={counters.high_cost_access_events} />
             </div>
 
+            {/* Tree traversals: preorder, inorder, postorder, level-order */}
             <section className="rounded-lg border border-gray-200 p-5">
                 <h2 className="text-xl font-semibold">Recorridos</h2>
                 <Traversal title="Preorden" values={indicators.tree.preorder} />
@@ -110,6 +116,7 @@ const VerifyStructure = () => {
                 <Traversal title="Por niveles" values={indicators.tree.levels} />
             </section>
 
+            {/* AVL rotation cases: LL, RR, LR, RL and simple rotations */}
             <section className="rounded-lg border border-gray-200 p-5">
                 <h2 className="text-xl font-semibold">Contadores AVL</h2>
                 <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -122,6 +129,7 @@ const VerifyStructure = () => {
                 </div>
             </section>
 
+            {/* Event distribution by priority level (1, 2, 3) */}
             <section className="rounded-lg border border-gray-200 p-5">
                 <h2 className="text-xl font-semibold">Eventos por prioridad</h2>
                 <div className="mt-4 grid gap-4 sm:grid-cols-3">
@@ -131,6 +139,7 @@ const VerifyStructure = () => {
                 </div>
             </section>
 
+            {/* Expected imbalances (warnings) - informational */}
             {audit.warnings.length > 0 && (
                 <IssueList
                     title="Desbalances esperados"
@@ -139,6 +148,7 @@ const VerifyStructure = () => {
                 />
             )}
 
+            {/* Critical inconsistencies found during audit */}
             {audit.issues.length > 0 && (
                 <IssueList
                     title="Inconsistencias detectadas"
@@ -150,6 +160,7 @@ const VerifyStructure = () => {
     );
 };
 
+// Card displaying a single metric with title and value
 const Indicator = ({ title, value }: { title: string; value: number }) => {
     return (
         <article className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
@@ -159,6 +170,7 @@ const Indicator = ({ title, value }: { title: string; value: number }) => {
     );
 };
 
+// Displays tree traversal results as comma-separated node IDs or "empty tree" message
 const Traversal = ({ title, values }: { title: string; values: number[] }) => {
     return (
         <p className="mt-3 text-sm text-gray-700">
@@ -168,6 +180,7 @@ const Traversal = ({ title, values }: { title: string; values: number[] }) => {
     );
 };
 
+// Lists audit warnings or issues with optional event ID context
 const IssueList = ({
     title,
     items,

@@ -3,6 +3,7 @@ import { Activity, Clock3, MapPin, Save, Settings2 } from "lucide-react";
 import { parametersService } from "../../services/parameters/parametersService";
 import type { ScenarioParameters } from "../../models/interfaces/parameters/ScenarioParameters";
 
+// Scenario parameters: L (access depth), W (temporal window), R (max distance), T (archive threshold)
 const parameterCards: { key: keyof ScenarioParameters; title: string; unit: string; description: string; icon: typeof Activity }[] = [
     { key: "L", title: "Límite de acceso", unit: "niveles", description: "Profundidad límite para identificar accesos costosos en el árbol.", icon: Activity },
     { key: "W", title: "Ventana temporal", unit: "horas", description: "Antigüedad máxima entre eventos para proponer una asociación.", icon: Clock3 },
@@ -11,14 +12,17 @@ const parameterCards: { key: keyof ScenarioParameters; title: string; unit: stri
 ];
 type ParameterDraft = Record<keyof ScenarioParameters, string>;
 
+// Page for editing scenario parameters that control associations, queries, and archival logic
 const Parameters = () => {
     const [values, setValues] = useState<ParameterDraft | null>(null);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [message, setMessage] = useState<{ text: string; error: boolean } | null>(null);
+    // Validates draft values; used for real-time error display and submit button state
     const fieldErrors = values ? parametersService.validateDraft(values) : {};
     const hasErrors = Object.keys(fieldErrors).length > 0;
 
+    // Fetches current parameters on mount; cleanup flag prevents state update after unmount
     useEffect(() => {
         let active = true;
         void parametersService.get().then((result) => {
@@ -31,6 +35,7 @@ const Parameters = () => {
         return () => { active = false; };
     }, []);
 
+    // Validates draft, sends to backend, and updates local state with confirmed values
     const save = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         if (!values) return;
@@ -63,6 +68,7 @@ const Parameters = () => {
             </header>
 
             <form onSubmit={(event) => void save(event)} className="space-y-6">
+                {/* Parameter input cards: one per parameter with description, unit, and validation feedback */}
                 <div className="grid gap-5 sm:grid-cols-2">
                     {parameterCards.map(({ key, title, unit, description, icon: Icon }) => (
                         <article key={key} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
@@ -84,6 +90,7 @@ const Parameters = () => {
                         </article>
                     ))}
                 </div>
+                {/* Submit button with status message: shows loading, saving, or validation error state */}
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     {message ? <p role="status" className={`text-sm ${message.error ? "text-red-700" : "text-emerald-700"}`}>{message.text}</p> : <p className="text-sm text-slate-500">Los cambios se guardan en el escenario activo.</p>}
                     <button type="submit" disabled={loading || saving || !values || hasErrors} className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#0b6e69] px-5 py-3 font-semibold text-white shadow-sm transition hover:bg-[#095b57] disabled:cursor-not-allowed disabled:opacity-50"><Save size={18} />{loading ? "Cargando…" : saving ? "Guardando…" : "Guardar parámetros"}</button>

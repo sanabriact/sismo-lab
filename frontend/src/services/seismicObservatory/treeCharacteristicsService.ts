@@ -4,6 +4,7 @@ import type { TreeCharacteristicsResponse } from "../../models/interfaces/tree/N
 const API_URL = import.meta.env.VITE_API_URL;
 
 class TreeCharacteristicsService {
+    // Loads tree characteristics; falls back to a failure response on error
     async get(): Promise<TreeCharacteristicsResponse> {
         try {
             const response = await axios.get<TreeCharacteristicsResponse>(`${API_URL}/api/tree-characteristics`);

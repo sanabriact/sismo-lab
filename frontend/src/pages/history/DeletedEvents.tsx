@@ -5,10 +5,12 @@ import HistoricalEventsTable from "../../components/history/HistoricalEventsTabl
 import type { ArchivedEvent } from "../../models/interfaces/history/History";
 import { historyService } from "../../services/events/historyService";
 
+// Page displaying seismic events removed from AVL tree via direct deletion
 const DeletedEvents = () => {
     const [events, setEvents] = useState<ArchivedEvent[]>([]);
     const [message, setMessage] = useState("Cargando eventos eliminados...");
 
+    // Fetches deleted events on mount; message shows loading state or error
     useEffect(() => {
         void historyService.getDeletedEvents().then((response) => {
             if (!response.ok) {

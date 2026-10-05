@@ -32,7 +32,6 @@ const formatDateTime = (iso: string) => {
 const iconButton = "rounded-md p-1.5 text-gray-600 transition-colors hover:bg-gray-100";
 function EventsTable({
     data,
-    onSearch,
     onMarkChecked
 }: EventsTableProps) {
     const navigate = useNavigate();
@@ -198,7 +197,7 @@ function EventsTable({
                                     <td className="px-4 py-3">{event.attention_status.toLocaleUpperCase()}</td>
                                     <td className="px-4 py-3">
                                         <div className="flex items-center gap-1">
-                                            {/* Here is the edit button with its handler. */}
+                                            {/* Edit button with its handler. */}
                                             <button
                                                 type="button"
                                                 onClick={() => handleEdit(event)}
@@ -207,6 +206,7 @@ function EventsTable({
                                             >
                                                 <Pencil size={16} />
                                             </button>
+                                            {/* Mark as checked button with its handler*/}
                                             <button
                                                 type="button"
                                                 onClick={() => handleMarkChecked(event)}
@@ -215,6 +215,7 @@ function EventsTable({
                                             >
                                                 <Check size={16} />
                                             </button>
+                                            {/* Delete event button with its handler */}
                                             <button
                                                 type="button"
                                                 onClick={() => handleDeleteEvent(event)}

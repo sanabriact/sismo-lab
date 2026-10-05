@@ -2,6 +2,7 @@ import type { SeismicObservatory } from "../../models/interfaces/observatory/Sei
 import type { Node } from "../../models/interfaces/tree/Node";
 import type { SeismicEvent } from "../../models/interfaces/tree/SeismicEvent";
 
+// Flattens the tree into an event list (pre-order traversal)
 function eventsFromTree(node: Node | null): SeismicEvent[] {
     if (!node) return [];
 
@@ -12,6 +13,7 @@ function eventsFromTree(node: Node | null): SeismicEvent[] {
     ];
 }
 
+// Maps an observatory to the scenario map data (zones, stations, events)
 export function toScenarioMap(observatory: SeismicObservatory) {
     return {
         zones: observatory.zones,

@@ -7,6 +7,7 @@ interface ArchiveTreePanelProps {
     onArchived: () => Promise<void>;
 }
 
+// Maps server error codes to user-facing messages
 const reasonFor = (reason?: string) => {
     switch (reason) {
         case "nothing_to_archive":
@@ -27,12 +28,14 @@ const reasonFor = (reason?: string) => {
     }
 };
 
+// Panel for finding and archiving eligible subtrees from the AVL tree
 export function ArchiveTreePanel({ onPreviewChange, onArchived }: ArchiveTreePanelProps) {
     const [preview, setPreview] = useState<ArchiveTreePreview | null>(null);
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [notice, setNotice] = useState<string | null>(null);
 
+    // Requests server to find a candidate subtree eligible for archival
     const prepareArchive = async () => {
         setBusy(true);
         setError(null);
@@ -51,6 +54,7 @@ export function ArchiveTreePanel({ onPreviewChange, onArchived }: ArchiveTreePan
         onPreviewChange(response.tree.affected_ids);
     };
 
+    // Confirms or cancels the archive operation; onArchived callback runs after successful archive
     const decideArchive = async (archive: boolean) => {
         if (!preview) return;
         setBusy(true);
@@ -96,6 +100,7 @@ export function ArchiveTreePanel({ onPreviewChange, onArchived }: ArchiveTreePan
                 </button>
             </div>
 
+            {/* Preview of the selected candidate subtree with confirmation buttons */}
             {preview && (
                 <div className="space-y-3 rounded-lg border border-amber-300 bg-white p-4" role="status">
                     <p className="font-semibold text-gray-900">Candidato encontrado</p>

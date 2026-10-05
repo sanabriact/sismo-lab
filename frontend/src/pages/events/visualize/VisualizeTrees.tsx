@@ -11,6 +11,7 @@ import { actionStackService } from "../../../services/socket/actionStackService"
 import { treeCharacteristicsService } from "../../../services/seismicObservatory/treeCharacteristicsService";
 import type { TreeCharacteristicsResponse } from "../../../models/interfaces/tree/NodeCharacteristics";
 
+// Page displaying AVL and BST trees with real-time updates, characteristics, and archive panel
 const VisualizeTrees = () => {
     const [data, setData] = useState<SeismicObservatory | null>(null);
     const [error, setError] = useState<string | null>(null);
@@ -22,6 +23,7 @@ const VisualizeTrees = () => {
     const highlightedIdSet = useMemo(() => new Set(highlightedIds), [highlightedIds]);
     const treeSummaries = characteristics?.tree_summaries;
 
+    // Fetches node characteristics (height, depth, cost access flag) for both trees
     const refreshCharacteristics = useCallback(async () => {
         const result = await treeCharacteristicsService.get();
         if (result.ok && result.trees) {
@@ -34,6 +36,7 @@ const VisualizeTrees = () => {
         }
     }, []);
 
+    // Fetches observatory data (both tree structures) and characteristics
     const fetchData = useCallback(async () => {
         try {
             const observatory = await ObservatoryService.getObservatory();
@@ -50,16 +53,19 @@ const VisualizeTrees = () => {
         }
     }, [refreshCharacteristics]);
 
+    // Loads observatory on mount
     useEffect(() => {
         void fetchData();
     }, [fetchData]);
 
+    // Refetches after archive operations complete
     useEffect(() => {
         return actionStackService.subscribeToUpdates((payload) => {
             if (payload.actionType === "ARCHIVE_BRANCH") void fetchData();
         });
     }, [fetchData]);
 
+    // Applies incoming socket operations to both trees via patches; refreshes characteristics
     const applyOperation = useCallback((operation: TreeOperation) => {
         void refreshCharacteristics();
         setData((current) => {
@@ -74,8 +80,10 @@ const VisualizeTrees = () => {
         });
     }, [refreshCharacteristics]);
 
+    // Subscribes to real-time tree operations and applies them
     useObservatorySocket(applyOperation);
 
+    // Refetches all data after subtree archival
     const refreshAfterArchive = useCallback(async () => {
         await fetchData();
     }, [fetchData]);
@@ -89,6 +97,7 @@ const VisualizeTrees = () => {
             ) : (
                 <>
                     <h1 className="text-3xl font-bold text-gray-900">Visualizar eventos</h1>
+                    {/* Summary cards: root, height, max depth, leaves for each tree */}
                     {treeSummaries && (
                         <div className="grid gap-4 md:grid-cols-2">
                             {(["avl", "bst"] as const).map((name) => {
@@ -104,6 +113,7 @@ const VisualizeTrees = () => {
                             })}
                         </div>
                     )}
+                    {/* Toggle button for node characteristics display with explanatory text */}
                     <div className="flex flex-wrap items-center gap-3">
                         <button
                             type="button"
@@ -117,10 +127,12 @@ const VisualizeTrees = () => {
                         {showCharacteristics && <p className="text-sm text-slate-500">Altura en aristas (hoja = 0) · Profundidad desde la raíz (raíz = 0) · Acceso costoso: prioridad 3 y profundidad &gt; L ({characteristicsLimit ?? "…"}).</p>}
                         {characteristicsError && <p className="text-sm text-amber-700" role="status">{characteristicsError}</p>}
                     </div>
+                    {/* Archive subtree panel with highlight synchronization */}
                     <ArchiveTreePanel
                         onPreviewChange={setHighlightedIds}
                         onArchived={refreshAfterArchive}
                     />
+                    {/* AVL tree visualization with optional characteristics overlay */}
                     <div>
                         <h2 className="mb-2 text-xl font-semibold">AVL</h2>
                         <div className="max-h-[70vh] max-w-full overflow-auto rounded-lg border border-gray-200 bg-white">
@@ -129,6 +141,7 @@ const VisualizeTrees = () => {
                             </div>
                         </div>
                     </div>
+                    {/* BST tree visualization */}
                     <div>
                         <h2 className="mb-2 text-xl font-semibold">BST</h2>
                         <div className="max-h-[70vh] max-w-full overflow-auto rounded-lg border border-gray-200 bg-white">

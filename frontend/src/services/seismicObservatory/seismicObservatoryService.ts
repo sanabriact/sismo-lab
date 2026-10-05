@@ -18,6 +18,7 @@ class SeismicObservatoryService {
         }
     }
 
+    /* Asynchronous function for calling the API when updating the observatory is necessary. */
     async updateObservatory(data: SeismicEvent): Promise<boolean> {
         try {
             await axios.post<SeismicEvent>(`${API_URL}/api/seismic-observatory`);

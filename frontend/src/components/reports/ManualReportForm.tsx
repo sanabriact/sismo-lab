@@ -1,49 +1,36 @@
 import { useEffect, useState, type FormEvent } from "react";
-import type { Station } from "../../models/interfaces/station/Station";
-import type { ReportInput } from "../../models/interfaces/reports/Report";
-
-interface ManualReportFormProps {
-    stations: Station[];
-    simulationTime: string | null;
-    loading: boolean;
-    onSubmit: (report: ReportInput) => void;
-}
-
-interface FormValues {
-    event_id: string;
-    revision: string;
-    station: string;
-    magnitude: string;
-    depth: string;
-    epicenter_x: string;
-    epicenter_y: string;
-    datetime: string;
-}
+import type { FormValues } from "../../models/interfaces/reports/FormValues";
+import type { ManualReportFormProps } from "../../models/interfaces/reports/ManualReportFormProps";
 
 const emptyValues: FormValues = {
     event_id: "", revision: "1", station: "", magnitude: "", depth: "",
     epicenter_x: "", epicenter_y: "", datetime: "",
 };
 
+// Converts ISO datetime to local datetime-local input format, adjusting for timezone offset
 const toLocalInputValue = (iso: string) => {
     const value = new Date(iso);
     value.setSeconds(0, 0);
     return new Date(value.getTime() - value.getTimezoneOffset() * 60_000).toISOString().slice(0, 16);
 };
 
+// Form for manually creating and queueing seismic event reports
 const ManualReportForm = ({ stations, simulationTime, loading, onSubmit }: ManualReportFormProps) => {
     const [values, setValues] = useState<FormValues>(emptyValues);
 
+    // Auto-populate datetime field with simulation time on first render
     useEffect(() => {
         if (simulationTime && !values.datetime) {
             setValues((current) => ({ ...current, datetime: toLocalInputValue(simulationTime) }));
         }
     }, [simulationTime, values.datetime]);
 
+    // Updates a single field in the form state
     const update = (field: keyof FormValues, value: string) => {
         setValues((current) => ({ ...current, [field]: value }));
     };
 
+    // Converts string form values to typed ReportInput and sends to parent
     const submit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         onSubmit({
