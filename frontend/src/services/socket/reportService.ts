@@ -1,5 +1,8 @@
 import { socketService } from "./socketService";
 import type {
+    GenerateReportsPayload,
+    GenerateReportsResponse,
+    GeneratedReportEvent,
     ReportQueueEvent,
     ReportQueueSnapshot,
     ReportStepResponse,
@@ -48,6 +51,26 @@ class ReportService {
 
     getSnapshot(): Promise<ReportQueueSnapshot> {
         return this.emit<ReportQueueSnapshot>("reports:snapshot");
+    }
+
+    generateReports(payload: GenerateReportsPayload): Promise<GenerateReportsResponse> {
+        return this.emit<GenerateReportsResponse>("reports:generate", payload);
+    }
+
+    subscribeToGeneration(
+        onReport: (event: GeneratedReportEvent) => void, 
+        onDone: (jobId: string) => void, 
+        onError: (jobId: string, message: string) => void): () => void {
+            const socket = socketService.connect();
+            socket.on("reports:generated", onReport);
+            socket.on("reports:generation_done", onDone)
+            socket.on("reports:generation_error", onError);
+
+            return () => {
+                socket.off("reports:generated", onReport);
+                socket.off("reports:generation_done", onDone);
+                socket.off("reports:generation_error", onError);
+            };
     }
 
     subscribeToQueue(

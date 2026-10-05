@@ -1,17 +1,17 @@
 {
-    "scenario_id": "760fd49d-6319-41bd-a3c5-c960a7eb5570",
+    "scenario_id": "cdeaa334-22ad-459b-942d-cccfbd478b1c",
     "avl_tree": {
         "root": {
             "value": {
                 "key": [
                     3,
-                    4.9,
-                    4
+                    4.6,
+                    7
                 ],
-                "depth": 12.0,
-                "epicenter_x": 340.0,
-                "epicenter_y": 250.0,
-                "datetime": "2026-05-08T14:20:00+00:00",
+                "depth": 29.0,
+                "epicenter_x": 400.0,
+                "epicenter_y": 400.0,
+                "datetime": "2026-01-27T11:00:00+00:00",
                 "revision": 1,
                 "reporting_stations": [
                     3
@@ -25,21 +25,21 @@
             "left_child": {
                 "value": {
                     "key": [
-                        3,
-                        4.5,
+                        2,
+                        5.0,
                         5
                     ],
-                    "depth": 8.0,
-                    "epicenter_x": 720.0,
-                    "epicenter_y": 350.0,
-                    "datetime": "2026-05-09T09:10:00+00:00",
+                    "depth": 25.0,
+                    "epicenter_x": 600.0,
+                    "epicenter_y": 600.0,
+                    "datetime": "2026-01-26T07:10:00+00:00",
                     "revision": 1,
                     "reporting_stations": [
                         2
                     ],
                     "attention_status": "pending",
                     "event_status": "active",
-                    "populated_zone": true,
+                    "populated_zone": false,
                     "expensive_access": false
                 },
                 "height": 3,
@@ -48,15 +48,15 @@
                         "key": [
                             1,
                             3.8,
-                            3
+                            2
                         ],
-                        "depth": 5.5,
-                        "epicenter_x": 860.0,
-                        "epicenter_y": 450.0,
-                        "datetime": "2026-05-07T08:30:00+00:00",
+                        "depth": 100.0,
+                        "epicenter_x": 750.0,
+                        "epicenter_y": 250.0,
+                        "datetime": "2026-01-23T12:30:00+00:00",
                         "revision": 1,
                         "reporting_stations": [
-                            4
+                            2
                         ],
                         "attention_status": "pending",
                         "event_status": "active",
@@ -68,13 +68,13 @@
                         "value": {
                             "key": [
                                 1,
-                                2.9,
-                                19
+                                2.5,
+                                11
                             ],
-                            "depth": 60.0,
-                            "epicenter_x": 970.0,
-                            "epicenter_y": 120.0,
-                            "datetime": "2026-05-14T01:50:00+00:00",
+                            "depth": 300.0,
+                            "epicenter_x": 800.0,
+                            "epicenter_y": 800.0,
+                            "datetime": "2026-01-29T03:40:00+00:00",
                             "revision": 1,
                             "reporting_stations": [
                                 4
@@ -89,13 +89,13 @@
                             "value": {
                                 "key": [
                                     1,
-                                    2.3,
-                                    7
+                                    1.0,
+                                    18
                                 ],
-                                "depth": 50.0,
-                                "epicenter_x": 95.0,
-                                "epicenter_y": 90.0,
-                                "datetime": "2026-05-11T02:05:00+00:00",
+                                "depth": 400.0,
+                                "epicenter_x": 10.0,
+                                "epicenter_y": 10.0,
+                                "datetime": "2026-01-31T04:50:00+00:00",
                                 "revision": 1,
                                 "reporting_stations": [
                                     1
@@ -114,20 +114,20 @@
                             "value": {
                                 "key": [
                                     1,
-                                    3.5,
+                                    3.0,
                                     15
                                 ],
-                                "depth": 40.0,
-                                "epicenter_x": 880.0,
-                                "epicenter_y": 600.0,
-                                "datetime": "2026-05-13T12:45:00+00:00",
+                                "depth": 200.0,
+                                "epicenter_x": 100.0,
+                                "epicenter_y": 900.0,
+                                "datetime": "2026-01-31T01:10:00+00:00",
                                 "revision": 1,
                                 "reporting_stations": [
-                                    4
+                                    3
                                 ],
                                 "attention_status": "pending",
                                 "event_status": "active",
-                                "populated_zone": false,
+                                "populated_zone": true,
                                 "expensive_access": false
                             },
                             "height": 0,
@@ -140,17 +140,17 @@
                     "right_child": {
                         "value": {
                             "key": [
-                                1,
-                                4.2,
-                                9
+                                2,
+                                4.5,
+                                3
                             ],
-                            "depth": 15.0,
-                            "epicenter_x": 300.0,
-                            "epicenter_y": 250.0,
-                            "datetime": "2026-05-12T04:00:00+00:00",
+                            "depth": 50.0,
+                            "epicenter_x": 250.0,
+                            "epicenter_y": 750.0,
+                            "datetime": "2026-01-24T09:45:00+00:00",
                             "revision": 1,
                             "reporting_stations": [
-                                1
+                                3
                             ],
                             "attention_status": "pending",
                             "event_status": "active",
@@ -163,402 +163,15 @@
                                 "key": [
                                     1,
                                     4.0,
-                                    17
+                                    13
                                 ],
-                                "depth": 70.0,
-                                "epicenter_x": 350.0,
-                                "epicenter_y": 550.0,
-                                "datetime": "2026-05-13T18:10:00+00:00",
+                                "depth": 100.0,
+                                "epicenter_x": 550.0,
+                                "epicenter_y": 450.0,
+                                "datetime": "2026-01-30T02:20:00+00:00",
                                 "revision": 1,
                                 "reporting_stations": [
-                                    3
-                                ],
-                                "attention_status": "pending",
-                                "event_status": "active",
-                                "populated_zone": true,
-                                "expensive_access": false
-                            },
-                            "height": 0,
-                            "left_child": null,
-                            "right_child": null,
-                            "node_creation_time": null
-                        },
-                        "right_child": null,
-                        "node_creation_time": null
-                    },
-                    "node_creation_time": null
-                },
-                "right_child": {
-                    "value": {
-                        "key": [
-                            3,
-                            4.7,
-                            13
-                        ],
-                        "depth": 9.0,
-                        "epicenter_x": 660.0,
-                        "epicenter_y": 310.0,
-                        "datetime": "2026-05-13T06:30:00+00:00",
-                        "revision": 1,
-                        "reporting_stations": [
-                            2
-                        ],
-                        "attention_status": "pending",
-                        "event_status": "active",
-                        "populated_zone": true,
-                        "expensive_access": false
-                    },
-                    "height": 1,
-                    "left_child": {
-                        "value": {
-                            "key": [
-                                3,
-                                4.7,
-                                12
-                            ],
-                            "depth": 9.0,
-                            "epicenter_x": 650.0,
-                            "epicenter_y": 300.0,
-                            "datetime": "2026-05-13T05:00:00+00:00",
-                            "revision": 1,
-                            "reporting_stations": [
-                                2
-                            ],
-                            "attention_status": "pending",
-                            "event_status": "active",
-                            "populated_zone": true,
-                            "expensive_access": false
-                        },
-                        "height": 0,
-                        "left_child": null,
-                        "right_child": null,
-                        "node_creation_time": null
-                    },
-                    "right_child": {
-                        "value": {
-                            "key": [
-                                3,
-                                4.7,
-                                14
-                            ],
-                            "depth": 9.0,
-                            "epicenter_x": 670.0,
-                            "epicenter_y": 320.0,
-                            "datetime": "2026-05-13T08:00:00+00:00",
-                            "revision": 1,
-                            "reporting_stations": [
-                                2
-                            ],
-                            "attention_status": "pending",
-                            "event_status": "active",
-                            "populated_zone": true,
-                            "expensive_access": false
-                        },
-                        "height": 0,
-                        "left_child": null,
-                        "right_child": null,
-                        "node_creation_time": null
-                    },
-                    "node_creation_time": null
-                },
-                "node_creation_time": null
-            },
-            "right_child": {
-                "value": {
-                    "key": [
-                        3,
-                        5.2,
-                        1
-                    ],
-                    "depth": 10.0,
-                    "epicenter_x": 150.0,
-                    "epicenter_y": 400.0,
-                    "datetime": "2026-05-05T03:12:00+00:00",
-                    "revision": 1,
-                    "reporting_stations": [
-                        1
-                    ],
-                    "attention_status": "pending",
-                    "event_status": "active",
-                    "populated_zone": true,
-                    "expensive_access": false
-                },
-                "height": 3,
-                "left_child": {
-                    "value": {
-                        "key": [
-                            3,
-                            5.0,
-                            6
-                        ],
-                        "depth": 30.0,
-                        "epicenter_x": 410.0,
-                        "epicenter_y": 580.0,
-                        "datetime": "2026-05-10T16:55:00+00:00",
-                        "revision": 1,
-                        "reporting_stations": [
-                            3
-                        ],
-                        "attention_status": "pending",
-                        "event_status": "active",
-                        "populated_zone": true,
-                        "expensive_access": false
-                    },
-                    "height": 1,
-                    "left_child": null,
-                    "right_child": {
-                        "value": {
-                            "key": [
-                                3,
-                                5.0,
-                                8
-                            ],
-                            "depth": 20.0,
-                            "epicenter_x": 460.0,
-                            "epicenter_y": 560.0,
-                            "datetime": "2026-05-11T20:40:00+00:00",
-                            "revision": 1,
-                            "reporting_stations": [
-                                3
-                            ],
-                            "attention_status": "pending",
-                            "event_status": "active",
-                            "populated_zone": true,
-                            "expensive_access": false
-                        },
-                        "height": 0,
-                        "left_child": null,
-                        "right_child": null,
-                        "node_creation_time": null
-                    },
-                    "node_creation_time": null
-                },
-                "right_child": {
-                    "value": {
-                        "key": [
-                            3,
-                            5.8,
-                            10
-                        ],
-                        "depth": 18.0,
-                        "epicenter_x": 200.0,
-                        "epicenter_y": 420.0,
-                        "datetime": "2026-05-12T06:30:00+00:00",
-                        "revision": 1,
-                        "reporting_stations": [
-                            1
-                        ],
-                        "attention_status": "pending",
-                        "event_status": "active",
-                        "populated_zone": true,
-                        "expensive_access": false
-                    },
-                    "height": 2,
-                    "left_child": {
-                        "value": {
-                            "key": [
-                                3,
-                                5.3,
-                                11
-                            ],
-                            "depth": 22.0,
-                            "epicenter_x": 225.0,
-                            "epicenter_y": 440.0,
-                            "datetime": "2026-05-13T02:15:00+00:00",
-                            "revision": 1,
-                            "reporting_stations": [
-                                1
-                            ],
-                            "attention_status": "pending",
-                            "event_status": "active",
-                            "populated_zone": true,
-                            "expensive_access": false
-                        },
-                        "height": 1,
-                        "left_child": null,
-                        "right_child": {
-                            "value": {
-                                "key": [
-                                    3,
-                                    5.4,
-                                    18
-                                ],
-                                "depth": 28.0,
-                                "epicenter_x": 210.0,
-                                "epicenter_y": 430.0,
-                                "datetime": "2026-05-13T20:55:00+00:00",
-                                "revision": 1,
-                                "reporting_stations": [
-                                    1
-                                ],
-                                "attention_status": "pending",
-                                "event_status": "active",
-                                "populated_zone": true,
-                                "expensive_access": false
-                            },
-                            "height": 0,
-                            "left_child": null,
-                            "right_child": null,
-                            "node_creation_time": null
-                        },
-                        "node_creation_time": null
-                    },
-                    "right_child": {
-                        "value": {
-                            "key": [
-                                3,
-                                6.0,
-                                2
-                            ],
-                            "depth": 25.0,
-                            "epicenter_x": 520.0,
-                            "epicenter_y": 150.0,
-                            "datetime": "2026-05-06T11:45:00+00:00",
-                            "revision": 1,
-                            "reporting_stations": [
-                                2
-                            ],
-                            "attention_status": "pending",
-                            "event_status": "active",
-                            "populated_zone": true,
-                            "expensive_access": false
-                        },
-                        "height": 1,
-                        "left_child": null,
-                        "right_child": {
-                            "value": {
-                                "key": [
-                                    3,
-                                    6.2,
-                                    16
-                                ],
-                                "depth": 33.0,
-                                "epicenter_x": 150.0,
-                                "epicenter_y": 480.0,
-                                "datetime": "2026-05-13T15:20:00+00:00",
-                                "revision": 1,
-                                "reporting_stations": [
-                                    1
-                                ],
-                                "attention_status": "pending",
-                                "event_status": "active",
-                                "populated_zone": true,
-                                "expensive_access": false
-                            },
-                            "height": 0,
-                            "left_child": null,
-                            "right_child": null,
-                            "node_creation_time": null
-                        },
-                        "node_creation_time": null
-                    },
-                    "node_creation_time": null
-                },
-                "node_creation_time": null
-            },
-            "node_creation_time": null
-        }
-    },
-    "bst_tree": {
-        "root": {
-            "value": {
-                "key": [
-                    3,
-                    5.2,
-                    1
-                ],
-                "depth": 10.0,
-                "epicenter_x": 150.0,
-                "epicenter_y": 400.0,
-                "datetime": "2026-05-05T03:12:00+00:00",
-                "revision": 1,
-                "reporting_stations": [
-                    1
-                ],
-                "attention_status": "pending",
-                "event_status": "active",
-                "populated_zone": true,
-                "expensive_access": false
-            },
-            "height": 0,
-            "left_child": {
-                "value": {
-                    "key": [
-                        1,
-                        3.8,
-                        3
-                    ],
-                    "depth": 5.5,
-                    "epicenter_x": 860.0,
-                    "epicenter_y": 450.0,
-                    "datetime": "2026-05-07T08:30:00+00:00",
-                    "revision": 1,
-                    "reporting_stations": [
-                        4
-                    ],
-                    "attention_status": "pending",
-                    "event_status": "active",
-                    "populated_zone": false,
-                    "expensive_access": false
-                },
-                "height": 0,
-                "left_child": {
-                    "value": {
-                        "key": [
-                            1,
-                            2.3,
-                            7
-                        ],
-                        "depth": 50.0,
-                        "epicenter_x": 95.0,
-                        "epicenter_y": 90.0,
-                        "datetime": "2026-05-11T02:05:00+00:00",
-                        "revision": 1,
-                        "reporting_stations": [
-                            1
-                        ],
-                        "attention_status": "pending",
-                        "event_status": "active",
-                        "populated_zone": true,
-                        "expensive_access": false
-                    },
-                    "height": 0,
-                    "left_child": null,
-                    "right_child": {
-                        "value": {
-                            "key": [
-                                1,
-                                3.5,
-                                15
-                            ],
-                            "depth": 40.0,
-                            "epicenter_x": 880.0,
-                            "epicenter_y": 600.0,
-                            "datetime": "2026-05-13T12:45:00+00:00",
-                            "revision": 1,
-                            "reporting_stations": [
-                                4
-                            ],
-                            "attention_status": "pending",
-                            "event_status": "active",
-                            "populated_zone": false,
-                            "expensive_access": false
-                        },
-                        "height": 0,
-                        "left_child": {
-                            "value": {
-                                "key": [
-                                    1,
-                                    2.9,
-                                    19
-                                ],
-                                "depth": 60.0,
-                                "epicenter_x": 970.0,
-                                "epicenter_y": 120.0,
-                                "datetime": "2026-05-14T01:50:00+00:00",
-                                "revision": 1,
-                                "reporting_stations": [
-                                    4
+                                    2
                                 ],
                                 "attention_status": "pending",
                                 "event_status": "active",
@@ -578,205 +191,85 @@
                 "right_child": {
                     "value": {
                         "key": [
-                            3,
-                            4.9,
-                            4
+                            2,
+                            5.2,
+                            10
                         ],
-                        "depth": 12.0,
-                        "epicenter_x": 340.0,
-                        "epicenter_y": 250.0,
-                        "datetime": "2026-05-08T14:20:00+00:00",
+                        "depth": 45.0,
+                        "epicenter_x": 220.0,
+                        "epicenter_y": 210.0,
+                        "datetime": "2026-01-28T20:15:00+00:00",
                         "revision": 1,
                         "reporting_stations": [
-                            3
+                            2
                         ],
                         "attention_status": "pending",
                         "event_status": "active",
                         "populated_zone": true,
                         "expensive_access": false
                     },
-                    "height": 0,
+                    "height": 2,
                     "left_child": {
                         "value": {
                             "key": [
-                                3,
-                                4.5,
-                                5
+                                2,
+                                5.0,
+                                6
                             ],
-                            "depth": 8.0,
-                            "epicenter_x": 720.0,
-                            "epicenter_y": 350.0,
-                            "datetime": "2026-05-09T09:10:00+00:00",
+                            "depth": 25.0,
+                            "epicenter_x": 600.0,
+                            "epicenter_y": 600.0,
+                            "datetime": "2026-01-26T08:05:00+00:00",
                             "revision": 1,
                             "reporting_stations": [
-                                2
+                                1
                             ],
                             "attention_status": "pending",
                             "event_status": "active",
-                            "populated_zone": true,
+                            "populated_zone": false,
                             "expensive_access": false
                         },
                         "height": 0,
-                        "left_child": {
-                            "value": {
-                                "key": [
-                                    1,
-                                    4.2,
-                                    9
-                                ],
-                                "depth": 15.0,
-                                "epicenter_x": 300.0,
-                                "epicenter_y": 250.0,
-                                "datetime": "2026-05-12T04:00:00+00:00",
-                                "revision": 1,
-                                "reporting_stations": [
-                                    1
-                                ],
-                                "attention_status": "pending",
-                                "event_status": "active",
-                                "populated_zone": true,
-                                "expensive_access": false
-                            },
-                            "height": 0,
-                            "left_child": {
-                                "value": {
-                                    "key": [
-                                        1,
-                                        4.0,
-                                        17
-                                    ],
-                                    "depth": 70.0,
-                                    "epicenter_x": 350.0,
-                                    "epicenter_y": 550.0,
-                                    "datetime": "2026-05-13T18:10:00+00:00",
-                                    "revision": 1,
-                                    "reporting_stations": [
-                                        3
-                                    ],
-                                    "attention_status": "pending",
-                                    "event_status": "active",
-                                    "populated_zone": true,
-                                    "expensive_access": false
-                                },
-                                "height": 0,
-                                "left_child": null,
-                                "right_child": null,
-                                "node_creation_time": null
-                            },
-                            "right_child": null,
-                            "node_creation_time": null
-                        },
-                        "right_child": {
-                            "value": {
-                                "key": [
-                                    3,
-                                    4.7,
-                                    12
-                                ],
-                                "depth": 9.0,
-                                "epicenter_x": 650.0,
-                                "epicenter_y": 300.0,
-                                "datetime": "2026-05-13T05:00:00+00:00",
-                                "revision": 1,
-                                "reporting_stations": [
-                                    2
-                                ],
-                                "attention_status": "pending",
-                                "event_status": "active",
-                                "populated_zone": true,
-                                "expensive_access": false
-                            },
-                            "height": 0,
-                            "left_child": null,
-                            "right_child": {
-                                "value": {
-                                    "key": [
-                                        3,
-                                        4.7,
-                                        13
-                                    ],
-                                    "depth": 9.0,
-                                    "epicenter_x": 660.0,
-                                    "epicenter_y": 310.0,
-                                    "datetime": "2026-05-13T06:30:00+00:00",
-                                    "revision": 1,
-                                    "reporting_stations": [
-                                        2
-                                    ],
-                                    "attention_status": "pending",
-                                    "event_status": "active",
-                                    "populated_zone": true,
-                                    "expensive_access": false
-                                },
-                                "height": 0,
-                                "left_child": null,
-                                "right_child": {
-                                    "value": {
-                                        "key": [
-                                            3,
-                                            4.7,
-                                            14
-                                        ],
-                                        "depth": 9.0,
-                                        "epicenter_x": 670.0,
-                                        "epicenter_y": 320.0,
-                                        "datetime": "2026-05-13T08:00:00+00:00",
-                                        "revision": 1,
-                                        "reporting_stations": [
-                                            2
-                                        ],
-                                        "attention_status": "pending",
-                                        "event_status": "active",
-                                        "populated_zone": true,
-                                        "expensive_access": false
-                                    },
-                                    "height": 0,
-                                    "left_child": null,
-                                    "right_child": null,
-                                    "node_creation_time": null
-                                },
-                                "node_creation_time": null
-                            },
-                            "node_creation_time": null
-                        },
+                        "left_child": null,
+                        "right_child": null,
                         "node_creation_time": null
                     },
                     "right_child": {
                         "value": {
                             "key": [
-                                3,
-                                5.0,
-                                6
+                                2,
+                                5.8,
+                                9
                             ],
-                            "depth": 30.0,
-                            "epicenter_x": 410.0,
-                            "epicenter_y": 580.0,
-                            "datetime": "2026-05-10T16:55:00+00:00",
+                            "depth": 40.0,
+                            "epicenter_x": 200.0,
+                            "epicenter_y": 200.0,
+                            "datetime": "2026-01-28T05:00:00+00:00",
                             "revision": 1,
                             "reporting_stations": [
-                                3
+                                1
                             ],
                             "attention_status": "pending",
                             "event_status": "active",
                             "populated_zone": true,
                             "expensive_access": false
                         },
-                        "height": 0,
+                        "height": 1,
                         "left_child": null,
                         "right_child": {
                             "value": {
                                 "key": [
                                     3,
-                                    5.0,
-                                    8
+                                    4.5,
+                                    16
                                 ],
-                                "depth": 20.0,
-                                "epicenter_x": 460.0,
-                                "epicenter_y": 560.0,
-                                "datetime": "2026-05-11T20:40:00+00:00",
+                                "depth": 30.0,
+                                "epicenter_x": 500.0,
+                                "epicenter_y": 250.0,
+                                "datetime": "2026-01-31T03:00:00+00:00",
                                 "revision": 1,
                                 "reporting_stations": [
-                                    3
+                                    4
                                 ],
                                 "attention_status": "pending",
                                 "event_status": "active",
@@ -799,33 +292,33 @@
                     "key": [
                         3,
                         6.0,
-                        2
+                        4
                     ],
-                    "depth": 25.0,
-                    "epicenter_x": 520.0,
-                    "epicenter_y": 150.0,
-                    "datetime": "2026-05-06T11:45:00+00:00",
+                    "depth": 10.0,
+                    "epicenter_x": 500.0,
+                    "epicenter_y": 500.0,
+                    "datetime": "2026-01-25T14:20:00+00:00",
                     "revision": 1,
                     "reporting_stations": [
-                        2
+                        4
                     ],
                     "attention_status": "pending",
                     "event_status": "active",
                     "populated_zone": true,
                     "expensive_access": false
                 },
-                "height": 0,
+                "height": 2,
                 "left_child": {
                     "value": {
                         "key": [
                             3,
-                            5.8,
-                            10
+                            5.2,
+                            1
                         ],
-                        "depth": 18.0,
-                        "epicenter_x": 200.0,
-                        "epicenter_y": 420.0,
-                        "datetime": "2026-05-12T06:30:00+00:00",
+                        "depth": 20.0,
+                        "epicenter_x": 250.0,
+                        "epicenter_y": 250.0,
+                        "datetime": "2026-01-22T08:15:00+00:00",
                         "revision": 1,
                         "reporting_stations": [
                             1
@@ -835,18 +328,43 @@
                         "populated_zone": true,
                         "expensive_access": false
                     },
-                    "height": 0,
+                    "height": 1,
                     "left_child": {
                         "value": {
                             "key": [
                                 3,
-                                5.3,
-                                11
+                                4.6,
+                                8
                             ],
-                            "depth": 22.0,
-                            "epicenter_x": 225.0,
-                            "epicenter_y": 440.0,
-                            "datetime": "2026-05-13T02:15:00+00:00",
+                            "depth": 29.0,
+                            "epicenter_x": 401.0,
+                            "epicenter_y": 401.0,
+                            "datetime": "2026-01-27T12:30:00+00:00",
+                            "revision": 1,
+                            "reporting_stations": [
+                                4
+                            ],
+                            "attention_status": "pending",
+                            "event_status": "active",
+                            "populated_zone": true,
+                            "expensive_access": false
+                        },
+                        "height": 0,
+                        "left_child": null,
+                        "right_child": null,
+                        "node_creation_time": null
+                    },
+                    "right_child": {
+                        "value": {
+                            "key": [
+                                3,
+                                5.5,
+                                14
+                            ],
+                            "depth": 5.0,
+                            "epicenter_x": 250.0,
+                            "epicenter_y": 750.0,
+                            "datetime": "2026-01-30T14:45:00+00:00",
                             "revision": 1,
                             "reporting_stations": [
                                 1
@@ -858,47 +376,432 @@
                         },
                         "height": 0,
                         "left_child": null,
-                        "right_child": {
-                            "value": {
-                                "key": [
-                                    3,
-                                    5.4,
-                                    18
-                                ],
-                                "depth": 28.0,
-                                "epicenter_x": 210.0,
-                                "epicenter_y": 430.0,
-                                "datetime": "2026-05-13T20:55:00+00:00",
-                                "revision": 1,
-                                "reporting_stations": [
-                                    1
-                                ],
-                                "attention_status": "pending",
-                                "event_status": "active",
-                                "populated_zone": true,
-                                "expensive_access": false
-                            },
-                            "height": 0,
-                            "left_child": null,
-                            "right_child": null,
-                            "node_creation_time": null
-                        },
+                        "right_child": null,
                         "node_creation_time": null
                     },
-                    "right_child": null,
                     "node_creation_time": null
                 },
                 "right_child": {
                     "value": {
                         "key": [
                             3,
-                            6.2,
-                            16
+                            7.1,
+                            12
                         ],
-                        "depth": 33.0,
-                        "epicenter_x": 150.0,
-                        "epicenter_y": 480.0,
-                        "datetime": "2026-05-13T15:20:00+00:00",
+                        "depth": 15.0,
+                        "epicenter_x": 300.0,
+                        "epicenter_y": 300.0,
+                        "datetime": "2026-01-29T16:55:00+00:00",
+                        "revision": 1,
+                        "reporting_stations": [
+                            3
+                        ],
+                        "attention_status": "pending",
+                        "event_status": "active",
+                        "populated_zone": true,
+                        "expensive_access": false
+                    },
+                    "height": 1,
+                    "left_child": {
+                        "value": {
+                            "key": [
+                                3,
+                                6.5,
+                                17
+                            ],
+                            "depth": 12.0,
+                            "epicenter_x": 750.0,
+                            "epicenter_y": 750.0,
+                            "datetime": "2026-01-31T04:00:00+00:00",
+                            "revision": 1,
+                            "reporting_stations": [
+                                2
+                            ],
+                            "attention_status": "pending",
+                            "event_status": "active",
+                            "populated_zone": false,
+                            "expensive_access": false
+                        },
+                        "height": 0,
+                        "left_child": null,
+                        "right_child": null,
+                        "node_creation_time": null
+                    },
+                    "right_child": null,
+                    "node_creation_time": null
+                },
+                "node_creation_time": null
+            },
+            "node_creation_time": null
+        }
+    },
+    "bst_tree": {
+        "root": {
+            "value": {
+                "key": [
+                    3,
+                    5.2,
+                    1
+                ],
+                "depth": 20.0,
+                "epicenter_x": 250.0,
+                "epicenter_y": 250.0,
+                "datetime": "2026-01-22T08:15:00+00:00",
+                "revision": 1,
+                "reporting_stations": [
+                    1
+                ],
+                "attention_status": "pending",
+                "event_status": "active",
+                "populated_zone": true,
+                "expensive_access": false
+            },
+            "height": 0,
+            "left_child": {
+                "value": {
+                    "key": [
+                        1,
+                        3.8,
+                        2
+                    ],
+                    "depth": 100.0,
+                    "epicenter_x": 750.0,
+                    "epicenter_y": 250.0,
+                    "datetime": "2026-01-23T12:30:00+00:00",
+                    "revision": 1,
+                    "reporting_stations": [
+                        2
+                    ],
+                    "attention_status": "pending",
+                    "event_status": "active",
+                    "populated_zone": false,
+                    "expensive_access": false
+                },
+                "height": 0,
+                "left_child": {
+                    "value": {
+                        "key": [
+                            1,
+                            2.5,
+                            11
+                        ],
+                        "depth": 300.0,
+                        "epicenter_x": 800.0,
+                        "epicenter_y": 800.0,
+                        "datetime": "2026-01-29T03:40:00+00:00",
+                        "revision": 1,
+                        "reporting_stations": [
+                            4
+                        ],
+                        "attention_status": "pending",
+                        "event_status": "active",
+                        "populated_zone": false,
+                        "expensive_access": false
+                    },
+                    "height": 0,
+                    "left_child": {
+                        "value": {
+                            "key": [
+                                1,
+                                1.0,
+                                18
+                            ],
+                            "depth": 400.0,
+                            "epicenter_x": 10.0,
+                            "epicenter_y": 10.0,
+                            "datetime": "2026-01-31T04:50:00+00:00",
+                            "revision": 1,
+                            "reporting_stations": [
+                                1
+                            ],
+                            "attention_status": "pending",
+                            "event_status": "active",
+                            "populated_zone": true,
+                            "expensive_access": false
+                        },
+                        "height": 0,
+                        "left_child": null,
+                        "right_child": null,
+                        "node_creation_time": null
+                    },
+                    "right_child": {
+                        "value": {
+                            "key": [
+                                1,
+                                3.0,
+                                15
+                            ],
+                            "depth": 200.0,
+                            "epicenter_x": 100.0,
+                            "epicenter_y": 900.0,
+                            "datetime": "2026-01-31T01:10:00+00:00",
+                            "revision": 1,
+                            "reporting_stations": [
+                                3
+                            ],
+                            "attention_status": "pending",
+                            "event_status": "active",
+                            "populated_zone": true,
+                            "expensive_access": false
+                        },
+                        "height": 0,
+                        "left_child": null,
+                        "right_child": null,
+                        "node_creation_time": null
+                    },
+                    "node_creation_time": null
+                },
+                "right_child": {
+                    "value": {
+                        "key": [
+                            2,
+                            4.5,
+                            3
+                        ],
+                        "depth": 50.0,
+                        "epicenter_x": 250.0,
+                        "epicenter_y": 750.0,
+                        "datetime": "2026-01-24T09:45:00+00:00",
+                        "revision": 1,
+                        "reporting_stations": [
+                            3
+                        ],
+                        "attention_status": "pending",
+                        "event_status": "active",
+                        "populated_zone": true,
+                        "expensive_access": false
+                    },
+                    "height": 0,
+                    "left_child": {
+                        "value": {
+                            "key": [
+                                1,
+                                4.0,
+                                13
+                            ],
+                            "depth": 100.0,
+                            "epicenter_x": 550.0,
+                            "epicenter_y": 450.0,
+                            "datetime": "2026-01-30T02:20:00+00:00",
+                            "revision": 1,
+                            "reporting_stations": [
+                                2
+                            ],
+                            "attention_status": "pending",
+                            "event_status": "active",
+                            "populated_zone": false,
+                            "expensive_access": false
+                        },
+                        "height": 0,
+                        "left_child": null,
+                        "right_child": null,
+                        "node_creation_time": null
+                    },
+                    "right_child": {
+                        "value": {
+                            "key": [
+                                2,
+                                5.0,
+                                5
+                            ],
+                            "depth": 25.0,
+                            "epicenter_x": 600.0,
+                            "epicenter_y": 600.0,
+                            "datetime": "2026-01-26T07:10:00+00:00",
+                            "revision": 1,
+                            "reporting_stations": [
+                                2
+                            ],
+                            "attention_status": "pending",
+                            "event_status": "active",
+                            "populated_zone": false,
+                            "expensive_access": false
+                        },
+                        "height": 0,
+                        "left_child": null,
+                        "right_child": {
+                            "value": {
+                                "key": [
+                                    2,
+                                    5.0,
+                                    6
+                                ],
+                                "depth": 25.0,
+                                "epicenter_x": 600.0,
+                                "epicenter_y": 600.0,
+                                "datetime": "2026-01-26T08:05:00+00:00",
+                                "revision": 1,
+                                "reporting_stations": [
+                                    1
+                                ],
+                                "attention_status": "pending",
+                                "event_status": "active",
+                                "populated_zone": false,
+                                "expensive_access": false
+                            },
+                            "height": 0,
+                            "left_child": null,
+                            "right_child": {
+                                "value": {
+                                    "key": [
+                                        3,
+                                        4.6,
+                                        7
+                                    ],
+                                    "depth": 29.0,
+                                    "epicenter_x": 400.0,
+                                    "epicenter_y": 400.0,
+                                    "datetime": "2026-01-27T11:00:00+00:00",
+                                    "revision": 1,
+                                    "reporting_stations": [
+                                        3
+                                    ],
+                                    "attention_status": "pending",
+                                    "event_status": "active",
+                                    "populated_zone": true,
+                                    "expensive_access": false
+                                },
+                                "height": 0,
+                                "left_child": {
+                                    "value": {
+                                        "key": [
+                                            2,
+                                            5.8,
+                                            9
+                                        ],
+                                        "depth": 40.0,
+                                        "epicenter_x": 200.0,
+                                        "epicenter_y": 200.0,
+                                        "datetime": "2026-01-28T05:00:00+00:00",
+                                        "revision": 1,
+                                        "reporting_stations": [
+                                            1
+                                        ],
+                                        "attention_status": "pending",
+                                        "event_status": "active",
+                                        "populated_zone": true,
+                                        "expensive_access": false
+                                    },
+                                    "height": 0,
+                                    "left_child": {
+                                        "value": {
+                                            "key": [
+                                                2,
+                                                5.2,
+                                                10
+                                            ],
+                                            "depth": 45.0,
+                                            "epicenter_x": 220.0,
+                                            "epicenter_y": 210.0,
+                                            "datetime": "2026-01-28T20:15:00+00:00",
+                                            "revision": 1,
+                                            "reporting_stations": [
+                                                2
+                                            ],
+                                            "attention_status": "pending",
+                                            "event_status": "active",
+                                            "populated_zone": true,
+                                            "expensive_access": false
+                                        },
+                                        "height": 0,
+                                        "left_child": null,
+                                        "right_child": null,
+                                        "node_creation_time": null
+                                    },
+                                    "right_child": {
+                                        "value": {
+                                            "key": [
+                                                3,
+                                                4.5,
+                                                16
+                                            ],
+                                            "depth": 30.0,
+                                            "epicenter_x": 500.0,
+                                            "epicenter_y": 250.0,
+                                            "datetime": "2026-01-31T03:00:00+00:00",
+                                            "revision": 1,
+                                            "reporting_stations": [
+                                                4
+                                            ],
+                                            "attention_status": "pending",
+                                            "event_status": "active",
+                                            "populated_zone": true,
+                                            "expensive_access": false
+                                        },
+                                        "height": 0,
+                                        "left_child": null,
+                                        "right_child": null,
+                                        "node_creation_time": null
+                                    },
+                                    "node_creation_time": null
+                                },
+                                "right_child": {
+                                    "value": {
+                                        "key": [
+                                            3,
+                                            4.6,
+                                            8
+                                        ],
+                                        "depth": 29.0,
+                                        "epicenter_x": 401.0,
+                                        "epicenter_y": 401.0,
+                                        "datetime": "2026-01-27T12:30:00+00:00",
+                                        "revision": 1,
+                                        "reporting_stations": [
+                                            4
+                                        ],
+                                        "attention_status": "pending",
+                                        "event_status": "active",
+                                        "populated_zone": true,
+                                        "expensive_access": false
+                                    },
+                                    "height": 0,
+                                    "left_child": null,
+                                    "right_child": null,
+                                    "node_creation_time": null
+                                },
+                                "node_creation_time": null
+                            },
+                            "node_creation_time": null
+                        },
+                        "node_creation_time": null
+                    },
+                    "node_creation_time": null
+                },
+                "node_creation_time": null
+            },
+            "right_child": {
+                "value": {
+                    "key": [
+                        3,
+                        6.0,
+                        4
+                    ],
+                    "depth": 10.0,
+                    "epicenter_x": 500.0,
+                    "epicenter_y": 500.0,
+                    "datetime": "2026-01-25T14:20:00+00:00",
+                    "revision": 1,
+                    "reporting_stations": [
+                        4
+                    ],
+                    "attention_status": "pending",
+                    "event_status": "active",
+                    "populated_zone": true,
+                    "expensive_access": false
+                },
+                "height": 0,
+                "left_child": {
+                    "value": {
+                        "key": [
+                            3,
+                            5.5,
+                            14
+                        ],
+                        "depth": 5.0,
+                        "epicenter_x": 250.0,
+                        "epicenter_y": 750.0,
+                        "datetime": "2026-01-30T14:45:00+00:00",
                         "revision": 1,
                         "reporting_stations": [
                             1
@@ -913,6 +816,55 @@
                     "right_child": null,
                     "node_creation_time": null
                 },
+                "right_child": {
+                    "value": {
+                        "key": [
+                            3,
+                            7.1,
+                            12
+                        ],
+                        "depth": 15.0,
+                        "epicenter_x": 300.0,
+                        "epicenter_y": 300.0,
+                        "datetime": "2026-01-29T16:55:00+00:00",
+                        "revision": 1,
+                        "reporting_stations": [
+                            3
+                        ],
+                        "attention_status": "pending",
+                        "event_status": "active",
+                        "populated_zone": true,
+                        "expensive_access": false
+                    },
+                    "height": 0,
+                    "left_child": {
+                        "value": {
+                            "key": [
+                                3,
+                                6.5,
+                                17
+                            ],
+                            "depth": 12.0,
+                            "epicenter_x": 750.0,
+                            "epicenter_y": 750.0,
+                            "datetime": "2026-01-31T04:00:00+00:00",
+                            "revision": 1,
+                            "reporting_stations": [
+                                2
+                            ],
+                            "attention_status": "pending",
+                            "event_status": "active",
+                            "populated_zone": false,
+                            "expensive_access": false
+                        },
+                        "height": 0,
+                        "left_child": null,
+                        "right_child": null,
+                        "node_creation_time": null
+                    },
+                    "right_child": null,
+                    "node_creation_time": null
+                },
                 "node_creation_time": null
             },
             "node_creation_time": null
@@ -923,72 +875,63 @@
             "id": 1,
             "name": "Station Alpha",
             "x": 120.5,
-            "y": 850.0
+            "y": 340.2
         },
         {
             "id": 2,
-            "name": "Station Bravo",
-            "x": 750.0,
-            "y": 220.3
+            "name": "Station Beta",
+            "x": 845.7,
+            "y": 215.4
         },
         {
             "id": 3,
-            "name": "Station Charlie",
-            "x": 430.0,
-            "y": 610.5
+            "name": "Station Gamma",
+            "x": 410.0,
+            "y": 720.6
         },
         {
             "id": 4,
             "name": "Station Delta",
-            "x": 980.2,
-            "y": 95.0
+            "x": 670.3,
+            "y": 880.9
         }
     ],
     "zones": [
         {
             "id": 1,
-            "name": "North Valley",
+            "name": "Northwest",
             "x_min": 0.0,
-            "x_max": 300.0,
+            "x_max": 500.0,
             "y_min": 0.0,
             "y_max": 500.0,
             "is_populated": true
         },
         {
             "id": 2,
-            "name": "South Plains",
-            "x_min": 0.0,
-            "x_max": 500.0,
-            "y_min": 600.0,
-            "y_max": 1000.0,
+            "name": "Northeast",
+            "x_min": 500.0,
+            "x_max": 1000.0,
+            "y_min": 0.0,
+            "y_max": 500.0,
             "is_populated": false
         },
         {
             "id": 3,
-            "name": "East Ridge",
-            "x_min": 500.0,
-            "x_max": 800.0,
-            "y_min": 0.0,
-            "y_max": 400.0,
+            "name": "Southwest",
+            "x_min": 0.0,
+            "x_max": 500.0,
+            "y_min": 500.0,
+            "y_max": 1000.0,
             "is_populated": true
         },
         {
             "id": 4,
-            "name": "West Hills",
-            "x_min": 800.0,
+            "name": "Southeast",
+            "x_min": 500.0,
             "x_max": 1000.0,
-            "y_min": 400.0,
-            "y_max": 800.0,
+            "y_min": 500.0,
+            "y_max": 1000.0,
             "is_populated": false
-        },
-        {
-            "id": 5,
-            "name": "Central",
-            "x_min": 300.0,
-            "x_max": 500.0,
-            "y_min": 200.0,
-            "y_max": 600.0,
-            "is_populated": true
         }
     ],
     "history": {
@@ -1014,8 +957,7 @@
             15,
             16,
             17,
-            18,
-            19
+            18
         ]
     },
     "report_queue": {
@@ -1025,7 +967,7 @@
         "items": [
             {
                 "action_type": "LOAD_SCENARIO",
-                "datetime": "2026-05-14T02:15:24+00:00",
+                "datetime": "2026-01-31T04:58:56+00:00",
                 "before_snapshot": null,
                 "inverse_action": "CLEAR_SCENARIO",
                 "undo_data": {
@@ -1038,7 +980,7 @@
             },
             {
                 "action_type": "ADVANCE_CLOCK",
-                "datetime": "2026-05-17T00:15:33+00:00",
+                "datetime": "2026-02-03T12:59:15+00:00",
                 "before_snapshot": null,
                 "inverse_action": "RESTORE_CHANGE",
                 "undo_data": {
@@ -1050,80 +992,80 @@
                                 "current_time"
                             ],
                             "exists": true,
-                            "value": "2026-05-14T02:15:33Z"
+                            "value": "2026-01-31T04:59:15Z"
                         }
                     ]
                 },
                 "metadata": {
                     "metrics_before": {
                         "tree": {
-                            "active_events": 19,
+                            "active_events": 18,
                             "height": 4,
                             "leaves": 8,
                             "inorder": [
                                 [
                                     1,
-                                    2.3,
-                                    7
+                                    1.0,
+                                    18
                                 ],
                                 [
                                     1,
-                                    2.9,
-                                    19
+                                    2.5,
+                                    11
                                 ],
                                 [
                                     1,
-                                    3.5,
+                                    3.0,
                                     15
                                 ],
                                 [
                                     1,
                                     3.8,
-                                    3
+                                    2
                                 ],
                                 [
                                     1,
                                     4.0,
-                                    17
+                                    13
                                 ],
                                 [
-                                    1,
-                                    4.2,
+                                    2,
+                                    4.5,
+                                    3
+                                ],
+                                [
+                                    2,
+                                    5.0,
+                                    5
+                                ],
+                                [
+                                    2,
+                                    5.0,
+                                    6
+                                ],
+                                [
+                                    2,
+                                    5.2,
+                                    10
+                                ],
+                                [
+                                    2,
+                                    5.8,
                                     9
                                 ],
                                 [
                                     3,
                                     4.5,
-                                    5
+                                    16
                                 ],
                                 [
                                     3,
-                                    4.7,
-                                    12
+                                    4.6,
+                                    7
                                 ],
                                 [
                                     3,
-                                    4.7,
-                                    13
-                                ],
-                                [
-                                    3,
-                                    4.7,
-                                    14
-                                ],
-                                [
-                                    3,
-                                    4.9,
-                                    4
-                                ],
-                                [
-                                    3,
-                                    5.0,
-                                    6
-                                ],
-                                [
-                                    3,
-                                    5.0,
+                                    4.6,
                                     8
                                 ],
                                 [
@@ -1133,85 +1075,90 @@
                                 ],
                                 [
                                     3,
-                                    5.3,
-                                    11
-                                ],
-                                [
-                                    3,
-                                    5.4,
-                                    18
-                                ],
-                                [
-                                    3,
-                                    5.8,
-                                    10
+                                    5.5,
+                                    14
                                 ],
                                 [
                                     3,
                                     6.0,
-                                    2
+                                    4
                                 ],
                                 [
                                     3,
-                                    6.2,
-                                    16
+                                    6.5,
+                                    17
+                                ],
+                                [
+                                    3,
+                                    7.1,
+                                    12
                                 ]
                             ],
                             "preorder": [
                                 [
                                     3,
-                                    4.9,
-                                    4
+                                    4.6,
+                                    7
                                 ],
                                 [
-                                    3,
-                                    4.5,
+                                    2,
+                                    5.0,
                                     5
                                 ],
                                 [
                                     1,
                                     3.8,
+                                    2
+                                ],
+                                [
+                                    1,
+                                    2.5,
+                                    11
+                                ],
+                                [
+                                    1,
+                                    1.0,
+                                    18
+                                ],
+                                [
+                                    1,
+                                    3.0,
+                                    15
+                                ],
+                                [
+                                    2,
+                                    4.5,
                                     3
                                 ],
                                 [
                                     1,
-                                    2.9,
-                                    19
-                                ],
-                                [
-                                    1,
-                                    2.3,
-                                    7
-                                ],
-                                [
-                                    1,
-                                    3.5,
-                                    15
-                                ],
-                                [
-                                    1,
-                                    4.2,
-                                    9
-                                ],
-                                [
-                                    1,
                                     4.0,
-                                    17
-                                ],
-                                [
-                                    3,
-                                    4.7,
                                     13
                                 ],
                                 [
-                                    3,
-                                    4.7,
-                                    12
+                                    2,
+                                    5.2,
+                                    10
+                                ],
+                                [
+                                    2,
+                                    5.0,
+                                    6
+                                ],
+                                [
+                                    2,
+                                    5.8,
+                                    9
                                 ],
                                 [
                                     3,
-                                    4.7,
-                                    14
+                                    4.5,
+                                    16
+                                ],
+                                [
+                                    3,
+                                    6.0,
+                                    4
                                 ],
                                 [
                                     3,
@@ -1220,125 +1167,90 @@
                                 ],
                                 [
                                     3,
-                                    5.0,
-                                    6
-                                ],
-                                [
-                                    3,
-                                    5.0,
+                                    4.6,
                                     8
                                 ],
                                 [
                                     3,
-                                    5.8,
-                                    10
+                                    5.5,
+                                    14
                                 ],
                                 [
                                     3,
-                                    5.3,
-                                    11
+                                    7.1,
+                                    12
                                 ],
                                 [
                                     3,
-                                    5.4,
-                                    18
-                                ],
-                                [
-                                    3,
-                                    6.0,
-                                    2
-                                ],
-                                [
-                                    3,
-                                    6.2,
-                                    16
+                                    6.5,
+                                    17
                                 ]
                             ],
                             "postorder": [
                                 [
                                     1,
-                                    2.3,
-                                    7
+                                    1.0,
+                                    18
                                 ],
                                 [
                                     1,
-                                    3.5,
+                                    3.0,
                                     15
                                 ],
                                 [
                                     1,
-                                    2.9,
-                                    19
+                                    2.5,
+                                    11
                                 ],
                                 [
                                     1,
                                     4.0,
-                                    17
+                                    13
                                 ],
                                 [
-                                    1,
-                                    4.2,
-                                    9
+                                    2,
+                                    4.5,
+                                    3
                                 ],
                                 [
                                     1,
                                     3.8,
-                                    3
+                                    2
                                 ],
                                 [
-                                    3,
-                                    4.7,
-                                    12
-                                ],
-                                [
-                                    3,
-                                    4.7,
-                                    14
-                                ],
-                                [
-                                    3,
-                                    4.7,
-                                    13
-                                ],
-                                [
-                                    3,
-                                    4.5,
-                                    5
-                                ],
-                                [
-                                    3,
-                                    5.0,
-                                    8
-                                ],
-                                [
-                                    3,
+                                    2,
                                     5.0,
                                     6
                                 ],
                                 [
                                     3,
-                                    5.4,
-                                    18
-                                ],
-                                [
-                                    3,
-                                    5.3,
-                                    11
-                                ],
-                                [
-                                    3,
-                                    6.2,
+                                    4.5,
                                     16
                                 ],
                                 [
-                                    3,
-                                    6.0,
-                                    2
+                                    2,
+                                    5.8,
+                                    9
+                                ],
+                                [
+                                    2,
+                                    5.2,
+                                    10
+                                ],
+                                [
+                                    2,
+                                    5.0,
+                                    5
                                 ],
                                 [
                                     3,
-                                    5.8,
-                                    10
+                                    4.6,
+                                    8
+                                ],
+                                [
+                                    3,
+                                    5.5,
+                                    14
                                 ],
                                 [
                                     3,
@@ -1347,20 +1259,50 @@
                                 ],
                                 [
                                     3,
-                                    4.9,
+                                    6.5,
+                                    17
+                                ],
+                                [
+                                    3,
+                                    7.1,
+                                    12
+                                ],
+                                [
+                                    3,
+                                    6.0,
                                     4
+                                ],
+                                [
+                                    3,
+                                    4.6,
+                                    7
                                 ]
                             ],
                             "levels": [
                                 [
                                     3,
-                                    4.9,
-                                    4
+                                    4.6,
+                                    7
+                                ],
+                                [
+                                    2,
+                                    5.0,
+                                    5
                                 ],
                                 [
                                     3,
-                                    4.5,
-                                    5
+                                    6.0,
+                                    4
+                                ],
+                                [
+                                    1,
+                                    3.8,
+                                    2
+                                ],
+                                [
+                                    2,
+                                    5.2,
+                                    10
                                 ],
                                 [
                                     3,
@@ -1368,96 +1310,76 @@
                                     1
                                 ],
                                 [
+                                    3,
+                                    7.1,
+                                    12
+                                ],
+                                [
                                     1,
-                                    3.8,
+                                    2.5,
+                                    11
+                                ],
+                                [
+                                    2,
+                                    4.5,
                                     3
                                 ],
                                 [
-                                    3,
-                                    4.7,
-                                    13
-                                ],
-                                [
-                                    3,
+                                    2,
                                     5.0,
                                     6
                                 ],
                                 [
-                                    3,
+                                    2,
                                     5.8,
-                                    10
-                                ],
-                                [
-                                    1,
-                                    2.9,
-                                    19
-                                ],
-                                [
-                                    1,
-                                    4.2,
                                     9
                                 ],
                                 [
                                     3,
-                                    4.7,
-                                    12
-                                ],
-                                [
-                                    3,
-                                    4.7,
-                                    14
-                                ],
-                                [
-                                    3,
-                                    5.0,
+                                    4.6,
                                     8
                                 ],
                                 [
                                     3,
-                                    5.3,
-                                    11
+                                    5.5,
+                                    14
                                 ],
                                 [
                                     3,
-                                    6.0,
-                                    2
+                                    6.5,
+                                    17
                                 ],
                                 [
                                     1,
-                                    2.3,
-                                    7
+                                    1.0,
+                                    18
                                 ],
                                 [
                                     1,
-                                    3.5,
+                                    3.0,
                                     15
                                 ],
                                 [
                                     1,
                                     4.0,
-                                    17
+                                    13
                                 ],
                                 [
                                     3,
-                                    5.4,
-                                    18
-                                ],
-                                [
-                                    3,
-                                    6.2,
+                                    4.5,
                                     16
                                 ]
                             ]
                         },
                         "counters": {
-                            "active_events": 19,
+                            "active_events": 18,
                             "historical_events": 0,
                             "events_by_priority": {
-                                "1": 6,
-                                "2": 0,
-                                "3": 13
+                                "1": 5,
+                                "2": 5,
+                                "3": 8
                             },
-                            "pending_attention": 19,
+                            "pending_attention": 18,
                             "high_cost_access_events": 0,
                             "accepted_corrections": 0,
                             "discarded_reports": 0,
@@ -1465,82 +1387,82 @@
                             "mass_archives": 0,
                             "archived_events": 0,
                             "ll_cases": 2,
-                            "rr_cases": 2,
+                            "rr_cases": 3,
                             "rl_cases": 2,
                             "lr_cases": 1,
-                            "simple_left_rotations": 5,
+                            "simple_left_rotations": 6,
                             "simple_right_rotations": 5
                         }
                     },
                     "metrics_after": {
                         "tree": {
-                            "active_events": 19,
+                            "active_events": 18,
                             "height": 4,
                             "leaves": 8,
                             "inorder": [
                                 [
                                     1,
-                                    2.3,
-                                    7
+                                    1.0,
+                                    18
                                 ],
                                 [
                                     1,
-                                    2.9,
-                                    19
+                                    2.5,
+                                    11
                                 ],
                                 [
                                     1,
-                                    3.5,
+                                    3.0,
                                     15
                                 ],
                                 [
                                     1,
                                     3.8,
-                                    3
+                                    2
                                 ],
                                 [
                                     1,
                                     4.0,
-                                    17
+                                    13
                                 ],
                                 [
-                                    1,
-                                    4.2,
+                                    2,
+                                    4.5,
+                                    3
+                                ],
+                                [
+                                    2,
+                                    5.0,
+                                    5
+                                ],
+                                [
+                                    2,
+                                    5.0,
+                                    6
+                                ],
+                                [
+                                    2,
+                                    5.2,
+                                    10
+                                ],
+                                [
+                                    2,
+                                    5.8,
                                     9
                                 ],
                                 [
                                     3,
                                     4.5,
-                                    5
+                                    16
                                 ],
                                 [
                                     3,
-                                    4.7,
-                                    12
+                                    4.6,
+                                    7
                                 ],
                                 [
                                     3,
-                                    4.7,
-                                    13
-                                ],
-                                [
-                                    3,
-                                    4.7,
-                                    14
-                                ],
-                                [
-                                    3,
-                                    4.9,
-                                    4
-                                ],
-                                [
-                                    3,
-                                    5.0,
-                                    6
-                                ],
-                                [
-                                    3,
-                                    5.0,
+                                    4.6,
                                     8
                                 ],
                                 [
@@ -1550,85 +1472,90 @@
                                 ],
                                 [
                                     3,
-                                    5.3,
-                                    11
-                                ],
-                                [
-                                    3,
-                                    5.4,
-                                    18
-                                ],
-                                [
-                                    3,
-                                    5.8,
-                                    10
+                                    5.5,
+                                    14
                                 ],
                                 [
                                     3,
                                     6.0,
-                                    2
+                                    4
                                 ],
                                 [
                                     3,
-                                    6.2,
-                                    16
+                                    6.5,
+                                    17
+                                ],
+                                [
+                                    3,
+                                    7.1,
+                                    12
                                 ]
                             ],
                             "preorder": [
                                 [
                                     3,
-                                    4.9,
-                                    4
+                                    4.6,
+                                    7
                                 ],
                                 [
-                                    3,
-                                    4.5,
+                                    2,
+                                    5.0,
                                     5
                                 ],
                                 [
                                     1,
                                     3.8,
+                                    2
+                                ],
+                                [
+                                    1,
+                                    2.5,
+                                    11
+                                ],
+                                [
+                                    1,
+                                    1.0,
+                                    18
+                                ],
+                                [
+                                    1,
+                                    3.0,
+                                    15
+                                ],
+                                [
+                                    2,
+                                    4.5,
                                     3
                                 ],
                                 [
                                     1,
-                                    2.9,
-                                    19
-                                ],
-                                [
-                                    1,
-                                    2.3,
-                                    7
-                                ],
-                                [
-                                    1,
-                                    3.5,
-                                    15
-                                ],
-                                [
-                                    1,
-                                    4.2,
-                                    9
-                                ],
-                                [
-                                    1,
                                     4.0,
-                                    17
-                                ],
-                                [
-                                    3,
-                                    4.7,
                                     13
                                 ],
                                 [
-                                    3,
-                                    4.7,
-                                    12
+                                    2,
+                                    5.2,
+                                    10
+                                ],
+                                [
+                                    2,
+                                    5.0,
+                                    6
+                                ],
+                                [
+                                    2,
+                                    5.8,
+                                    9
                                 ],
                                 [
                                     3,
-                                    4.7,
-                                    14
+                                    4.5,
+                                    16
+                                ],
+                                [
+                                    3,
+                                    6.0,
+                                    4
                                 ],
                                 [
                                     3,
@@ -1637,125 +1564,90 @@
                                 ],
                                 [
                                     3,
-                                    5.0,
-                                    6
-                                ],
-                                [
-                                    3,
-                                    5.0,
+                                    4.6,
                                     8
                                 ],
                                 [
                                     3,
-                                    5.8,
-                                    10
+                                    5.5,
+                                    14
                                 ],
                                 [
                                     3,
-                                    5.3,
-                                    11
+                                    7.1,
+                                    12
                                 ],
                                 [
                                     3,
-                                    5.4,
-                                    18
-                                ],
-                                [
-                                    3,
-                                    6.0,
-                                    2
-                                ],
-                                [
-                                    3,
-                                    6.2,
-                                    16
+                                    6.5,
+                                    17
                                 ]
                             ],
                             "postorder": [
                                 [
                                     1,
-                                    2.3,
-                                    7
+                                    1.0,
+                                    18
                                 ],
                                 [
                                     1,
-                                    3.5,
+                                    3.0,
                                     15
                                 ],
                                 [
                                     1,
-                                    2.9,
-                                    19
+                                    2.5,
+                                    11
                                 ],
                                 [
                                     1,
                                     4.0,
-                                    17
+                                    13
                                 ],
                                 [
-                                    1,
-                                    4.2,
-                                    9
+                                    2,
+                                    4.5,
+                                    3
                                 ],
                                 [
                                     1,
                                     3.8,
-                                    3
+                                    2
                                 ],
                                 [
-                                    3,
-                                    4.7,
-                                    12
-                                ],
-                                [
-                                    3,
-                                    4.7,
-                                    14
-                                ],
-                                [
-                                    3,
-                                    4.7,
-                                    13
-                                ],
-                                [
-                                    3,
-                                    4.5,
-                                    5
-                                ],
-                                [
-                                    3,
-                                    5.0,
-                                    8
-                                ],
-                                [
-                                    3,
+                                    2,
                                     5.0,
                                     6
                                 ],
                                 [
                                     3,
-                                    5.4,
-                                    18
-                                ],
-                                [
-                                    3,
-                                    5.3,
-                                    11
-                                ],
-                                [
-                                    3,
-                                    6.2,
+                                    4.5,
                                     16
                                 ],
                                 [
-                                    3,
-                                    6.0,
-                                    2
+                                    2,
+                                    5.8,
+                                    9
+                                ],
+                                [
+                                    2,
+                                    5.2,
+                                    10
+                                ],
+                                [
+                                    2,
+                                    5.0,
+                                    5
                                 ],
                                 [
                                     3,
-                                    5.8,
-                                    10
+                                    4.6,
+                                    8
+                                ],
+                                [
+                                    3,
+                                    5.5,
+                                    14
                                 ],
                                 [
                                     3,
@@ -1764,20 +1656,50 @@
                                 ],
                                 [
                                     3,
-                                    4.9,
+                                    6.5,
+                                    17
+                                ],
+                                [
+                                    3,
+                                    7.1,
+                                    12
+                                ],
+                                [
+                                    3,
+                                    6.0,
                                     4
+                                ],
+                                [
+                                    3,
+                                    4.6,
+                                    7
                                 ]
                             ],
                             "levels": [
                                 [
                                     3,
-                                    4.9,
-                                    4
+                                    4.6,
+                                    7
+                                ],
+                                [
+                                    2,
+                                    5.0,
+                                    5
                                 ],
                                 [
                                     3,
-                                    4.5,
-                                    5
+                                    6.0,
+                                    4
+                                ],
+                                [
+                                    1,
+                                    3.8,
+                                    2
+                                ],
+                                [
+                                    2,
+                                    5.2,
+                                    10
                                 ],
                                 [
                                     3,
@@ -1785,96 +1707,76 @@
                                     1
                                 ],
                                 [
+                                    3,
+                                    7.1,
+                                    12
+                                ],
+                                [
                                     1,
-                                    3.8,
+                                    2.5,
+                                    11
+                                ],
+                                [
+                                    2,
+                                    4.5,
                                     3
                                 ],
                                 [
-                                    3,
-                                    4.7,
-                                    13
-                                ],
-                                [
-                                    3,
+                                    2,
                                     5.0,
                                     6
                                 ],
                                 [
-                                    3,
+                                    2,
                                     5.8,
-                                    10
-                                ],
-                                [
-                                    1,
-                                    2.9,
-                                    19
-                                ],
-                                [
-                                    1,
-                                    4.2,
                                     9
                                 ],
                                 [
                                     3,
-                                    4.7,
-                                    12
-                                ],
-                                [
-                                    3,
-                                    4.7,
-                                    14
-                                ],
-                                [
-                                    3,
-                                    5.0,
+                                    4.6,
                                     8
                                 ],
                                 [
                                     3,
-                                    5.3,
-                                    11
+                                    5.5,
+                                    14
                                 ],
                                 [
                                     3,
-                                    6.0,
-                                    2
+                                    6.5,
+                                    17
                                 ],
                                 [
                                     1,
-                                    2.3,
-                                    7
+                                    1.0,
+                                    18
                                 ],
                                 [
                                     1,
-                                    3.5,
+                                    3.0,
                                     15
                                 ],
                                 [
                                     1,
                                     4.0,
-                                    17
+                                    13
                                 ],
                                 [
                                     3,
-                                    5.4,
-                                    18
-                                ],
-                                [
-                                    3,
-                                    6.2,
+                                    4.5,
                                     16
                                 ]
                             ]
                         },
                         "counters": {
-                            "active_events": 19,
+                            "active_events": 18,
                             "historical_events": 0,
                             "events_by_priority": {
-                                "1": 6,
-                                "2": 0,
-                                "3": 13
+                                "1": 5,
+                                "2": 5,
+                                "3": 8
                             },
-                            "pending_attention": 19,
+                            "pending_attention": 18,
                             "high_cost_access_events": 0,
                             "accepted_corrections": 0,
                             "discarded_reports": 0,
@@ -1882,10 +1784,10 @@
                             "mass_archives": 0,
                             "archived_events": 0,
                             "ll_cases": 2,
-                            "rr_cases": 2,
+                            "rr_cases": 3,
                             "rl_cases": 2,
                             "lr_cases": 1,
-                            "simple_left_rotations": 5,
+                            "simple_left_rotations": 6,
                             "simple_right_rotations": 5
                         }
                     },
@@ -1914,896 +1816,14 @@
                         }
                     },
                     "details": {
-                        "hours": 70.0
-                    }
-                }
-            },
-            {
-                "action_type": "ADVANCE_CLOCK",
-                "datetime": "2026-06-15T04:15:43+00:00",
-                "before_snapshot": null,
-                "inverse_action": "RESTORE_CHANGE",
-                "undo_data": {
-                    "version": 1,
-                    "changes": [
-                        {
-                            "path": [
-                                "clock",
-                                "current_time"
-                            ],
-                            "exists": true,
-                            "value": "2026-05-17T00:15:43Z"
-                        }
-                    ]
-                },
-                "metadata": {
-                    "metrics_before": {
-                        "tree": {
-                            "active_events": 19,
-                            "height": 4,
-                            "leaves": 8,
-                            "inorder": [
-                                [
-                                    1,
-                                    2.3,
-                                    7
-                                ],
-                                [
-                                    1,
-                                    2.9,
-                                    19
-                                ],
-                                [
-                                    1,
-                                    3.5,
-                                    15
-                                ],
-                                [
-                                    1,
-                                    3.8,
-                                    3
-                                ],
-                                [
-                                    1,
-                                    4.0,
-                                    17
-                                ],
-                                [
-                                    1,
-                                    4.2,
-                                    9
-                                ],
-                                [
-                                    3,
-                                    4.5,
-                                    5
-                                ],
-                                [
-                                    3,
-                                    4.7,
-                                    12
-                                ],
-                                [
-                                    3,
-                                    4.7,
-                                    13
-                                ],
-                                [
-                                    3,
-                                    4.7,
-                                    14
-                                ],
-                                [
-                                    3,
-                                    4.9,
-                                    4
-                                ],
-                                [
-                                    3,
-                                    5.0,
-                                    6
-                                ],
-                                [
-                                    3,
-                                    5.0,
-                                    8
-                                ],
-                                [
-                                    3,
-                                    5.2,
-                                    1
-                                ],
-                                [
-                                    3,
-                                    5.3,
-                                    11
-                                ],
-                                [
-                                    3,
-                                    5.4,
-                                    18
-                                ],
-                                [
-                                    3,
-                                    5.8,
-                                    10
-                                ],
-                                [
-                                    3,
-                                    6.0,
-                                    2
-                                ],
-                                [
-                                    3,
-                                    6.2,
-                                    16
-                                ]
-                            ],
-                            "preorder": [
-                                [
-                                    3,
-                                    4.9,
-                                    4
-                                ],
-                                [
-                                    3,
-                                    4.5,
-                                    5
-                                ],
-                                [
-                                    1,
-                                    3.8,
-                                    3
-                                ],
-                                [
-                                    1,
-                                    2.9,
-                                    19
-                                ],
-                                [
-                                    1,
-                                    2.3,
-                                    7
-                                ],
-                                [
-                                    1,
-                                    3.5,
-                                    15
-                                ],
-                                [
-                                    1,
-                                    4.2,
-                                    9
-                                ],
-                                [
-                                    1,
-                                    4.0,
-                                    17
-                                ],
-                                [
-                                    3,
-                                    4.7,
-                                    13
-                                ],
-                                [
-                                    3,
-                                    4.7,
-                                    12
-                                ],
-                                [
-                                    3,
-                                    4.7,
-                                    14
-                                ],
-                                [
-                                    3,
-                                    5.2,
-                                    1
-                                ],
-                                [
-                                    3,
-                                    5.0,
-                                    6
-                                ],
-                                [
-                                    3,
-                                    5.0,
-                                    8
-                                ],
-                                [
-                                    3,
-                                    5.8,
-                                    10
-                                ],
-                                [
-                                    3,
-                                    5.3,
-                                    11
-                                ],
-                                [
-                                    3,
-                                    5.4,
-                                    18
-                                ],
-                                [
-                                    3,
-                                    6.0,
-                                    2
-                                ],
-                                [
-                                    3,
-                                    6.2,
-                                    16
-                                ]
-                            ],
-                            "postorder": [
-                                [
-                                    1,
-                                    2.3,
-                                    7
-                                ],
-                                [
-                                    1,
-                                    3.5,
-                                    15
-                                ],
-                                [
-                                    1,
-                                    2.9,
-                                    19
-                                ],
-                                [
-                                    1,
-                                    4.0,
-                                    17
-                                ],
-                                [
-                                    1,
-                                    4.2,
-                                    9
-                                ],
-                                [
-                                    1,
-                                    3.8,
-                                    3
-                                ],
-                                [
-                                    3,
-                                    4.7,
-                                    12
-                                ],
-                                [
-                                    3,
-                                    4.7,
-                                    14
-                                ],
-                                [
-                                    3,
-                                    4.7,
-                                    13
-                                ],
-                                [
-                                    3,
-                                    4.5,
-                                    5
-                                ],
-                                [
-                                    3,
-                                    5.0,
-                                    8
-                                ],
-                                [
-                                    3,
-                                    5.0,
-                                    6
-                                ],
-                                [
-                                    3,
-                                    5.4,
-                                    18
-                                ],
-                                [
-                                    3,
-                                    5.3,
-                                    11
-                                ],
-                                [
-                                    3,
-                                    6.2,
-                                    16
-                                ],
-                                [
-                                    3,
-                                    6.0,
-                                    2
-                                ],
-                                [
-                                    3,
-                                    5.8,
-                                    10
-                                ],
-                                [
-                                    3,
-                                    5.2,
-                                    1
-                                ],
-                                [
-                                    3,
-                                    4.9,
-                                    4
-                                ]
-                            ],
-                            "levels": [
-                                [
-                                    3,
-                                    4.9,
-                                    4
-                                ],
-                                [
-                                    3,
-                                    4.5,
-                                    5
-                                ],
-                                [
-                                    3,
-                                    5.2,
-                                    1
-                                ],
-                                [
-                                    1,
-                                    3.8,
-                                    3
-                                ],
-                                [
-                                    3,
-                                    4.7,
-                                    13
-                                ],
-                                [
-                                    3,
-                                    5.0,
-                                    6
-                                ],
-                                [
-                                    3,
-                                    5.8,
-                                    10
-                                ],
-                                [
-                                    1,
-                                    2.9,
-                                    19
-                                ],
-                                [
-                                    1,
-                                    4.2,
-                                    9
-                                ],
-                                [
-                                    3,
-                                    4.7,
-                                    12
-                                ],
-                                [
-                                    3,
-                                    4.7,
-                                    14
-                                ],
-                                [
-                                    3,
-                                    5.0,
-                                    8
-                                ],
-                                [
-                                    3,
-                                    5.3,
-                                    11
-                                ],
-                                [
-                                    3,
-                                    6.0,
-                                    2
-                                ],
-                                [
-                                    1,
-                                    2.3,
-                                    7
-                                ],
-                                [
-                                    1,
-                                    3.5,
-                                    15
-                                ],
-                                [
-                                    1,
-                                    4.0,
-                                    17
-                                ],
-                                [
-                                    3,
-                                    5.4,
-                                    18
-                                ],
-                                [
-                                    3,
-                                    6.2,
-                                    16
-                                ]
-                            ]
-                        },
-                        "counters": {
-                            "active_events": 19,
-                            "historical_events": 0,
-                            "events_by_priority": {
-                                "1": 6,
-                                "2": 0,
-                                "3": 13
-                            },
-                            "pending_attention": 19,
-                            "high_cost_access_events": 0,
-                            "accepted_corrections": 0,
-                            "discarded_reports": 0,
-                            "conflicts": 0,
-                            "mass_archives": 0,
-                            "archived_events": 0,
-                            "ll_cases": 2,
-                            "rr_cases": 2,
-                            "rl_cases": 2,
-                            "lr_cases": 1,
-                            "simple_left_rotations": 5,
-                            "simple_right_rotations": 5
-                        }
-                    },
-                    "metrics_after": {
-                        "tree": {
-                            "active_events": 19,
-                            "height": 4,
-                            "leaves": 8,
-                            "inorder": [
-                                [
-                                    1,
-                                    2.3,
-                                    7
-                                ],
-                                [
-                                    1,
-                                    2.9,
-                                    19
-                                ],
-                                [
-                                    1,
-                                    3.5,
-                                    15
-                                ],
-                                [
-                                    1,
-                                    3.8,
-                                    3
-                                ],
-                                [
-                                    1,
-                                    4.0,
-                                    17
-                                ],
-                                [
-                                    1,
-                                    4.2,
-                                    9
-                                ],
-                                [
-                                    3,
-                                    4.5,
-                                    5
-                                ],
-                                [
-                                    3,
-                                    4.7,
-                                    12
-                                ],
-                                [
-                                    3,
-                                    4.7,
-                                    13
-                                ],
-                                [
-                                    3,
-                                    4.7,
-                                    14
-                                ],
-                                [
-                                    3,
-                                    4.9,
-                                    4
-                                ],
-                                [
-                                    3,
-                                    5.0,
-                                    6
-                                ],
-                                [
-                                    3,
-                                    5.0,
-                                    8
-                                ],
-                                [
-                                    3,
-                                    5.2,
-                                    1
-                                ],
-                                [
-                                    3,
-                                    5.3,
-                                    11
-                                ],
-                                [
-                                    3,
-                                    5.4,
-                                    18
-                                ],
-                                [
-                                    3,
-                                    5.8,
-                                    10
-                                ],
-                                [
-                                    3,
-                                    6.0,
-                                    2
-                                ],
-                                [
-                                    3,
-                                    6.2,
-                                    16
-                                ]
-                            ],
-                            "preorder": [
-                                [
-                                    3,
-                                    4.9,
-                                    4
-                                ],
-                                [
-                                    3,
-                                    4.5,
-                                    5
-                                ],
-                                [
-                                    1,
-                                    3.8,
-                                    3
-                                ],
-                                [
-                                    1,
-                                    2.9,
-                                    19
-                                ],
-                                [
-                                    1,
-                                    2.3,
-                                    7
-                                ],
-                                [
-                                    1,
-                                    3.5,
-                                    15
-                                ],
-                                [
-                                    1,
-                                    4.2,
-                                    9
-                                ],
-                                [
-                                    1,
-                                    4.0,
-                                    17
-                                ],
-                                [
-                                    3,
-                                    4.7,
-                                    13
-                                ],
-                                [
-                                    3,
-                                    4.7,
-                                    12
-                                ],
-                                [
-                                    3,
-                                    4.7,
-                                    14
-                                ],
-                                [
-                                    3,
-                                    5.2,
-                                    1
-                                ],
-                                [
-                                    3,
-                                    5.0,
-                                    6
-                                ],
-                                [
-                                    3,
-                                    5.0,
-                                    8
-                                ],
-                                [
-                                    3,
-                                    5.8,
-                                    10
-                                ],
-                                [
-                                    3,
-                                    5.3,
-                                    11
-                                ],
-                                [
-                                    3,
-                                    5.4,
-                                    18
-                                ],
-                                [
-                                    3,
-                                    6.0,
-                                    2
-                                ],
-                                [
-                                    3,
-                                    6.2,
-                                    16
-                                ]
-                            ],
-                            "postorder": [
-                                [
-                                    1,
-                                    2.3,
-                                    7
-                                ],
-                                [
-                                    1,
-                                    3.5,
-                                    15
-                                ],
-                                [
-                                    1,
-                                    2.9,
-                                    19
-                                ],
-                                [
-                                    1,
-                                    4.0,
-                                    17
-                                ],
-                                [
-                                    1,
-                                    4.2,
-                                    9
-                                ],
-                                [
-                                    1,
-                                    3.8,
-                                    3
-                                ],
-                                [
-                                    3,
-                                    4.7,
-                                    12
-                                ],
-                                [
-                                    3,
-                                    4.7,
-                                    14
-                                ],
-                                [
-                                    3,
-                                    4.7,
-                                    13
-                                ],
-                                [
-                                    3,
-                                    4.5,
-                                    5
-                                ],
-                                [
-                                    3,
-                                    5.0,
-                                    8
-                                ],
-                                [
-                                    3,
-                                    5.0,
-                                    6
-                                ],
-                                [
-                                    3,
-                                    5.4,
-                                    18
-                                ],
-                                [
-                                    3,
-                                    5.3,
-                                    11
-                                ],
-                                [
-                                    3,
-                                    6.2,
-                                    16
-                                ],
-                                [
-                                    3,
-                                    6.0,
-                                    2
-                                ],
-                                [
-                                    3,
-                                    5.8,
-                                    10
-                                ],
-                                [
-                                    3,
-                                    5.2,
-                                    1
-                                ],
-                                [
-                                    3,
-                                    4.9,
-                                    4
-                                ]
-                            ],
-                            "levels": [
-                                [
-                                    3,
-                                    4.9,
-                                    4
-                                ],
-                                [
-                                    3,
-                                    4.5,
-                                    5
-                                ],
-                                [
-                                    3,
-                                    5.2,
-                                    1
-                                ],
-                                [
-                                    1,
-                                    3.8,
-                                    3
-                                ],
-                                [
-                                    3,
-                                    4.7,
-                                    13
-                                ],
-                                [
-                                    3,
-                                    5.0,
-                                    6
-                                ],
-                                [
-                                    3,
-                                    5.8,
-                                    10
-                                ],
-                                [
-                                    1,
-                                    2.9,
-                                    19
-                                ],
-                                [
-                                    1,
-                                    4.2,
-                                    9
-                                ],
-                                [
-                                    3,
-                                    4.7,
-                                    12
-                                ],
-                                [
-                                    3,
-                                    4.7,
-                                    14
-                                ],
-                                [
-                                    3,
-                                    5.0,
-                                    8
-                                ],
-                                [
-                                    3,
-                                    5.3,
-                                    11
-                                ],
-                                [
-                                    3,
-                                    6.0,
-                                    2
-                                ],
-                                [
-                                    1,
-                                    2.3,
-                                    7
-                                ],
-                                [
-                                    1,
-                                    3.5,
-                                    15
-                                ],
-                                [
-                                    1,
-                                    4.0,
-                                    17
-                                ],
-                                [
-                                    3,
-                                    5.4,
-                                    18
-                                ],
-                                [
-                                    3,
-                                    6.2,
-                                    16
-                                ]
-                            ]
-                        },
-                        "counters": {
-                            "active_events": 19,
-                            "historical_events": 0,
-                            "events_by_priority": {
-                                "1": 6,
-                                "2": 0,
-                                "3": 13
-                            },
-                            "pending_attention": 19,
-                            "high_cost_access_events": 0,
-                            "accepted_corrections": 0,
-                            "discarded_reports": 0,
-                            "conflicts": 0,
-                            "mass_archives": 0,
-                            "archived_events": 0,
-                            "ll_cases": 2,
-                            "rr_cases": 2,
-                            "rl_cases": 2,
-                            "lr_cases": 1,
-                            "simple_left_rotations": 5,
-                            "simple_right_rotations": 5
-                        }
-                    },
-                    "metrics_delta": {
-                        "tree": {
-                            "active_events": 0,
-                            "height": 0,
-                            "leaves": 0
-                        },
-                        "counters": {
-                            "active_events": 0,
-                            "historical_events": 0,
-                            "pending_attention": 0,
-                            "high_cost_access_events": 0,
-                            "accepted_corrections": 0,
-                            "discarded_reports": 0,
-                            "conflicts": 0,
-                            "mass_archives": 0,
-                            "archived_events": 0,
-                            "ll_cases": 0,
-                            "rr_cases": 0,
-                            "rl_cases": 0,
-                            "lr_cases": 0,
-                            "simple_left_rotations": 0,
-                            "simple_right_rotations": 0
-                        }
-                    },
-                    "details": {
-                        "hours": 700.0
+                        "hours": 80.0
                     }
                 }
             }
         ]
     },
     "clock": {
-        "current_time": "2026-06-15T05:11:21Z"
+        "current_time": "2026-02-03T14:27:42Z"
     },
     "l": 3,
     "t": 72,
@@ -2820,36 +1840,32 @@
             "7": [],
             "8": [],
             "9": [],
-            "10": [],
-            "11": [
-                10
+            "10": [
+                9
             ],
+            "11": [],
             "12": [],
             "13": [],
             "14": [],
             "15": [],
             "16": [],
             "17": [],
-            "18": [
-                10
-            ],
-            "19": []
+            "18": []
         },
         "selected_references": {
-            "11": 10,
-            "18": 10
+            "10": 9
         },
         "selection_policy": "highest_magnitude_then_earliest_time_then_lowest_id"
     },
     "metrics": {
-        "active_events": 19,
+        "active_events": 18,
         "historical_events": 0,
         "events_by_priority": {
-            "1": 6,
-            "2": 0,
-            "3": 13
+            "1": 5,
+            "2": 5,
+            "3": 8
         },
-        "pending_attention": 19,
+        "pending_attention": 18,
         "high_cost_access_events": 0,
         "accepted_corrections": 0,
         "discarded_reports": 0,
@@ -2857,10 +1873,10 @@
         "mass_archives": 0,
         "archived_events": 0,
         "ll_cases": 2,
-        "rr_cases": 2,
+        "rr_cases": 3,
         "rl_cases": 2,
         "lr_cases": 1,
-        "simple_left_rotations": 5,
+        "simple_left_rotations": 6,
         "simple_right_rotations": 5
     },
     "saved_versions": [],

@@ -5,7 +5,8 @@ export type QueryType =
     | "top_pending"
     | "magnitude_range"
     | "date_depth_range"
-    | "expensive_access";
+    | "expensive_access"
+    | "tree_comparison";
 
 export interface QueryRequest {
     type: QueryType;
@@ -35,4 +36,25 @@ export interface QueryResponse {
     used_by?: QueryEvent[];
     window_hours?: number;
     distance_limit_km?: number;
+    comparison?: {
+        event_count: number;
+        comparison_definition: string;
+        runs: TreeComparisonRun[];
+    };
+}
+
+export interface TreeComparisonRun {
+    order: "ascending_key" | "descending_key" | "ascending_id";
+    event_count: number;
+    searches_per_tree: number;
+    avl: TreeComparisonMetrics;
+    bst: TreeComparisonMetrics;
+}
+
+export interface TreeComparisonMetrics {
+    root_id: number | null;
+    height: number;
+    leaves: number;
+    search_comparisons: number;
+    average_comparisons: number;
 }

@@ -18,6 +18,7 @@ const labels: Record<QueryType, string> = {
     magnitude_range: "Rango de magnitud",
     date_depth_range: "Fecha y profundidad",
     expensive_access: "Acceso costoso",
+    tree_comparison: "Comparar AVL y BST",
 };
 
 const eventIdField = (values: Record<string, string>, onValueChange: QueryPanelProps["onValueChange"]) => (
@@ -99,6 +100,14 @@ const QueryPanel = ({
                         </div>
                     )}
                     {queryType === "expensive_access" && <p className="rounded-lg bg-slate-50 p-3 text-sm text-slate-600">Busca eventos de prioridad alta cuya profundidad supera el límite L configurado en el escenario.</p>}
+                    {queryType === "tree_comparison" && <p className="rounded-lg bg-slate-50 p-3 text-sm text-slate-600">Construye ambos árboles con los mismos eventos en tres órdenes reproducibles y busca las mismas claves K en cada uno.</p>}
+                </div>
+
+                <div className="mt-5 rounded-lg bg-slate-50 p-3 text-xs leading-5 text-slate-600">
+                    <p className="font-semibold text-slate-700">Cómo leer el costo</p>
+                    <p>La búsqueda por ID usa un índice. Los primeros pendientes recorren el AVL en orden inverso de K y paran al reunir k eventos; si faltan pendientes, pueden visitar todo el árbol.</p>
+                    <p>Los rangos de magnitud y fecha/profundidad recorren todos los nodos: magnitud no forma un intervalo único porque la prioridad precede a M en K, y fecha/profundidad no pertenecen a K.</p>
+                    <p>Acceso costoso también revisa todo el AVL para comprobar profundidad. Asociaciones consulta los índices de relaciones sin recorrer nodos. Cada consulta indica cuántos nodos visitó.</p>
                 </div>
 
                 <button type="submit" disabled={loading} className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#0b6e69] px-4 py-2.5 font-semibold text-white transition hover:bg-[#095b57] disabled:cursor-not-allowed disabled:opacity-60">
@@ -114,6 +123,46 @@ const QueryPanel = ({
 const QueryResults = ({ response }: { response: QueryResponse | null }) => {
     if (!response) return <div className="flex min-h-64 items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center text-sm text-slate-500">Los resultados aparecerán aquí.</div>;
     if (!response.ok) return <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-red-800"><p className="font-semibold">No se pudo ejecutar la consulta.</p><p className="mt-1 text-sm">{response.reason}</p></div>;
+
+    if (response.comparison) {
+        const orderLabels = {
+            ascending_key: "K ascendente",
+            descending_key: "K descendente",
+            ascending_id: "ID ascendente",
+        };
+        return (
+            <div className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                <div>
+                    <h2 className="text-lg font-semibold text-slate-900">Comparación AVL y BST</h2>
+                    <p className="text-sm text-slate-500">{response.comparison.event_count} eventos · {response.comparison.comparison_definition}</p>
+                </div>
+                <div className="overflow-auto">
+                    <table className="min-w-full text-left text-sm">
+                        <thead className="border-b border-slate-200 text-xs uppercase text-slate-500">
+                            <tr><th className="px-2 py-2">Inserción</th><th className="px-2 py-2">Árbol</th><th className="px-2 py-2">Raíz</th><th className="px-2 py-2">Altura</th><th className="px-2 py-2">Hojas</th><th className="px-2 py-2">Comparaciones</th><th className="px-2 py-2">Promedio/búsqueda</th></tr>
+                        </thead>
+                        <tbody>
+                            {response.comparison.runs.flatMap((run) => (["avl", "bst"] as const).map((treeName) => {
+                                const metrics = run[treeName];
+                                return (
+                                    <tr key={`${run.order}-${treeName}`} className="border-b border-slate-100 last:border-0">
+                                        <td className="px-2 py-3">{orderLabels[run.order]}</td>
+                                        <td className="px-2 py-3 font-semibold">{treeName.toUpperCase()}</td>
+                                        <td className="px-2 py-3">{metrics.root_id ?? "—"}</td>
+                                        <td className="px-2 py-3">{metrics.height}</td>
+                                        <td className="px-2 py-3">{metrics.leaves}</td>
+                                        <td className="px-2 py-3">{metrics.search_comparisons}</td>
+                                        <td className="px-2 py-3">{metrics.average_comparisons.toFixed(2)}</td>
+                                    </tr>
+                                );
+                            }))}
+                        </tbody>
+                    </table>
+                </div>
+                <p className="text-xs text-slate-500">En cada orden, se consultan las mismas claves K existentes en ambos árboles. La altura se mide en aristas; un árbol vacío tiene altura -1.</p>
+            </div>
+        );
+    }
 
     // Single-event responses and list responses share the same compact table.
     const events = response.events ?? (response.event ? [response.event] : []);

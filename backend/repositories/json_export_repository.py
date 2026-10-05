@@ -9,6 +9,7 @@ class JSONExportRepository:
 
         return {
             "load_type": "topology",
+            "execution_mode": observatory.getExecutionMode(),
             "datetime": observatory.getClock().getCurrentTimeText(),
             "parameters": dict(parameters),
             "zones": [zone.toDict() for zone in observatory.getZones()],
@@ -30,9 +31,11 @@ class JSONExportRepository:
                     for event in history.getArchived().values()
                 ],
                 "eliminated": [
-                    self._historical_event_to_export(event, "eliminated")
+                    self._historical_event_to_export(event, "deleted")
                     for event in history.getDeleted().values()
                 ],
+                "deletedIds": sorted(history.getDeletedIds()),
+                "archivedTrees": history.getArchivedTrees(),
             },
             "report_queue": {
                 "items": [
@@ -45,6 +48,10 @@ class JSONExportRepository:
                 "candidates": {
                     str(key): list(ids)
                     for key, ids in association_manager.getCandidates().items()
+                },
+                "selected_references": {
+                    str(key): value
+                    for key, value in association_manager.getSelectedReferences().items()
                 },
             },
             "metrics": observatory.getMetrics().toDict(),
@@ -77,17 +84,11 @@ class JSONExportRepository:
     @staticmethod
     def _historical_event_to_export(event, status):
         data = event.toDict()
-        priority, magnitude, event_id = event.getKey()
-        return {
-            "id": event_id,
-            "magnitude": magnitude,
-            "depth": data["depth"],
-            "epicenter_x": data["epicenter_x"],
-            "epicenter_y": data["epicenter_y"],
-            "datetime": data["datetime"],
-            "revision": data["revision"],
-            "event_status": status,
-        }
+        data["key"] = list(event.getKey())
+        data["event_status"] = status
+        data["eliminated"] = status == "eliminated"
+        data["archived"] = status == "archived"
+        return data
 
     @staticmethod
     def _report_to_export(report):

@@ -62,6 +62,10 @@ const Reports = () => {
         }
     };
 
+    const handleAIReportGenerator = () => {
+        
+    }
+
 
     const processNext = async () => {
         if (processingAction || !queueSnapshot?.size) return;
@@ -107,7 +111,7 @@ const Reports = () => {
             </div>
 
             <div className="grid gap-3 md:grid-cols-3">
-                <button type="button" disabled title="La generación con IA estará disponible próximamente" className="flex items-center gap-3 rounded-lg border border-slate-200 bg-white p-4 text-left shadow-sm transition hover:border-slate-300 disabled:cursor-not-allowed disabled:opacity-60"><Sparkles className="text-violet-500" size={21} /><span><strong className="block text-sm text-slate-900">Generar con IA</strong><small className="text-xs text-slate-500">Próximamente</small></span></button>
+                <button type="button" onClick={handleAIReportGenerator} className="flex items-center gap-3 rounded-lg border border-slate-200 bg-white p-4 text-left shadow-sm transition hover:bg-gray-200 disabled:opacity-60"><Sparkles className="text-violet-500" size={21} /><span><strong className="block text-sm text-slate-900">Generar con IA</strong><small className="text-xs text-slate-500"></small></span></button>
                 <button type="button" onClick={() => fileInputRef.current?.click()} disabled={loading} className="flex items-center gap-3 rounded-lg border border-[#0b6e69] bg-[#e7f5f2] p-4 text-left shadow-sm transition hover:bg-[#d8efeb] disabled:cursor-not-allowed disabled:opacity-60"><FilePlus2 className="text-[#0b6e69]" size={21} /><span><strong className="block text-sm text-slate-900">Cargar archivo</strong><small className="text-xs text-slate-600">Importar JSON</small></span></button>
                 <button type="button" onClick={() => navigate("/reports/create")} className="flex items-center gap-3 rounded-lg bg-[#04172f] p-4 text-left text-white shadow-sm transition hover:bg-[#08264d]"><FilePlus2 size={21} /><span><strong className="block text-sm">Crear manualmente</strong><small className="text-xs text-white/75">Nuevo reporte</small></span></button>
             </div>

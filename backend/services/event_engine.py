@@ -355,7 +355,7 @@ class EventEngine:
         return {"ok": True, "clock": payload, "currentTime": current_time.isoformat()}
 
     def load_scenario_from_text(self, content):
-        """Validate, build, activate and persist a text-based scenario."""
+        """Validate and build before persisting or activating a new scenario."""
         previous = self.observatory
         previous_snapshot = self._snapshot_for_load(previous)
         with self.lock:
@@ -374,6 +374,7 @@ class EventEngine:
                             f"Secciones opcionales inválidas: {error}"
                         ]) from error
                     self.service.metrics_service.refresh_derived_metrics(observatory)
+                if hasattr(self.service, "saveObservatory"):
                     self.service.saveObservatory(observatory)
             except Exception:
                 self.parameters_service.update(previous_parameters)
@@ -387,6 +388,46 @@ class EventEngine:
         self._record_loaded_scenario(observatory, previous_snapshot)
         return observatory
 
+    MAX_AI_REPORTS = 25
+
+def generate_reports_from_ai(self, payload):
+    """
+    Produce a batch of validated reports (LLM first, deterministic fallback second)
+    and enqueue them in the FIFO queue. Returns the accepted reports and any issues found.
+    """
+    count = max(1, min(int(payload.get("count", 5)), MAX_AI_REPORTS))
+    seed = int(payload.get("seed", 42))
+    context = self._build_generation_context()  # ASSUMPTION: you may already have a snapshot helper
+
+    # The slow part (network call) does not touch the engine state.
+    try:
+        candidates = request_reports_from_llm(context, count, payload.get("scenario"))
+    except Exception:
+        candidates = []
+
+    valid, issues = [], []
+    for report in candidates:
+        problems = self._validate_report(report)  # ASSUMPTION: same validator used by reports:prepare
+        if problems:
+            issues.extend(problems)
+        else:
+            valid.append(report)
+
+    # Top up with the seeded generator if the LLM failed or returned invalid reports.
+    missing = count - len(valid)
+    if missing > 0:
+        valid.extend(generate_deterministic_reports(context, missing, seed))
+
+    valid = valid[:count]
+
+    # The fast part (state mutation) happens once, at the end.
+    enqueue_result = self.prepare_reports({"reports": valid})  # ASSUMPTION: logic behind reports:prepare
+    if not enqueue_result.get("ok", False):
+        return {"ok": False, "reports": [], "issues": enqueue_result.get("issues", []) + issues}
+
+    return {"ok": True, "reports": valid, "issues": issues}
+        
+    
     def create_event_from_api(self, data):
         """Create a manual event while keeping the active state in the engine."""
         try:
@@ -706,8 +747,10 @@ class EventEngine:
                     "reason": "invalid_event_id"
                 }
 
-            # The event must still be active in the observatory.
+            # The event can still be active or archived in history.
             event = self.observatory.searchEventById(event_id)
+            if event is None:
+                event = self.observatory.getHistory().getArchived().get(event_id)
             if event is None:
                 return {
                     "ok": False,
@@ -777,7 +820,7 @@ class EventEngine:
                     # Always close the visual operation.
                     steps = self.observatory.finish_visual_operation()
 
-                if result.decision != "updated":
+                if result.decision not in ("updated", "reactivated"):
                     return {
                         "ok": False,
                         "reason": result.reason,
@@ -808,6 +851,7 @@ class EventEngine:
 
                 self.service.saveObservatory(self.observatory)
                 snapshot = self.report_queue_service.snapshot(self.observatory)
+                event = self.observatory.searchEventById(event_id)
 
                 response = {
                     "ok": True,

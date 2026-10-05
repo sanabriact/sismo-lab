@@ -110,10 +110,12 @@ class SeismicObservatoryService:
         if not isinstance(data, dict) or any(field not in data for field in required):
             raise ValueError("Faltan datos obligatorios para editar el evento")
 
-        # The event must still exist and be active before it can be updated.
+        # The event can be active in the trees or archived in history.
         event = observatory.searchEventById(event_id)
         if event is None:
-            raise ValueError("El evento ya no está activo")
+            event = observatory.getHistory().getArchived().get(event_id)
+        if event is None:
+            raise ValueError("El evento ya no existe")
 
         # Validate that the station ID is an integer.
         station_id = data["station"]
@@ -159,7 +161,7 @@ class SeismicObservatoryService:
             if queued.getEventId() == event_id
         ]
 
-        # The new correction gets a revision greater than the active event
+        # The new correction gets a revision greater than the event
         # and any pending correction for that event.
         revision = max(
             [event.getCurrentRevision(), *pending_revisions],
@@ -198,7 +200,6 @@ class SeismicObservatoryService:
 
     def loadScenarioFromText(self, content):
         observatory = self.buildScenario(self.parseScenarioText(content))
-        self.repository.save(observatory)
         return observatory
 
     def loadScenarioFromAI(self, ai_mode):
@@ -461,7 +462,7 @@ class SeismicObservatoryService:
             for event in observatory.getAVLTree().preorder() or []:
                 observatory.getBSTTree().insert(event)
 
-        audit = observatory.getAVLTree().audit()
+        audit = observatory.getAVLTree().audit(mode=mode)
         for issue in audit["issues"]:
             detail = ", ".join(f"{k}={v}" for k, v in issue.items() if k != "type")
             issues.append(f"AVL: {issue['type']} ({detail})")
