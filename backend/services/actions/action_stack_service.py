@@ -208,7 +208,6 @@ class ActionStackService:
 
             # The popped stack is the exact history from before this action.
             data["action_stack"] = stack.toDict()
-            data["saved_versions"] = observatory.getSavedVersions()
             restored = SeismicObservatory.fromDict(data)
             if action.getActionType() == "CREATE_EVENT":
                 restored.deleteLastId()
