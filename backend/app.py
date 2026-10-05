@@ -13,22 +13,27 @@ from backend.managers.scenario_generator_manager import ScenarioGeneratorManager
 from backend.managers.load_scenario_manager import LoadScenarioManager
 from backend.services.socket.socket_broadcaster import SocketBroadcaster
 from backend.services.ai_client.event_bus import mode_changed, scenario_loaded
+from backend.services.parameters.scenario_parameters_service import ScenarioParametersService
+from backend.services.json_export_service import JSONExportService
 
 app = Flask(__name__)
 CORS(app)
 
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
 init_realtime(socketio)
-obs_service = SeismicObservatoryService()
+parameters_service = ScenarioParametersService()
+obs_service = SeismicObservatoryService(parameters_service=parameters_service)
 event_engine = EventEngine(
     socketio=socketio,
     service=obs_service,
     mode_changed=mode_changed,
     stress_mode_manager=StressModeManager(),
+    parameters_service=parameters_service,
 )
 socket_broadcaster = SocketBroadcaster(mode_changed, scenario_loaded)
 ai_client = AIEventClient()
-load_scenario_manager = LoadScenarioManager()
+load_scenario_manager = LoadScenarioManager(parameters_service=parameters_service)
+json_export_service = JSONExportService(parameters_service=parameters_service)
 
 generator_manager = ScenarioGeneratorManager( ai_client=ai_client, engine=event_engine)
 event_engine.set_scenario_manager(generator_manager)
@@ -43,6 +48,25 @@ manual_event_minimums = {}
 @app.route("/api/seismic-observatory", methods=["GET"])
 def getSeismicObservatory():
     return jsonify(event_engine.get_or_load_observatory().toDict())
+
+@app.route("/api/export/json", methods=["GET"])
+def export_scenario_json():
+    observatory = event_engine.get_or_load_observatory()
+    with event_engine.lock:
+        if observatory is None or observatory.getScenarioId() is None:
+            return jsonify({"ok": False, "reason": "no_scenario"}), 404
+        data = json_export_service.export(observatory)
+    return jsonify(data)
+
+@app.route("/api/parameters", methods=["GET"])
+def get_parameters():
+    return jsonify(event_engine.get_parameters())
+
+@app.route("/api/parameters", methods=["PATCH"])
+def update_parameters():
+    result = event_engine.update_parameters(request.get_json(silent=True))
+    status_code = 200 if result.get("ok") else 400
+    return jsonify(result), status_code
 
 @app.route("/api/events", methods=["POST"])
 def createEvent():
@@ -130,6 +154,12 @@ def execute_query():
         status_code = 404 if result.get("reason") == "no_scenario" else 400
         return jsonify(result), status_code
     return jsonify(result)
+
+@app.route("/api/tree-characteristics", methods=["GET"])
+def get_tree_characteristics():
+    result = event_engine.get_tree_characteristics()
+    status_code = 200 if result.get("ok") else 404
+    return jsonify(result), status_code
 
 # Route for editing a event based on its id
 @app.route("/api/events/<int:event_id>", methods=["GET"])
@@ -293,7 +323,7 @@ def handle_scenario_load(data):
             observatory = event_engine.load_scenario_from_text(data.get("content"))
         else:
             # The frontend sends the AI mode in "aiMode" or "content".
-            observatory = event_engine.load_scenario_from_ai(data.get("aiMode") or data.get("content"))
+            observatory = event_engine.load_scenario_from_ai(data.get("content"))
 
     except ScenarioValidationError as error:
         return {"ok": False, "reason": "invalid_scenario", "issues": error.issues}

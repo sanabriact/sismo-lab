@@ -4,11 +4,9 @@ import type { AppRoute } from '../models/interfaces/appRoute/AppRoute';
 /* Import routes components */
 const Home = lazy(() => import('../pages/home/Home'));
 const VisualizeTrees = lazy(() => import('../pages/events/visualize/VisualizeTrees'));
-const CheckEvent = lazy(() => import ('../pages/events/check/CheckEvent'));
 const ConsultEvent = lazy(() => import ('../pages/events/consult/ConsultEvent'));
 const CorrectEvent = lazy(() => import ('../pages/events/correct/CorrectEvent'));
 const CreateEvent = lazy(() => import ('../pages/events/create/CreateEvent'));
-const DeleteEvent = lazy (() => import ('../pages/events/delete/DeleteEvent'));
 const Scenario = lazy(() => import ('../pages/scenery/Scenery'));
 const LoadScenario = lazy(() => import ('../pages/load/loadScenario'));
 const VerifyStructure = lazy(() => import('../pages/events/verify/VerifyStructure'));
@@ -20,6 +18,8 @@ const History = lazy(() => import('../pages/history/History'));
 const ArchivedEvents = lazy(() => import('../pages/history/ArchivedEvents'));
 const DeletedEvents = lazy(() => import('../pages/history/DeletedEvents'));
 const HistoricalIds = lazy(() => import('../pages/history/HistoricalIds'));
+const Parameters = lazy(() => import('../pages/parameters/Parameters'));
+const ExportJson = lazy(() => import('../pages/export/ExportJson'));
 
 /* Adding components to each route */
 const coreRoutes: AppRoute[] = [
@@ -32,6 +32,18 @@ const coreRoutes: AppRoute[] = [
         path: "/load-scenario",
         title: "Cargar escenario",
         component: LoadScenario,
+    },
+    {
+        path: "/parameters",
+        title: "Parámetros",
+        component: Parameters,
+        requiresScenario: true
+    },
+    {
+        path: "/export-json",
+        title: "Exportar JSON",
+        component: ExportJson,
+        requiresScenario: true,
     },
     {
         path: "/reports",
@@ -91,7 +103,8 @@ const coreRoutes: AppRoute[] = [
         title: "Consultar eventos",
         component: ConsultEvent,
         group: "events",
-        requiresScenario: true
+        requiresScenario: true,
+        hideInSidebar: true
     },
     {
         path: "/events/associations",

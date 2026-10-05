@@ -9,22 +9,27 @@ class JsonScenarioRepository:
         self.error = ""
 
         try:
-            with open(filepath, "r", encoding="utf-8") as file:
+            with open(filepath, "r", encoding="utf-8-sig") as file:
                 return json.load(file, object_pairs_hook=self._rejectDuplicateKeys)
         except json.JSONDecodeError as e:
             self.error = f"Invalid JSON at line {e.lineno}, column {e.colno}: {e.msg}"
-        except ValueError as e:  # duplicate keys
+            print(f"--> ERROR JSON: {self.error}")
+        except ValueError as e:  # Claves duplicadas encontradas
             self.error = str(e)
-        except OSError as e:  # file not found, no permission, etc.
+            print(f"--> ERROR CLAVE DUPLICADA: {self.error}")
+        except OSError as e:  # Archivo no encontrado o sin permisos
             self.error = f"Could not read file: {e}"
+            print(f"--> ERROR ARCHIVO / RUTA: {self.error}")
 
         return None
 
     @staticmethod
     def _rejectDuplicateKeys(archive):
         result = {}
+        seen_keys = set()
         for key, value in archive:
-            if key in result:
+            if key in seen_keys:
                 raise ValueError(f"Duplicate key in JSON: '{key}'")
+            seen_keys.add(key)
             result[key] = value
         return result

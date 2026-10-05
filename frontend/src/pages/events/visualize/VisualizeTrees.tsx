@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { Info } from "lucide-react";
 import { ObservatoryService } from "../../../services/seismicObservatory/seismicObservatoryService";
 import type { SeismicObservatory } from "../../../models/interfaces/observatory/SeismicObservatory";
 import { TreeView } from "../../../components/tree/TreeView";
@@ -7,12 +8,30 @@ import { useObservatorySocket } from "../../../hooks/socket/useObservatorySocket
 import { applyTreePatch } from "../../../utils/tree/applyTreePatch";
 import type { TreeOperation } from "../../../models/interfaces/realTime/TreeOperation";
 import { actionStackService } from "../../../services/socket/actionStackService";
+import { treeCharacteristicsService } from "../../../services/seismicObservatory/treeCharacteristicsService";
+import type { TreeCharacteristicsResponse } from "../../../models/interfaces/tree/NodeCharacteristics";
 
 const VisualizeTrees = () => {
     const [data, setData] = useState<SeismicObservatory | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [characteristics, setCharacteristics] = useState<TreeCharacteristicsResponse["trees"] | null>(null);
+    const [characteristicsLimit, setCharacteristicsLimit] = useState<number | null>(null);
+    const [characteristicsError, setCharacteristicsError] = useState<string | null>(null);
+    const [showCharacteristics, setShowCharacteristics] = useState(false);
     const [highlightedIds, setHighlightedIds] = useState<number[]>([]);
     const highlightedIdSet = useMemo(() => new Set(highlightedIds), [highlightedIds]);
+
+    const refreshCharacteristics = useCallback(async () => {
+        const result = await treeCharacteristicsService.get();
+        if (result.ok && result.trees) {
+            setCharacteristics(result.trees);
+            setCharacteristicsLimit(result.limit ?? null);
+            setCharacteristicsError(null);
+        } else {
+            setCharacteristicsError(result.reason ?? "No fue posible cargar las características.");
+            setCharacteristicsLimit(null);
+        }
+    }, []);
 
     const fetchData = useCallback(async () => {
         try {
@@ -23,11 +42,12 @@ const VisualizeTrees = () => {
             }
             setData(observatory);
             setError(null);
+            await refreshCharacteristics();
         } catch (fetchError) {
             console.error("Error obteniendo observatorio (pages)", fetchError);
             setError("No se pudo cargar los árboles.");
         }
-    }, []);
+    }, [refreshCharacteristics]);
 
     useEffect(() => {
         void fetchData();
@@ -40,6 +60,7 @@ const VisualizeTrees = () => {
     }, [fetchData]);
 
     const applyOperation = useCallback((operation: TreeOperation) => {
+        void refreshCharacteristics();
         setData((current) => {
             if (!current || current.scenario_id !== operation.scenarioId) return current;
             return operation.steps.reduce((next, step) => ({
@@ -50,7 +71,7 @@ const VisualizeTrees = () => {
                     : next.bst_tree,
             }), current);
         });
-    }, []);
+    }, [refreshCharacteristics]);
 
     useObservatorySocket(applyOperation);
 
@@ -67,6 +88,19 @@ const VisualizeTrees = () => {
             ) : (
                 <>
                     <h1 className="text-3xl font-bold text-gray-900">Visualizar eventos</h1>
+                    <div className="flex flex-wrap items-center gap-3">
+                        <button
+                            type="button"
+                            onClick={() => setShowCharacteristics((visible) => !visible)}
+                            disabled={!characteristics}
+                            aria-pressed={showCharacteristics}
+                            className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50 ${showCharacteristics ? "bg-[#0b6e69] text-white" : "border border-slate-300 bg-white text-slate-700 hover:bg-slate-50"}`}
+                        >
+                            <Info size={17} />{showCharacteristics ? "Ocultar características AVL" : "Ver características del AVL"}
+                        </button>
+                        {showCharacteristics && <p className="text-sm text-slate-500">Altura en aristas (hoja = 0) · Profundidad desde la raíz (raíz = 0) · Acceso costoso: prioridad 3 y profundidad &gt; L ({characteristicsLimit ?? "…"}).</p>}
+                        {characteristicsError && <p className="text-sm text-amber-700" role="status">{characteristicsError}</p>}
+                    </div>
                     <ArchiveTreePanel
                         onPreviewChange={setHighlightedIds}
                         onArchived={refreshAfterArchive}
@@ -74,7 +108,7 @@ const VisualizeTrees = () => {
                     <div>
                         <h2 className="mb-2 text-xl font-semibold">AVL</h2>
                         <div className="overflow-auto rounded-lg border border-gray-200">
-                            <TreeView data={data.avl_tree} type="avl" highlightIds={highlightedIdSet} />
+                            <TreeView data={data.avl_tree} type="avl" highlightIds={highlightedIdSet} showCharacteristics={showCharacteristics} characteristics={characteristics?.avl} />
                         </div>
                     </div>
                     <div>

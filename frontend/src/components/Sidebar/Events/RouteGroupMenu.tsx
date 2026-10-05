@@ -18,8 +18,6 @@ const RouteGroupMenu = ({ group, title }: RouteGroupMenuProps) => {
     label: title,
     path,   
   }));
-  console.log(items)
-
   return <DropdownMenu title={title} items={items} />;
 };
 

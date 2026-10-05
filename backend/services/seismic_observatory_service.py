@@ -3,11 +3,13 @@ from datetime import datetime
 from uuid import uuid4
 from backend.repositories.seismic_observatory_repository import SeismicObservatoryRepository
 from backend.services.metrics.metrics_service import MetricsService
+from backend.services.ai_client.scenario_generator_client import ScenarioGeneratorService
 from backend.models.seismic_observatory import SeismicObservatory
 from backend.models.station import Station
 from backend.models.zone import Zone
 from backend.models.report import Report
 from backend.utils.quantities import parseDatetime, hasAtMostOneDecimal
+from backend.services.parameters.scenario_parameters_service import ScenarioParametersService
 
 EXECUTION_MODES = ("normal", "stress")
 
@@ -18,9 +20,10 @@ class ScenarioValidationError(Exception):
         self.issues = issues
 
 class SeismicObservatoryService:
-    def __init__(self):
+    def __init__(self, parameters_service=None):
         self.repository = SeismicObservatoryRepository()
         self.metrics_service = MetricsService()
+        self.parameters_service = parameters_service or ScenarioParametersService()
 
     def getObservatory(self):
         observatory = self.repository.load()
@@ -201,23 +204,9 @@ class SeismicObservatoryService:
     def loadScenarioFromAI(self, ai_mode):
         # Aún no hay generación de escenarios con la IA: "empty" usa una
         # configuración base (estaciones y zonas fijas, sin eventos).
-        if ai_mode != "empty":
-            raise ScenarioValidationError([
-                "La generación de escenarios con IA en el modo '" + str(ai_mode) + "' aún no está implementada"
-            ])
-        observatory = self.buildScenario({
-            "execution_mode": "normal",
-            "stations": [
-                {"id": 1, "name": "Estación Norte", "x": 250, "y": 750},
-                {"id": 2, "name": "Estación Centro", "x": 500, "y": 500},
-                {"id": 3, "name": "Estación Sur", "x": 750, "y": 250},
-            ],
-            "zones": [
-                {"id": 1, "name": "Zona Suroccidental", "x_min": 0, "x_max": 500, "y_min": 0, "y_max": 500, "is_populated": True},
-                {"id": 2, "name": "Zona Nororiental", "x_min": 500, "x_max": 1000, "y_min": 500, "y_max": 1000, "is_populated": False},
-            ],
-            "events": [],
-        })
+        scenario_generator_service = ScenarioGeneratorService()
+        data = scenario_generator_service.generate(ai_mode)
+        observatory = self.buildScenario(data)
         self.repository.save(observatory)
         return observatory
 
@@ -248,6 +237,11 @@ class SeismicObservatoryService:
         if mode not in EXECUTION_MODES:
             raise ScenarioValidationError(["execution_mode debe ser 'normal' o 'stress'"])
 
+        try:
+            parameters = self.parameters_service.parameters_from_scenario(data)
+        except (TypeError, ValueError) as error:
+            raise ScenarioValidationError([f"Parámetros inválidos: {error}"])
+
         if "tree" in data:
             topology_data = {
                 **data,
@@ -260,6 +254,10 @@ class SeismicObservatoryService:
         # Siempre un id nuevo: evita que eventos en cola de un escenario
         # anterior con el mismo id se apliquen a este.
         observatory.scenario_id = str(uuid4())
+        self.parameters_service.update(parameters)
+        observatory.setL(parameters["L"])
+        observatory.setT(parameters["T"])
+        observatory.setAssociationLimits(parameters["W"], parameters["R"])
         self.metrics_service.refresh_derived_metrics(observatory)
         return observatory
 
@@ -426,7 +424,19 @@ class SeismicObservatoryService:
         # Se completa lo que falte con los valores por defecto de un
         # observatorio vacío, para aceptar exportaciones parciales.
         base = SeismicObservatory().toDict()
-        merged = {**base, **{key: value for key, value in data.items() if key in base}}
+        # These sections use the portable export schema, while fromDict expects
+        # the observatory's private persistence schema. LoadScenarioManager
+        # restores them after the required topology has been constructed.
+        optional_sections = {
+            "history", "report_queue", "association_manager", "metrics",
+        }
+        merged = {
+            **base,
+            **{
+                key: value for key, value in data.items()
+                if key in base and key not in optional_sections
+            },
+        }
         merged["scenario_id"] = None
         if "datetime" in data and "clock" not in data:
             merged["clock"] = {"current_time": data["datetime"]}
