@@ -22,16 +22,6 @@ class ArchiveTreeService:
     def _event(node):
         return node.getValue()
 
-    # Collect the event ids of a subtree in pre-order
-    def _collect_ids(self, node):
-        if node is None:
-            return []
-        return (
-            [self._event(node).getKey()[2]]
-            + self._collect_ids(node.getLeftChild())
-            + self._collect_ids(node.getRightChild())
-        )
-
     # Convert a subtree into a JSON-friendly nested dictionary
     def _tree_json(self, node):
         if node is None:
@@ -70,7 +60,8 @@ class ArchiveTreeService:
             selected, tree_payload = selected
         else:
             tree_payload = avl.objectToSend(selected, [])
-        ids = self._collect_ids(selected)
+        # Collect the event ids of a subtree in pre-order
+        ids = avl.getIdsToPaint(selected, [])
         tree = self._tree_json(selected)
         self.pending[client_id] = {
             "scenario_id": observatory.scenario_id,

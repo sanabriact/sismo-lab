@@ -1,3 +1,7 @@
+// ------------------------------------------------------------------
+// R eq ui re Sc en ar io
+// ------------------------------------------------------------------
+
 import type { ReactNode } from "react";
 import { Navigate } from "react-router-dom";
 import { useObservable } from "../../stores/useObservable";

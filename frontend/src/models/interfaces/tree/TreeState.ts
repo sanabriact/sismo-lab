@@ -1,3 +1,7 @@
+// ------------------------------------------------------------------
+// T re eS ta te
+// ------------------------------------------------------------------
+
 import type { FlatNode } from "../realTime/FlatNode";
 
 export interface TreeState {

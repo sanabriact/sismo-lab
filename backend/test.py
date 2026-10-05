@@ -1,19 +1,15 @@
+# ------------------------------------------------------------------
+# t es t
+# ------------------------------------------------------------------
+
 from backend.models.station import Station
-from backend.services.seismic_observatory_service import SeismicObservatoryService
 from backend.services.tree_service import TreeService
-from backend.structures.avl import AVL
-from backend.structures.bst import BST
-from backend.models.event import Event
 from backend.models.seismic_observatory import SeismicObservatory
 from backend.models.report import Report
-from backend.repositories.seismic_observatory_repository import SeismicObservatoryRepository
 from backend.repositories.json_repository import JSONRepository
 from datetime import datetime
 
 observatory = SeismicObservatory()
-obs_service = SeismicObservatoryService()
-
-list = []
 n = 7
 for i in range(1,7):
     date = datetime(2024, 6, 1, 12, 0, 0)

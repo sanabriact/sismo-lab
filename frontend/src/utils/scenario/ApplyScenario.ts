@@ -1,3 +1,7 @@
+// ------------------------------------------------------------------
+// A pp ly Sc en ar io
+// ------------------------------------------------------------------
+
 import type { ScenarioLoadedPayload } from "../../models/interfaces/scenery/ScenarioLoadedPayload";
 import { scenarioStore } from "../../stores/scenario/ScenarioStore";
 import type { ScenarioStatusResponse } from "../../models/interfaces/scenery/ScenarioStatusResponse";

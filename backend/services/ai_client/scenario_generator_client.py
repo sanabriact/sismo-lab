@@ -2,10 +2,7 @@ import json
 import os
 import random
 from datetime import timedelta, datetime, timezone
-from pathlib import Path
-from dotenv import load_dotenv
 from groq import Groq
-from backend.utils.quantities import parseDatetime
 
 # -----------------------------------------------------------------------------
 # Generation modes and response schema

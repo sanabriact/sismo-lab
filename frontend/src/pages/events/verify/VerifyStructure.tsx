@@ -1,3 +1,7 @@
+// ------------------------------------------------------------------
+// V er if yS tr uc tu re
+// ------------------------------------------------------------------
+
 import { useEffect, useState } from "react";
 import { structureAuditService } from "../../../services/socket/structureAuditService";
 import type { StructureAuditReport } from "../../../models/interfaces/realTime/StructureAudit";

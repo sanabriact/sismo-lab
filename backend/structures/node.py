@@ -1,5 +1,4 @@
 from backend.utils.json_utils import objectToDict
-from datetime import datetime
 from backend.utils.quantities import normalizeDatetime, parseDatetime
 
 

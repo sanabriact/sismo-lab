@@ -1,3 +1,7 @@
+// ------------------------------------------------------------------
+// t re eC ha ra ct er is ti cs Se rv ic e
+// ------------------------------------------------------------------
+
 import axios from "axios";
 import type { TreeCharacteristicsResponse } from "../../models/interfaces/tree/NodeCharacteristics";
 

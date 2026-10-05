@@ -1,3 +1,7 @@
+// ------------------------------------------------------------------
+// S ei sm ic Ob se rv at or y
+// ------------------------------------------------------------------
+
 import type { ExecutionMode } from "../../types/observatory/ExecutionMode";
 import type { AssociationManager } from "../associationManager/AssociationManager";
 import type { Tree } from "../tree/Tree";

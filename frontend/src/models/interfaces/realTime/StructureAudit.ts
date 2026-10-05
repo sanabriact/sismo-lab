@@ -1,3 +1,7 @@
+// ------------------------------------------------------------------
+// S tr uc tu re Au di t
+// ------------------------------------------------------------------
+
 export interface StructureAuditIssue {
     id: number | null;
     type: string;

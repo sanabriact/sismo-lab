@@ -1,3 +1,7 @@
+// ------------------------------------------------------------------
+// M od eS ta te
+// ------------------------------------------------------------------
+
 import type { ExecutionMode } from "../../types/observatory/ExecutionMode";
 
 export interface ModeState {

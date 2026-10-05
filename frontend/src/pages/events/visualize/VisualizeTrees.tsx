@@ -1,3 +1,7 @@
+// ------------------------------------------------------------------
+// V is ua li ze Tr ee s
+// ------------------------------------------------------------------
+
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Info } from "lucide-react";
 import { ObservatoryService } from "../../../services/seismicObservatory/seismicObservatoryService";

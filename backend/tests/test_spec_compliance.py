@@ -1,8 +1,11 @@
+# ------------------------------------------------------------------
+# t es t s pe c c om pl ia nc e
+# ------------------------------------------------------------------
+
 """Specification-focused tests for queries, persistence, and recovery data."""
 
 from datetime import datetime, timedelta, timezone
 
-from backend.models.event import Event
 from backend.models.report import Report
 from backend.models.seismic_observatory import SeismicObservatory
 from backend.models.station import Station
