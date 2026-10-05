@@ -374,14 +374,32 @@ def create_manual_report(data=None):
     return event_engine.create_manual_report(data)
 
 @socketio.on("reports:ai_start")
-def handle_ai_generation_start(payload):
+def handle_ai_generation_start(payload=None):
     """Validate the configuration and start the continuous AI generation."""
-    payload = payload or {}
-    interval = max(MIN_INTERVAL_SECONDS, float(payload.get("intervalSeconds", 10)))
-    known = event_engine.get_station_ids()  # ASSUMPTION: stations are immutable during execution
-    station_ids = [s for s in (payload.get("stationIds") or known) if s in known]
+    payload = payload if isinstance(payload, dict) else {}
+
+    interval = max(
+        MIN_INTERVAL_SECONDS,
+        float(payload.get("intervalSeconds", 10))
+    )
+
+    known_stations = event_engine.observatory.getStations()
+    known_ids = [station.getId() for station in known_stations]
+
+    requested_ids = payload.get("stationIds")
+
+    station_ids = (
+        [station_id for station_id in requested_ids if station_id in known_ids]
+        if requested_ids
+        else known_ids
+    )
+
     if not station_ids:
-        return {"ok": False, "running": ai_loop.is_running(), "reason": "no_valid_stations"}
+        return {
+            "ok": False,
+            "running": ai_loop.is_running(),
+            "reason": "no_valid_stations"
+        }
 
     started = ai_loop.start({
         "interval": interval,
@@ -389,22 +407,27 @@ def handle_ai_generation_start(payload):
         "scenario": payload.get("scenario"),
         "seed": int(payload.get("seed", 42)),
     })
-    socketio.emit("reports:ai_status", {"running": True})
-    return {"ok": True, "running": True, "alreadyRunning": not started}
 
+    socketio.emit("reports:ai_status", {"running": True})
+
+    return {
+        "ok": True,
+        "running": True,
+        "alreadyRunning": not started
+    }
 
 @socketio.on("reports:ai_stop")
-def handle_ai_generation_stop():
+def handle_ai_generation_stop(_data = None):
     """Stop the continuous AI generation."""
     ai_loop.stop()
     socketio.emit("reports:ai_status", {"running": False})
     return {"ok": True, "running": False}
 
-
 @socketio.on("reports:ai_status_get")
-def handle_ai_generation_status():
+def handle_ai_generation_status(_data = None):
     """Return whether the generator is running (used when a client reloads the page)."""
     return {"ok": True, "running": ai_loop.is_running()}
+
 @socketio.on("reports:step")
 def process_report_step(data=None):
     # Process exactly one report through the engine-owned lifecycle.

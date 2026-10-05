@@ -46,19 +46,16 @@ class AiGenerationLoop:
             "count": len(self._config["station_ids"]),
             "station_ids": self._config["station_ids"],
             "scenario": self._config.get("scenario"),
-            "seed": self._config["seed"] + tick,  # reproducible but different each tick
-            "enqueue": False,
+            "seed": self._config["seed"] + tick,
         })
         if not result["ok"] or not self._running:
             return
 
-        queued = self._engine.prepare_reports({"reports": result["reports"]})  # ASSUMPTION
-        if queued.get("ok", False):
-            self._socketio.emit("reports:generated", {
-                "tick": tick,
-                "reports": result["reports"],
-                "fallbackCount": result["fallback_count"],
-            })
+        self._socketio.emit("reports:generated", {
+            "tick": tick,
+            "reports": result["reports"],
+            "fallbackCount": result.get("fallback_count", 0),
+        })
 
     def _wait(self, seconds):
         """Sleep in short steps so a stop request takes effect almost immediately."""

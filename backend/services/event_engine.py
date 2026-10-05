@@ -11,6 +11,11 @@ from backend.services.actions.action_stack_service import ActionStackError, Acti
 from backend.services.query.query_service import QueryService
 from backend.services.history.history_service import HistoryService
 from backend.services.parameters.scenario_parameters_service import ScenarioParametersService
+from backend.helpers.ai_reports import (
+    generate_deterministic_reports,
+    request_reports_from_llm,
+    validate_generated_report_shape,
+)
 
 class EventEngine:
     """
@@ -390,44 +395,173 @@ class EventEngine:
 
     MAX_AI_REPORTS = 25
 
-def generate_reports_from_ai(self, payload):
-    """
-    Produce a batch of validated reports (LLM first, deterministic fallback second)
-    and enqueue them in the FIFO queue. Returns the accepted reports and any issues found.
-    """
-    count = max(1, min(int(payload.get("count", 5)), MAX_AI_REPORTS))
-    seed = int(payload.get("seed", 42))
-    context = self._build_generation_context()  # ASSUMPTION: you may already have a snapshot helper
+    def pending_count(self):
+        """Return the number of reports currently waiting in the FIFO queue."""
+        with self.lock:
+            if self.observatory is None:
+                return 0
+            return len(self.observatory.getReportQueue().items)
 
-    # The slow part (network call) does not touch the engine state.
-    try:
-        candidates = request_reports_from_llm(context, count, payload.get("scenario"))
-    except Exception:
-        candidates = []
+    def _build_generation_context(self):
+        """Build a detached snapshot used by the AI report generator."""
+        observatory = self.observatory
+        if observatory is None:
+            raise ValueError("no_scenario")
 
-    valid, issues = [], []
-    for report in candidates:
-        problems = self._validate_report(report)  # ASSUMPTION: same validator used by reports:prepare
-        if problems:
-            issues.extend(problems)
+        active = []
+        for event in observatory.getAVLTree().index.values():
+            event = event.getValue()
+            
+            data = event.toDict()
+            data["event_id"] = event.getKey()[2]
+            data.pop("key", None)
+            active.append(data)
+
+        archived = []
+        for event_id, event in observatory.getHistory().getArchived().items():
+            data = event.toDict()
+            data["event_id"] = event_id
+            data.pop("key", None)
+            archived.append(data)
+
+        deleted_ids = observatory.getHistory().getDeletedIds()
+        existing_ids = {item["event_id"] for item in active + archived}
+
+        return {
+            "clock": observatory.getClock().getCurrentTime(),
+            "station_ids": [station.getId() for station in observatory.getStations()],
+            "events": active + archived,
+            "deleted_ids": sorted(deleted_ids),
+            "used_ids": existing_ids.union(deleted_ids),
+        }
+
+    def _validate_report(self, report, context):
+        """Validate an AI candidate against the active scenario snapshot."""
+        try:
+            problem = validate_generated_report_shape(
+                report,
+                set(context["station_ids"]),
+                self.observatory.getClock(),
+            )
+        except (AttributeError, TypeError, ValueError) as error:
+            return str(error)
+
+        if problem:
+            return problem
+
+        known_ids = {event["event_id"] for event in context["events"]}
+        deleted_ids = set(context["deleted_ids"])
+        event_id = report["event_id"]
+        revision = report["revision"]
+
+        if event_id in deleted_ids:
+            return "El event_id pertenece a un evento eliminado"
+        if event_id not in known_ids and revision != 1:
+            return "Un evento inexistente solo puede crearse con revision 1"
+
+        return None
+
+    def generate_reports_from_ai(self, payload):
+        """Generate, validate and enqueue one AI batch through the normal report flow."""
+        payload = payload if isinstance(payload, dict) else {}
+        count = max(1, min(int(payload.get("count", 5)), self.MAX_AI_REPORTS))
+        seed = int(payload.get("seed", 42))
+
+        with self.lock:
+            if self.observatory is None:
+                return {"ok": False, "reports": [], "issues": ["no_scenario"]}
+            scenario_id = self.scenario_id
+            context = self._build_generation_context()
+
+        try:
+            candidates = request_reports_from_llm(
+                context,
+                count,
+                payload.get("scenario"),
+            )
+        except Exception as error:
+            candidates = []
+            llm_issue = str(error)
         else:
-            valid.append(report)
+            llm_issue = None
 
-    # Top up with the seeded generator if the LLM failed or returned invalid reports.
-    missing = count - len(valid)
-    if missing > 0:
-        valid.extend(generate_deterministic_reports(context, missing, seed))
+        valid = []
+        issues = []
 
-    valid = valid[:count]
+        if llm_issue:
+            issues.append({"source": "ai", "reason": llm_issue})
 
-    # The fast part (state mutation) happens once, at the end.
-    enqueue_result = self.prepare_reports({"reports": valid})  # ASSUMPTION: logic behind reports:prepare
-    if not enqueue_result.get("ok", False):
-        return {"ok": False, "reports": [], "issues": enqueue_result.get("issues", []) + issues}
+        for report in candidates:
+            problem = self._validate_report(report, context)
+            if problem:
+                issues.append({"source": "ai", "reason": problem, "report": report})
+            else:
+                valid.append(report)
 
-    return {"ok": True, "reports": valid, "issues": issues}
-        
-    
+        missing = count - len(valid)
+        fallback_count = 0
+        if missing > 0:
+            fallback = generate_deterministic_reports(context, missing, seed)
+            for report in fallback:
+                problem = self._validate_report(report, context)
+                if problem:
+                    issues.append({"source": "fallback", "reason": problem, "report": report})
+                else:
+                    valid.append(report)
+                    fallback_count += 1
+                if len(valid) >= count:
+                    break
+
+        valid = valid[:count]
+
+        if not valid:
+            return {
+                "ok": False,
+                "reports": [],
+                "issues": issues or ["No se pudieron generar reportes válidos"],
+            }
+
+        with self.lock:
+            if self.observatory is None or self.scenario_id != scenario_id:
+                return {
+                    "ok": False,
+                    "reports": [],
+                    "issues": ["El escenario cambió durante la generación"],
+                }
+
+            queue_reports = [
+                self._normalize_ai_report(report)
+                for report in valid
+            ]
+
+        enqueue_result = self.prepare_reports(queue_reports)
+        if not enqueue_result.get("ok", False):
+            return {
+                "ok": False,
+                "reports": [],
+                "issues": enqueue_result.get("issues", []) + issues,
+            }
+
+        return {
+            "ok": True,
+            "reports": valid,
+            "issues": issues,
+            "fallback_count": fallback_count,
+            "snapshot": enqueue_result.get("snapshot"),
+        }
+
+    def _normalize_ai_report(self, report):
+        """Convert an AI report into the exact payload expected by ReportQueueService."""
+        return {
+            "event_id": int(report["event_id"]),
+            "revision": int(report["revision"]),
+            "station": int(report["station"]),
+            "magnitude": report["magnitude"],
+            "depth": report["depth"],
+            "epicenter_x": report["epicenter_x"],
+            "epicenter_y": report["epicenter_y"],
+            "datetime": report["datetime"],
+        }
     def create_event_from_api(self, data):
         """Create a manual event while keeping the active state in the engine."""
         try:

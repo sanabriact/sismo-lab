@@ -1,8 +1,11 @@
 import { socketService } from "./socketService";
 import type {
+    AIReportStartPayload,
+    AIReportStatusResponse,
+    AIReportStatusEvent,
+    AIGeneratedReportsEvent,
     GenerateReportsPayload,
     GenerateReportsResponse,
-    GeneratedReportEvent,
     ReportQueueEvent,
     ReportQueueSnapshot,
     ReportStepResponse,
@@ -57,20 +60,33 @@ class ReportService {
         return this.emit<GenerateReportsResponse>("reports:generate", payload);
     }
 
-    subscribeToGeneration(
-        onReport: (event: GeneratedReportEvent) => void, 
-        onDone: (jobId: string) => void, 
-        onError: (jobId: string, message: string) => void): () => void {
-            const socket = socketService.connect();
-            socket.on("reports:generated", onReport);
-            socket.on("reports:generation_done", onDone)
-            socket.on("reports:generation_error", onError);
+    startAIGeneration(payload: AIReportStartPayload = {}): Promise<AIReportStatusResponse> {
+        return this.emit<AIReportStatusResponse>("reports:ai_start", payload);
+    }
 
-            return () => {
-                socket.off("reports:generated", onReport);
-                socket.off("reports:generation_done", onDone);
-                socket.off("reports:generation_error", onError);
-            };
+    stopAIGeneration(): Promise<AIReportStatusResponse> {
+        return this.emit<AIReportStatusResponse>("reports:ai_stop");
+    }
+
+    getAIGenerationStatus(): Promise<AIReportStatusResponse> {
+        return this.emit<AIReportStatusResponse>("reports:ai_status_get");
+    }
+
+    subscribeToAIGeneration(
+        onStatus: (status: AIReportStatusEvent) => void,
+        onGenerated?: (event: AIGeneratedReportsEvent) => void,
+        onError?: (payload: { tick?: number; message?: string }) => void,
+    ): () => void {
+        const socket = socketService.connect();
+        socket.on("reports:ai_status", onStatus);
+        if (onGenerated) socket.on("reports:generated", onGenerated);
+        if (onError) socket.on("reports:generation_error", onError);
+
+        return () => {
+            socket.off("reports:ai_status", onStatus);
+            if (onGenerated) socket.off("reports:generated", onGenerated);
+            if (onError) socket.off("reports:generation_error", onError);
+        };
     }
 
     subscribeToQueue(

@@ -83,3 +83,27 @@ export interface GeneratedReportEvent {
     index: number;
     total: number;
 }
+
+export interface AIReportStartPayload {
+    intervalSeconds?: number;
+    stationIds?: number[];
+    scenario?: string;
+    seed?: number;
+}
+
+export interface AIReportStatusResponse {
+    ok: boolean;
+    running: boolean;
+    alreadyRunning?: boolean;
+    reason?: string;
+}
+
+export interface AIReportStatusEvent {
+    running: boolean;
+}
+
+export interface AIGeneratedReportsEvent {
+    tick: number;
+    reports: ReportsPayload["reports"];
+    fallbackCount?: number;
+}
