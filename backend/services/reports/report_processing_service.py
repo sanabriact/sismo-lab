@@ -1,15 +1,29 @@
+# Coordinate report queue operations without owning locks or sockets
 class ReportProcessingService:
-    """Coordinate report queue operations without owning locks or sockets."""
 
+    # -------------------------------------------------------------------------
+    # Initialization
+    # -------------------------------------------------------------------------
+
+    # Create the service with its queue service and report processor
     def __init__(self, queue_service, report_processor):
         self.queue_service = queue_service
         self.report_processor = report_processor
 
+    # -------------------------------------------------------------------------
+    # Batch preparation
+    # -------------------------------------------------------------------------
+
+    # Validate and enqueue a complete report batch
     def prepare(self, observatory, raw_reports):
-        """Validate and enqueue a complete report batch."""
         result = self.queue_service.prepare(observatory, raw_reports)
         return result, self.queue_service.snapshot(observatory)
 
+    # -------------------------------------------------------------------------
+    # Report processing
+    # -------------------------------------------------------------------------
+
+    # Process the first queued report and return transport-ready data
     def process_one(
         self,
         observatory,
@@ -18,12 +32,13 @@ class ReportProcessingService:
         next_sequence,
         metrics_service,
     ):
-        """Process the first queued report and return transport-ready data."""
+        # Capture the state before the operation
         report_queue = observatory.getReportQueue()
         before_version = observatory.toVersion()
         before_indicators = metrics_service.capture_display(observatory)
         report = report_queue.dequeue()
 
+        # Apply the report while recording the visual steps
         observatory.begin_visual_operation()
         try:
             result = self.report_processor.apply(
@@ -40,6 +55,8 @@ class ReportProcessingService:
             for step in result_steps
             if step.get("kind") == "rotation"
         ]
+
+        # Register the completed operation
         complete_operation(
             observatory,
             "queue_step",
@@ -57,6 +74,7 @@ class ReportProcessingService:
             result_steps,
         )
 
+        # Build the tree payload only when the tree changed
         tree_payload = None
         if result.tree_changed:
             event = observatory.searchEventById(result.event_id)
@@ -69,6 +87,7 @@ class ReportProcessingService:
                 "steps": result.steps,
             }
 
+        # Build the step payload and return all transport-ready data
         step_payload = {
             "decision": result.decision,
             "reason": result.reason,
