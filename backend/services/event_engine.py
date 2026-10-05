@@ -1281,13 +1281,11 @@ class EventEngine:
             snapshot = empty.toVersion()
             snapshot["scenario_id"] = None
             snapshot["action_stack"] = empty.getActionStack().toDict()
-            snapshot["saved_versions"] = empty.getSavedVersions()
             return snapshot
 
         snapshot = observatory.toVersion()
         snapshot["scenario_id"] = observatory.getScenarioId()
         snapshot["action_stack"] = observatory.getActionStack().toDict()
-        snapshot["saved_versions"] = observatory.getSavedVersions()
         return snapshot
 
     def _record_loaded_scenario(self, observatory, previous_snapshot):

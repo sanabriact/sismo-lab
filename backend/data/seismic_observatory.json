@@ -1,5 +1,13 @@
 {
+<<<<<<< HEAD
     "scenario_id": "66fca493-3ee6-4f8b-b7bb-68e04b113d2d",
+=======
+<<<<<<< HEAD
+    "scenario_id": "822890a4-62eb-47d4-8cff-d4baabee6377",
+=======
+    "scenario_id": "ff35e184-c5a1-4a18-a922-56f51902a4a8",
+>>>>>>> c27929c3ee4ebd68f536de0406cca0e596cc6749
+>>>>>>> f3aacfc62e6437656a53d99ce67e6b79d9be7d3a
     "avl_tree": {
         "root": {
             "value": {
@@ -623,7 +631,15 @@
         "items": [
             {
                 "action_type": "LOAD_SCENARIO",
+<<<<<<< HEAD
                 "datetime": "2026-09-10T15:31:57+00:00",
+=======
+<<<<<<< HEAD
+                "datetime": "2026-09-29T20:03:33+00:00",
+=======
+                "datetime": "2026-04-30T22:04:57+00:00",
+>>>>>>> c27929c3ee4ebd68f536de0406cca0e596cc6749
+>>>>>>> f3aacfc62e6437656a53d99ce67e6b79d9be7d3a
                 "before_snapshot": null,
                 "inverse_action": "CLEAR_SCENARIO",
                 "undo_data": {

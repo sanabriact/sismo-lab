@@ -36,8 +36,7 @@ class SeismicObservatory:
         self.association_manager = AssociationManager()
         self.metrics = Metrics()
 
-        # ===================== versiones y modo de ejecución =====================
-        self.saved_versions = []          
+        # ===================== modo de ejecución =====================
         self.execution_mode = "normal"  
         
         # ===================== Escenario =========================
@@ -106,10 +105,6 @@ class SeismicObservatory:
         return self.metrics
     def setMetrics(self,metrics):
         self.metrics = metrics
-    def getSavedVersions(self):
-        return self.saved_versions
-    def setSavedVersions(self,versions):
-        self.saved_versions = versions
     def getExecutionMode(self):
         return self.execution_mode
     def setExecutionMode(self, mode):
@@ -256,7 +251,6 @@ class SeismicObservatory:
             "t":self.t,
             "association_manager":objectToDict(self.association_manager),
             "metrics": objectToDict(self.metrics),
-            "saved_versions":[objectToDict(version) for version in self.saved_versions],
             "execution_mode":self.execution_mode
         }
 
@@ -280,6 +274,5 @@ class SeismicObservatory:
         observatory.t = data["t"]
         observatory.association_manager = AssociationManager.fromDict(data["association_manager"])
         observatory.metrics = Metrics.fromDict(data["metrics"])
-        observatory.saved_versions = data["saved_versions"]
         observatory.execution_mode = data.get("execution_mode", "normal")
         return observatory
