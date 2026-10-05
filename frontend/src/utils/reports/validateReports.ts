@@ -1,3 +1,7 @@
+// ------------------------------------------------------------------
+// v al id at eR ep or ts
+// ------------------------------------------------------------------
+
 import type { ReportInput, ReportsPayload } from "../../models/interfaces/reports/Report";
 
 const REQUIRED_FIELDS: (keyof ReportInput)[] = [

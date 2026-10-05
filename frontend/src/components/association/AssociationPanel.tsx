@@ -1,3 +1,7 @@
+// ------------------------------------------------------------------
+// A ss oc ia ti on Pa ne l
+// ------------------------------------------------------------------
+
 import { Link2, Search } from "lucide-react";
 import type { QueryEvent } from "../../models/interfaces/query/Query";
 import type { AssociationQueryResponse } from "../../models/interfaces/association/Association";

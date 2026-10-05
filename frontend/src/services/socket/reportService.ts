@@ -1,3 +1,7 @@
+// ------------------------------------------------------------------
+// r ep or tS er vi ce
+// ------------------------------------------------------------------
+
 import { socketService } from "./socketService";
 import type {
     AIReportStartPayload,

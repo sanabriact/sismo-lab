@@ -1,3 +1,7 @@
+// ------------------------------------------------------------------
+// S ce na ri oB ri dg e
+// ------------------------------------------------------------------
+
 import { socketService } from "../socket/socketService";
 import { applyScenarioPayload, applyScenarioStatus } from "../../utils/scenario/ApplyScenario";
 import type { ScenarioLoadedPayload } from "../../models/interfaces/scenery/ScenarioLoadedPayload";

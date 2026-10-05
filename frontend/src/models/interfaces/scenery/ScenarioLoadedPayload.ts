@@ -1,3 +1,7 @@
+// ------------------------------------------------------------------
+// S ce na ri oL oa de dP ay lo ad
+// ------------------------------------------------------------------
+
 import type { ExecutionMode } from "../../types/observatory/ExecutionMode";
 
 export interface ScenarioLoadedPayload {

@@ -16,7 +16,7 @@ El objetivo es construir una solución coherente y explicar cómo las abstraccio
 
 Son obligatorias las reglas de datos, prioridad, comparación e integridad descritas en este documento. Los equipos deben decidir cómo representarlas y cómo organizar la solución. Las decisiones abiertas deben documentarse, implementarse y sustentarse con ejemplos y análisis de costo.
 
-- Definan las entidades y responsabilidades necesarias para distinguir eventos, reportes, estaciones, asociaciones, versiones y operaciones. No se prescribe un número de clases ni una arquitectura (aunque si debe haber una separación de GUI y negocio).
+- Definan las entidades y responsabilidades necesarias para distinguir eventos, reportes, estaciones, asociaciones y operaciones. No se prescribe un número de clases ni una arquitectura (aunque si debe haber una separación de GUI y negocio).
 - Elijan las estructuras auxiliares, la representación de los nodos, el manejo del historial y el formato concreto del JSON. Justifiquen cada elección y las alternativas descartadas.
 - Implementen el AVL y el BST de comparación. No se permite delegar sus operaciones a bibliotecas de árboles o colecciones ordenadas. Se pueden utilizar bibliotecas para interfaz gráfica, lectura de JSON, visualización y pruebas.
 - Utilicen explícitamente una pila para deshacer y una cola para reportes pendientes. El equipo debe explicar su representación y el costo de sus operaciones.
@@ -245,15 +245,13 @@ No basta con guardar la lista de eventos. Los valores derivados almacenados se v
 
 La carga debe ser completa o no aplicarse. El esquema, las validaciones y los mensajes de error forman parte del diseño técnico que deberá sustentar el equipo. No se exige un formato JSON idéntico entre equipos.
 
-# 14 Deshacer y versiones persistentes
+# 14 Deshacer acciones
 
 La pila de retroceso debe permitir deshacer acciones sucesivas y recuperar el estado anterior exacto, incluida la topología. Cada alta, corrección, eliminación, archivo masivo, cambio de parámetros, avance del reloj, cambio de atención, carga y recuperación global constituye una acción independiente.
 
 Cada paso de procesamiento de la cola también constituye una acción. Al deshacerlo se restablecen tanto el escenario como la posición del reporte en la cola, incluso si ese paso había descartado un reporte. Las inserciones y rotaciones internas de una corrección o archivo masivo no se deshacen por separado.
 
 El estado recuperado incluye datos, histórico, referencias, cola, reloj, parámetros, modo y métricas. La representación del historial queda a cargo del equipo: deberá justificar su consumo de memoria y garantizar que cambios posteriores no alteren estados anteriores.
-
-Además de deshacer, el usuario podrá guardar versiones con nombre y restaurarlas por selección. Las versiones persisten después de cerrar el programa e incluyen el mismo estado operativo definido para la exportación. No necesitan contener la pila de retroceso ni otras versiones. Restaurar una versión es una acción que puede deshacerse.
 
 # 15 Auditoría e indicadores
 
@@ -268,11 +266,11 @@ La interfaz mantendrá visibles o accesibles los siguientes indicadores:
 - Casos LL, RR, LR y RL atendidos, junto con giros simples a izquierda y derecha. Un caso doble cuenta como un caso LR o RL y dos giros elementales.
 - Eventos por prioridad, pendientes de atención y eventos marcados con acceso costoso.
 
-Los contadores forman parte del estado restaurable: deshacer o restaurar una versión recupera sus valores anteriores. El registro de una acción debe permitir explicar cómo se obtuvieron sus métricas.
+Los contadores forman parte del estado restaurable: deshacer una acción recupera sus valores anteriores. El registro de una acción debe permitir explicar cómo se obtuvieron sus métricas.
 
 # 16 Presentación de la solución
 
-La aplicación tendrá una vista gráfica del AVL y una vista comparativa con el BST. El usuario podrá inspeccionar las claves y los enlaces, observar cambios de estructura y acceder a cola, histórico, versiones y auditoría. El equipo decide la distribución de pantallas y la técnica de dibujo. La interfaz debe comunicar qué operación ocurrió y por qué produjo ese resultado. Al igual se deberá tener una gráfica donde se observe el plano geográfico con los eventos representados como el equipo lo decida y lo sustente de manera que se interprete de manera fácil por el usuario final.
+La aplicación tendrá una vista gráfica del AVL y una vista comparativa con el BST. El usuario podrá inspeccionar las claves y los enlaces, observar cambios de estructura y acceder a cola, histórico y auditoría. El equipo decide la distribución de pantallas y la técnica de dibujo. La interfaz debe comunicar qué operación ocurrió y por qué produjo ese resultado. Al igual se deberá tener una gráfica donde se observe el plano geográfico con los eventos representados como el equipo lo decida y lo sustente de manera que se interprete de manera fácil por el usuario final.
 
 # 17 Casos mínimos para demostrar la solución
 
@@ -283,7 +281,7 @@ Cada equipo preparará datos reproducibles, declarará el estado inicial y mostr
 - **Reporte tardío.** Recibir eventos cercanos de magnitudes 5,6 a las 10:00 y 4,2 a las 10:20. Recibir después uno de magnitud 6,1 ocurrido a las 09:55. Mostrar los candidatos nuevos y el resultado de la política de selección del equipo.
 - **Rotaciones y recuperación.** Provocar los cuatro casos de balanceo. Generar una estructura degradada en estrés, repararla y demostrar que conserva identidades, orden y asociaciones. Incluir desbalances mayores que 2.
 - **Archivo masivo.** Mostrar una rama elegible con varios eventos, los criterios de desempate y la situación sin ramas elegibles. Evidenciar que una rama cuya raíz sea de baja prioridad no es elegible si contiene un descendiente de prioridad mayor. Deshacer el archivo completo.
-- **Persistencia y consistencia.** Guardar y recuperar una topología normal y otra en estrés. Rechazar un archivo inconsistente sin alterar el estado actual. Restaurar una versión después de reiniciar y deshacer una corrección y un paso de cola.
+- **Persistencia y consistencia.** Guardar y recuperar una topología normal y otra en estrés. Rechazar un archivo inconsistente sin alterar el estado actual. Volver a cargar después de reiniciar un escenario exportado y deshacer una corrección y un paso de cola.
 
 # 18 Entregables y sustentación
 

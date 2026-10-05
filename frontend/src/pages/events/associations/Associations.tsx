@@ -1,3 +1,7 @@
+// ------------------------------------------------------------------
+// A ss oc ia ti on s
+// ------------------------------------------------------------------
+
 import { useState } from "react";
 import AssociationPanel from "../../../components/association/AssociationPanel";
 import { associationService } from "../../../services/events/associationService";

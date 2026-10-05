@@ -3,9 +3,13 @@ from dataclasses import dataclass, field
 from backend.utils.quantities import hasAtMostOneDecimal, normalizeDatetime, toTenths
 
 
+# Describe the decision and observable changes from one report
 @dataclass
 class StepResult:
-    """Describe the decision and observable changes from one report."""
+
+    # -------------------------------------------------------------------------
+    # Fields
+    # -------------------------------------------------------------------------
 
     decision: str
     reason: str
@@ -18,8 +22,12 @@ class StepResult:
     rotations: list = field(default_factory=list)
     tree_changed: bool = False
 
+    # -------------------------------------------------------------------------
+    # Serialization
+    # -------------------------------------------------------------------------
+
+    # Serialize the processing result for logs or transport payloads
     def to_dict(self):
-        """Serialize the processing result for logs or transport payloads."""
         return {
             "decision": self.decision,
             "reason": self.reason,
@@ -34,27 +42,40 @@ class StepResult:
         }
 
 
+# Apply one already prepared report to the observatory domain
 class ReportProcessor:
-    """Applies one already prepared report to the observatory domain."""
 
+    # -------------------------------------------------------------------------
+    # Initialization
+    # -------------------------------------------------------------------------
+
+    # Create the processor with an optional callback for changed events
     def __init__(self, on_event_changed=None):
         self.on_event_changed = on_event_changed or (lambda observatory, event_id: None)
 
+    # -------------------------------------------------------------------------
+    # Report application
+    # -------------------------------------------------------------------------
+
+    # Apply one validated report and classify its domain outcome
     def apply(self, observatory, report, metrics_service=None):
-        """Apply one validated report and classify its domain outcome."""
         station_id = report.getStation().getId()
         event_id = report.getEventId()
         revision = report.getRevision()
+
+        # Reject reports that fail validation
         invalid_reason = self._validate(observatory, report)
         if invalid_reason is not None:
             observatory.getMetrics().incrementDiscardedReports()
             return StepResult("rejected_invalid", invalid_reason, event_id, revision, station_id)
 
+        # Reject reports for deleted events
         history = observatory.getHistory()
         if event_id in history.getDeletedIds():
             observatory.getMetrics().incrementDiscardedReports()
             return StepResult("rejected_deleted", "El evento fue eliminado y no puede reanudarse", event_id, revision, station_id)
 
+        # Route the report to the active or archived handler
         event = observatory.searchEventById(event_id)
         if event is not None:
             return self._apply_active(observatory, event, report)
@@ -63,19 +84,8 @@ class ReportProcessor:
         if archived is not None:
             return self._apply_archived(observatory, archived, report)
 
-        # An unknown identity is a creation only for its first revision.
-        # A higher revision without an active/archived event has no base event
-        # to correct, so it must not silently create one.
-        if revision != 1:
-            observatory.getMetrics().incrementDiscardedReports()
-            return StepResult(
-                "rejected_invalid",
-                "Un evento inexistente solo puede crearse con revision 1",
-                event_id,
-                revision,
-                station_id,
-            )
-
+        # The first received report may start at any positive revision. The
+        # specification treats it as the initial known state for that id.
         result = observatory.createEvent(
             id=event_id, magnitude=report.getMagnitude(), depth=report.getDepth(),
             epicenter_x=report.getEpicenterX(), epicenter_y=report.getEpicenterY(),
@@ -89,8 +99,12 @@ class ReportProcessor:
         self.on_event_changed(observatory, event_id)
         return StepResult("created", "Evento creado correctamente", event_id, revision, station_id, key_after=list(event.getKey()), tree_changed=True)
 
+    # -------------------------------------------------------------------------
+    # Active events
+    # -------------------------------------------------------------------------
+
+    # Handle a report whose event is currently present in both trees
     def _apply_active(self, observatory, event, report):
-        """Handle a report whose event is currently present in both trees."""
         event_id = report.getEventId()
         station_id = report.getStation().getId()
         current_revision = event.getCurrentRevision()
@@ -114,8 +128,12 @@ class ReportProcessor:
         observatory.getMetrics().incrementConflicts()
         return StepResult("conflict", "El reporte entra en conflicto con los datos vigentes", event_id, report.getRevision(), station_id, key_before, key_before)
 
+    # -------------------------------------------------------------------------
+    # Archived events
+    # -------------------------------------------------------------------------
+
+    # Handle a report that may reactivate an archived event
     def _apply_archived(self, observatory, event, report):
-        """Handle a report that may reactivate an archived event."""
         event_id = report.getEventId()
         station_id = report.getStation().getId()
         key_before = list(event.getKey())
@@ -143,8 +161,12 @@ class ReportProcessor:
         self.on_event_changed(observatory, event_id)
         return StepResult("reactivated", "Evento archivado reactivado correctamente", event_id, report.getRevision(), station_id, key_before, list(event.getKey()), tree_changed=True)
 
+    # -------------------------------------------------------------------------
+    # Validation
+    # -------------------------------------------------------------------------
+
+    # Check station, clock, precision, and domain ranges before mutation
     def _validate(self, observatory, report):
-        """Check station, clock, precision, and domain ranges before mutation."""
         station_ids = {station.getId() for station in observatory.getStations()}
         if report.getStation().getId() not in station_ids:
             return "La estación no pertenece al escenario"
@@ -160,8 +182,8 @@ class ReportProcessor:
             return "Los valores del reporte están fuera de rango"
         return None
 
+    # Return whether all numeric report values fit domain limits
     def _valid_report_values(self, report):
-        """Return whether all numeric report values fit domain limits."""
         return (
             -2 <= report.getMagnitude() <= 10
             and 0 <= report.getDepth() <= 700
@@ -169,8 +191,12 @@ class ReportProcessor:
             and 0 <= report.getEpicenterY() <= 1000
         )
 
+    # -------------------------------------------------------------------------
+    # Data comparison
+    # -------------------------------------------------------------------------
+
+    # Compare normalized values to identify an idempotent confirmation
     def _same_data(self, event, report):
-        """Compare normalized values to identify an idempotent confirmation."""
         return (
             toTenths(event.getKey()[1]) == toTenths(report.getMagnitude())
             and toTenths(event.getDepth()) == toTenths(report.getDepth())

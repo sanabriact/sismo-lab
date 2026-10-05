@@ -1,3 +1,7 @@
+// ------------------------------------------------------------------
+// C lo ck St at e
+// ------------------------------------------------------------------
+
 export type ClockOperation = "idle" | "pending" | "failed";
 
 export interface ClockState {

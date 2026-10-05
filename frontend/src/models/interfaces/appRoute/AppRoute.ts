@@ -1,3 +1,7 @@
+// ------------------------------------------------------------------
+// A pp Ro ut e
+// ------------------------------------------------------------------
+
 import type { ComponentType, LazyExoticComponent } from "react";
 
 export interface AppRoute {

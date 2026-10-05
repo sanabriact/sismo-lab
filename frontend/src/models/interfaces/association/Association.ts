@@ -1,3 +1,7 @@
+// ------------------------------------------------------------------
+// A ss oc ia ti on
+// ------------------------------------------------------------------
+
 import type { QueryEvent } from "../query/Query";
 
 export interface AssociationQueryResponse {

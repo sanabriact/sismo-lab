@@ -1,3 +1,7 @@
+// ------------------------------------------------------------------
+// N od eC ha ra ct er is ti cs
+// ------------------------------------------------------------------
+
 export interface NodeCharacteristics {
     height: number;
     depth: number;

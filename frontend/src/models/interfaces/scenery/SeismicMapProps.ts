@@ -1,3 +1,7 @@
+// ------------------------------------------------------------------
+// S ei sm ic Ma pP ro ps
+// ------------------------------------------------------------------
+
 import type { SeismicEvent } from "../tree/SeismicEvent";
 import type { Zone } from "./Zone";
 import type { Station } from "../station/Station";

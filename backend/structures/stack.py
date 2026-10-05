@@ -1,3 +1,7 @@
+# ------------------------------------------------------------------
+# s ta ck
+# ------------------------------------------------------------------
+
 from backend.utils.json_utils import objectToDict
 from backend.models.action import Action
 class Stack:

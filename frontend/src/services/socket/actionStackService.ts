@@ -1,3 +1,7 @@
+// ------------------------------------------------------------------
+// a ct io nS ta ck Se rv ic e
+// ------------------------------------------------------------------
+
 import { socketService } from "./socketService";
 import { ObservatoryService } from "../seismicObservatory/seismicObservatoryService";
 import { scenarioStore } from "../../stores/scenario/ScenarioStore";

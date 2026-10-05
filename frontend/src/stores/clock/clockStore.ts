@@ -1,3 +1,7 @@
+// ------------------------------------------------------------------
+// c lo ck St or e
+// ------------------------------------------------------------------
+
 import { Observable } from "../Observable";
 import type { ClockState } from "../../models/interfaces/realTime/ClockState";
 

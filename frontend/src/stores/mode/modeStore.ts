@@ -1,3 +1,7 @@
+// ------------------------------------------------------------------
+// m od eS to re
+// ------------------------------------------------------------------
+
 import type { ModeState } from "../../models/interfaces/realTime/ModeState";
 import { Observable } from "../Observable";
 

@@ -1,21 +1,19 @@
 import queue
 import threading
-import time
-from datetime import timedelta
 from backend.models.seismic_observatory import SeismicObservatory
 from backend.services.reports.report_processor import ReportProcessor
 from backend.services.reports.report_queue_service import ReportQueueService
-from backend.services.seismic_observatory_service import ScenarioValidationError
+from backend.services.reports.report_processing_service import ReportProcessingService
 from backend.services.archive.archive_tree_service import ArchiveTreeService
 from backend.services.actions.action_stack_service import ActionStackError, ActionStackService
 from backend.services.query.query_service import QueryService
 from backend.services.history.history_service import HistoryService
 from backend.services.parameters.scenario_parameters_service import ScenarioParametersService
-from backend.helpers.ai_reports import (
-    generate_deterministic_reports,
-    request_reports_from_llm,
-    validate_generated_report_shape,
-)
+from backend.services.ai_client.ai_report_service import AIReportService
+from backend.services.scenario.scenario_load_service import ScenarioLoadService
+from backend.services.clock.realtime_clock_service import RealtimeClockService
+from backend.services.events.event_lifecycle_service import EventLifecycleService
+from backend.services.mode.execution_mode_service import ExecutionModeService
 
 class EventEngine:
     """
@@ -40,6 +38,20 @@ class EventEngine:
         self.scenario_id = None
         self.report_queue_service = ReportQueueService()
         self.report_processor = ReportProcessor()
+        self.report_processing_service = ReportProcessingService(
+            self.report_queue_service,
+            self.report_processor,
+        )
+        self.event_lifecycle_service = EventLifecycleService(
+            service,
+            self.report_processor,
+            self.report_queue_service,
+        )
+        self.execution_mode_service = ExecutionModeService(
+            stress_mode_manager,
+            getattr(self.service, "metrics_service", None),
+        )
+        self.ai_report_service = AIReportService()
         self.archive_tree_service = ArchiveTreeService()
         self.action_stack_service = ActionStackService()
         # The engine owns the query service just like the other domain services.
@@ -53,19 +65,24 @@ class EventEngine:
         self.report_queue_running = False
         self.report_queue_paused = False
         self.scenario_manager = None
-        self.scenario_validator = None
+        self.scenario_load_service = ScenarioLoadService(
+            service,
+            self.parameters_service,
+        )
         self.scenario_loaded = None
+        self.ai_generation_loop = None
         self._recovery_before_version = 0
         self._recovery_before_indicators = {}
-        self.clock_realtime_interval = 1.0
-        # The clock is broadcast every second, but disk persistence is less
-        # frequent because the simulation state does not need one file write
-        # per visual tick.
-        self.clock_persistence_interval = 10.0
-        self.clock_realtime_running = False
-        self._clock_realtime_anchor_monotonic = None
-        self._clock_realtime_anchor_time = None
-        self._clock_last_persist_monotonic = None
+        # The service owns automatic clock progression; the engine still
+        # coordinates locks, actions, persistence, and public responses.
+        self.clock_service = RealtimeClockService(
+            socketio=socketio,
+            lock=self.lock,
+            get_observatory=self.get_observatory,
+            get_scenario_id=lambda: self.scenario_id,
+            save_observatory=self._save_observatory,
+            refresh_metrics=self._refresh_clock_metrics,
+        )
 
     def set_scenario_manager(self, manager):
         """Register the manager that prepares the generator after a load."""
@@ -73,11 +90,15 @@ class EventEngine:
 
     def set_scenario_validator(self, validator):
         """Register the manager that validates uploaded scenario content."""
-        self.scenario_validator = validator
+        self.scenario_load_service.set_validator(validator)
 
     def set_scenario_loaded_notifier(self, notifier):
         """Register the event-bus callback used after a scenario is activated."""
         self.scenario_loaded = notifier
+
+    def set_ai_generation_loop(self, generation_loop):
+        """Register the worker used by the continuous AI report generator."""
+        self.ai_generation_loop = generation_loop
 
     def set_observatory(self, observatory):
         """Replace the active scenario and reset its event sequence."""
@@ -111,6 +132,51 @@ class EventEngine:
             "T": observatory.getT(),
         })
 
+    def _complete_operation(
+        self,
+        observatory,
+        action_type,
+        before_version,
+        before_indicators,
+        details=None,
+        steps=None,
+    ):
+        """Apply the common post-operation metrics, action, and save steps."""
+        metrics_service = getattr(self.service, "metrics_service", None)
+        if metrics_service is not None:
+            metrics_service.refresh_derived_metrics(observatory)
+            if steps is not None:
+                metrics_service.register_rotation_steps(
+                    observatory.getMetrics(),
+                    steps,
+                )
+            metrics_service.record_operation(
+                observatory=observatory,
+                action_type=action_type,
+                before_version=before_version,
+                before_indicators=before_indicators,
+                details=details or {},
+            )
+        self._save_observatory(observatory)
+
+    def _save_observatory(self, observatory):
+        """Persist the active state through the service boundary."""
+        save_method = getattr(self.service, "saveObservatory", None)
+        if callable(save_method):
+            return save_method(observatory)
+        return False
+
+    def _refresh_clock_metrics(self, observatory):
+        """Refresh derived indicators after automatic clock progression."""
+        metrics_service = getattr(self.service, "metrics_service", None)
+        if metrics_service is not None:
+            metrics_service.refresh_derived_metrics(observatory)
+
+    @property
+    def clock_realtime_running(self):
+        """Expose the clock worker state for existing callers."""
+        return self.clock_service.running
+
     def get_parameters(self):
         observatory = self.get_or_load_observatory()
         with self.lock:
@@ -137,16 +203,13 @@ class EventEngine:
             observatory.setL(after["L"])
             observatory.setT(after["T"])
             observatory.setAssociationLimits(after["W"], after["R"])
-            if hasattr(self.service, "metrics_service"):
-                self.service.metrics_service.refresh_derived_metrics(observatory)
-                self.service.metrics_service.record_operation(
-                    observatory=observatory,
-                    action_type="change_parameter",
-                    before_version=before_version,
-                    before_indicators=before_indicators,
-                    details={"parameters_before": before, "parameters_after": after},
-                )
-            self.service.saveObservatory(observatory)
+            self._complete_operation(
+                observatory,
+                "change_parameter",
+                before_version,
+                before_indicators,
+                {"parameters_before": before, "parameters_after": after},
+            )
             return {"ok": True, "changed": True, **after}
 
     def getL(self):
@@ -276,16 +339,14 @@ class EventEngine:
             metrics.incrementMassArchives()
             for _ in result["subtree"]["affected_ids"]:
                 metrics.incrementArchivedEvents()
-            self.service.metrics_service.refresh_derived_metrics(self.observatory)
-            self.service.metrics_service.record_operation(
-                observatory=self.observatory,
-                action_type="mass_archive",
-                before_version=before_version,
-                before_indicators=before_indicators,
-                details={"root_id": result["subtree"]["root_id"],
-                         "affected_ids": result["subtree"]["affected_ids"]},
+            self._complete_operation(
+                self.observatory,
+                "mass_archive",
+                before_version,
+                before_indicators,
+                {"root_id": result["subtree"]["root_id"],
+                 "affected_ids": result["subtree"]["affected_ids"]},
             )
-            self.service.saveObservatory(self.observatory)
             return result
 
     def clock_snapshot(self):
@@ -311,15 +372,13 @@ class EventEngine:
             )
             current_time = self.observatory.getClock().advanceHours(hours)
             self._reset_realtime_anchor_locked(current_time)
-            self.service.metrics_service.refresh_derived_metrics(self.observatory)
-            self.service.metrics_service.record_operation(
-                observatory=self.observatory,
-                action_type="advance_clock",
-                before_version=before_version,
-                before_indicators=before_indicators,
-                details={"hours": float(hours)},
+            self._complete_operation(
+                self.observatory,
+                "advance_clock",
+                before_version,
+                before_indicators,
+                {"hours": float(hours)},
             )
-            self.service.saveObservatory(self.observatory)
             payload = {
                 "scenarioId": self.scenario_id,
                 "currentTime": self.observatory.getClock().getCurrentTimeText(),
@@ -342,15 +401,13 @@ class EventEngine:
             )
             current_time = self.observatory.getClock().advanceTo(moment)
             self._reset_realtime_anchor_locked(current_time)
-            self.service.metrics_service.refresh_derived_metrics(self.observatory)
-            self.service.metrics_service.record_operation(
-                observatory=self.observatory,
-                action_type="advance_clock_to",
-                before_version=before_version,
-                before_indicators=before_indicators,
-                details={"target": self.observatory.getClock().getCurrentTimeText()},
+            self._complete_operation(
+                self.observatory,
+                "advance_clock_to",
+                before_version,
+                before_indicators,
+                {"target": self.observatory.getClock().getCurrentTimeText()},
             )
-            self.service.saveObservatory(self.observatory)
             payload = {
                 "scenarioId": self.scenario_id,
                 "currentTime": self.observatory.getClock().getCurrentTimeText(),
@@ -364,26 +421,8 @@ class EventEngine:
         previous = self.observatory
         previous_snapshot = self._snapshot_for_load(previous)
         with self.lock:
-            previous_parameters = self.parameters_service.getAll()
-            try:
-                if self.scenario_validator is not None:
-                    validated = self.scenario_validator.loadFromText(content, stress_mode=False)
-                    if validated is None:
-                        raise ScenarioValidationError(self.scenario_validator.errors)
-                observatory = self.service.loadScenarioFromText(content)
-                if self.scenario_validator is not None:
-                    try:
-                        self.scenario_validator.loadOptionalSections(observatory, validated)
-                    except (AttributeError, IndexError, KeyError, TypeError, ValueError) as error:
-                        raise ScenarioValidationError([
-                            f"Secciones opcionales inválidas: {error}"
-                        ]) from error
-                    self.service.metrics_service.refresh_derived_metrics(observatory)
-                if hasattr(self.service, "saveObservatory"):
-                    self.service.saveObservatory(observatory)
-            except Exception:
-                self.parameters_service.update(previous_parameters)
-                raise
+            observatory = self.scenario_load_service.load_text(content)
+            self._save_observatory(observatory)
 
         if self.scenario_manager is not None:
             self.scenario_manager.load_scenario(observatory)
@@ -393,8 +432,6 @@ class EventEngine:
         self._record_loaded_scenario(observatory, previous_snapshot)
         return observatory
 
-    MAX_AI_REPORTS = 25
-
     def pending_count(self):
         """Return the number of reports currently waiting in the FIFO queue."""
         with self.lock:
@@ -402,124 +439,17 @@ class EventEngine:
                 return 0
             return len(self.observatory.getReportQueue().items)
 
-    def _build_generation_context(self):
-        """Build a detached snapshot used by the AI report generator."""
-        observatory = self.observatory
-        if observatory is None:
-            raise ValueError("no_scenario")
-
-        active = []
-        for event in observatory.getAVLTree().index.values():
-            event = event.getValue()
-            
-            data = event.toDict()
-            data["event_id"] = event.getKey()[2]
-            data.pop("key", None)
-            active.append(data)
-
-        archived = []
-        for event_id, event in observatory.getHistory().getArchived().items():
-            data = event.toDict()
-            data["event_id"] = event_id
-            data.pop("key", None)
-            archived.append(data)
-
-        deleted_ids = observatory.getHistory().getDeletedIds()
-        existing_ids = {item["event_id"] for item in active + archived}
-
-        return {
-            "clock": observatory.getClock().getCurrentTime(),
-            "station_ids": [station.getId() for station in observatory.getStations()],
-            "events": active + archived,
-            "deleted_ids": sorted(deleted_ids),
-            "used_ids": existing_ids.union(deleted_ids),
-        }
-
-    def _validate_report(self, report, context):
-        """Validate an AI candidate against the active scenario snapshot."""
-        try:
-            problem = validate_generated_report_shape(
-                report,
-                set(context["station_ids"]),
-                self.observatory.getClock(),
-            )
-        except (AttributeError, TypeError, ValueError) as error:
-            return str(error)
-
-        if problem:
-            return problem
-
-        known_ids = {event["event_id"] for event in context["events"]}
-        deleted_ids = set(context["deleted_ids"])
-        event_id = report["event_id"]
-        revision = report["revision"]
-
-        if event_id in deleted_ids:
-            return "El event_id pertenece a un evento eliminado"
-        if event_id not in known_ids and revision != 1:
-            return "Un evento inexistente solo puede crearse con revision 1"
-
-        return None
-
     def generate_reports_from_ai(self, payload):
         """Generate, validate and enqueue one AI batch through the normal report flow."""
-        payload = payload if isinstance(payload, dict) else {}
-        count = max(1, min(int(payload.get("count", 5)), self.MAX_AI_REPORTS))
-        seed = int(payload.get("seed", 42))
-
         with self.lock:
             if self.observatory is None:
                 return {"ok": False, "reports": [], "issues": ["no_scenario"]}
             scenario_id = self.scenario_id
-            context = self._build_generation_context()
+            context = self.ai_report_service.build_context(self.observatory)
 
-        try:
-            candidates = request_reports_from_llm(
-                context,
-                count,
-                payload.get("scenario"),
-            )
-        except Exception as error:
-            candidates = []
-            llm_issue = str(error)
-        else:
-            llm_issue = None
-
-        valid = []
-        issues = []
-
-        if llm_issue:
-            issues.append({"source": "ai", "reason": llm_issue})
-
-        for report in candidates:
-            problem = self._validate_report(report, context)
-            if problem:
-                issues.append({"source": "ai", "reason": problem, "report": report})
-            else:
-                valid.append(report)
-
-        missing = count - len(valid)
-        fallback_count = 0
-        if missing > 0:
-            fallback = generate_deterministic_reports(context, missing, seed)
-            for report in fallback:
-                problem = self._validate_report(report, context)
-                if problem:
-                    issues.append({"source": "fallback", "reason": problem, "report": report})
-                else:
-                    valid.append(report)
-                    fallback_count += 1
-                if len(valid) >= count:
-                    break
-
-        valid = valid[:count]
-
-        if not valid:
-            return {
-                "ok": False,
-                "reports": [],
-                "issues": issues or ["No se pudieron generar reportes válidos"],
-            }
+        generation = self.ai_report_service.generate(context, payload)
+        if not generation["ok"]:
+            return generation
 
         with self.lock:
             if self.observatory is None or self.scenario_id != scenario_id:
@@ -529,39 +459,87 @@ class EventEngine:
                     "issues": ["El escenario cambió durante la generación"],
                 }
 
-            queue_reports = [
-                self._normalize_ai_report(report)
-                for report in valid
-            ]
+            queue_reports = [self.ai_report_service.normalize(report) for report in generation["reports"]]
 
         enqueue_result = self.prepare_reports(queue_reports)
         if not enqueue_result.get("ok", False):
             return {
                 "ok": False,
                 "reports": [],
-                "issues": enqueue_result.get("issues", []) + issues,
+                "issues": enqueue_result.get("issues", []) + generation["issues"],
             }
 
         return {
             "ok": True,
-            "reports": valid,
-            "issues": issues,
-            "fallback_count": fallback_count,
+            "reports": generation["reports"],
+            "issues": generation["issues"],
+            "fallback_count": generation["fallback_count"],
             "snapshot": enqueue_result.get("snapshot"),
         }
 
-    def _normalize_ai_report(self, report):
-        """Convert an AI report into the exact payload expected by ReportQueueService."""
+    def start_ai_report_generation(self, payload=None, minimum_interval=2):
+        """Validate AI generation settings and start the report worker."""
+        if self.ai_generation_loop is None:
+            return {"ok": False, "running": False, "reason": "ai_unavailable"}
+
+        payload = payload if isinstance(payload, dict) else {}
+        interval = max(
+            minimum_interval,
+            float(payload.get("intervalSeconds", 10)),
+        )
+
+        with self.lock:
+            if self.observatory is None:
+                return {
+                    "ok": False,
+                    "running": self.ai_generation_loop.is_running(),
+                    "reason": "no_scenario",
+                }
+
+            known_ids = [station.getId() for station in self.observatory.getStations()]
+            requested_ids = payload.get("stationIds")
+            station_ids = (
+                [station_id for station_id in requested_ids if station_id in known_ids]
+                if requested_ids
+                else known_ids
+            )
+
+            if not station_ids:
+                return {
+                    "ok": False,
+                    "running": self.ai_generation_loop.is_running(),
+                    "reason": "no_valid_stations",
+                }
+
+        started = self.ai_generation_loop.start({
+            "interval": interval,
+            "station_ids": station_ids,
+            "scenario": payload.get("scenario"),
+            "seed": int(payload.get("seed", 42)),
+        })
+
+        self.socketio.emit("reports:ai_status", {"running": True})
         return {
-            "event_id": int(report["event_id"]),
-            "revision": int(report["revision"]),
-            "station": int(report["station"]),
-            "magnitude": report["magnitude"],
-            "depth": report["depth"],
-            "epicenter_x": report["epicenter_x"],
-            "epicenter_y": report["epicenter_y"],
-            "datetime": report["datetime"],
+            "ok": True,
+            "running": True,
+            "alreadyRunning": not started,
         }
+
+    def stop_ai_report_generation(self):
+        """Stop the continuous AI report worker."""
+        if self.ai_generation_loop is None:
+            return {"ok": False, "running": False, "reason": "ai_unavailable"}
+
+        self.ai_generation_loop.stop()
+        self.socketio.emit("reports:ai_status", {"running": False})
+        return {"ok": True, "running": False}
+
+    def ai_report_generation_status(self):
+        """Return the current state of the continuous AI report worker."""
+        if self.ai_generation_loop is None:
+            return {"ok": False, "running": False, "reason": "ai_unavailable"}
+        return {"ok": True, "running": self.ai_generation_loop.is_running()}
+
     def create_event_from_api(self, data):
         """Create a manual event while keeping the active state in the engine."""
         try:
@@ -610,7 +588,7 @@ class EventEngine:
                 self.scenario_manager.current_index = 0
                 self.scenario_manager.event_count = 0
             self.service.metrics_service.refresh_derived_metrics(restored)
-            self.service.saveObservatory(restored)
+            self._save_observatory(restored)
             payload = {
                 "scenarioId": self.scenario_id,
                 "actionType": action.getActionType(),
@@ -635,10 +613,12 @@ class EventEngine:
         with self.lock:
             if self.observatory is None:
                 return {"ok": False, "reason": "no_scenario", "enqueued": 0, "issues": []}
-            result = self.report_queue_service.prepare(self.observatory, raw_reports)
+            result, snapshot = self.report_processing_service.prepare(
+                self.observatory,
+                raw_reports,
+            )
             if result["ok"]:
-                self.service.saveObservatory(self.observatory)
-            snapshot = self.report_queue_service.snapshot(self.observatory)
+                self._save_observatory(self.observatory)
         self.socketio.emit("queue:updated", snapshot)
         return {**result, "snapshot": snapshot}
 
@@ -650,10 +630,12 @@ class EventEngine:
 
             # Use the same report service as JSON batches so both entry points
             # have identical validation and FIFO behavior.
-            result = self.report_queue_service.prepare(self.observatory, [raw_report])
-            snapshot = self.report_queue_service.snapshot(self.observatory)
+            result, snapshot = self.report_processing_service.prepare(
+                self.observatory,
+                [raw_report],
+            )
             if result["ok"]:
-                self.service.saveObservatory(self.observatory)
+                self._save_observatory(self.observatory)
 
         self.socketio.emit("queue:updated", snapshot)
         return {**result, "snapshot": snapshot}
@@ -669,68 +651,13 @@ class EventEngine:
             if report_queue.is_empty():
                 return {"ok": False, "reason": "empty_queue"}
 
-            before_version = self.observatory.toVersion()
-            before_indicators = self.service.metrics_service.capture_display(self.observatory)
-            report = report_queue.dequeue()
-            self.observatory.begin_visual_operation()
-            try:
-                result = self.report_processor.apply(
-                    self.observatory,
-                    report,
-                    self.service.metrics_service,
-                )
-            finally:
-                result_steps = self.observatory.finish_visual_operation()
-
-            result.steps = result_steps
-            result.rotations = [
-                step.get("rotation", {}).get("type")
-                for step in result_steps
-                if step.get("kind") == "rotation"
-            ]
-            metrics_service = self.service.metrics_service
-            metrics_service.refresh_derived_metrics(self.observatory)
-            metrics_service.register_rotation_steps(self.observatory.getMetrics(), result_steps)
-            metrics_service.record_operation(
-                observatory=self.observatory,
-                action_type="queue_step",
-                before_version=before_version,
-                before_indicators=before_indicators,
-                details={
-                    "event_id": result.event_id,
-                    "revision": result.revision,
-                    "station_id": result.station_id,
-                    "decision": result.decision,
-                    "reason": result.reason,
-                    "rotations": result.rotations,
-                    "report_position": 1,
-                },
+            step_payload, tree_payload, snapshot = self.report_processing_service.process_one(
+                self.observatory,
+                self.scenario_id,
+                self._complete_operation,
+                self._next_sequence,
+                self.service.metrics_service,
             )
-            self.service.saveObservatory(self.observatory)
-
-            event = self.observatory.searchEventById(result.event_id) if result.tree_changed else None
-            tree_payload = None
-            if result.tree_changed:
-                self.sequence += 1
-                tree_payload = {
-                    "scenarioId": self.scenario_id,
-                    "sequence": self.sequence,
-                    "mode": self.observatory.getExecutionMode(),
-                    "stationId": result.station_id,
-                    "event": event.toDict() if event is not None else None,
-                    "steps": result.steps,
-                }
-
-            step_payload = {
-                "decision": result.decision,
-                "reason": result.reason,
-                "eventId": result.event_id,
-                "revision": result.revision,
-                "stationId": result.station_id,
-                "rotations": result.rotations,
-                "remaining": report_queue.size(),
-            }
-            snapshot = self.report_queue_service.snapshot(self.observatory)
 
         if tree_payload is not None:
             self.socketio.emit("tree:operation", tree_payload)
@@ -778,6 +705,11 @@ class EventEngine:
             if self.observatory is None:
                 return {"ok": False, "reason": "no_scenario"}
             return self.report_queue_service.snapshot(self.observatory)
+
+    def _next_sequence(self):
+        """Return the next visual operation sequence number."""
+        self.sequence += 1
+        return self.sequence
 
     def enqueue(self, station, data):
         """Queue one generated event for the engine's background worker."""
@@ -838,7 +770,10 @@ class EventEngine:
             if self.recovering:
                 raise ValueError("La estructura se está recuperando; inténtalo de nuevo")
 
-            operation = self.service.createManualEvent(self.observatory, data)
+            operation = self.event_lifecycle_service.create_manual_event(
+                self.observatory,
+                data,
+            )
             self.sequence += 1
             operation["scenarioId"] = self.scenario_id
             operation["sequence"] = self.sequence
@@ -857,155 +792,29 @@ class EventEngine:
 
     # Method for updating manual events
     def update_manual_event(self, data):
-        # Lock the update process to avoid simultaneous changes to the same data.
         with self.lock:
-            # An event can only be updated when a scenario is loaded.
             if self.observatory is None:
-                return {
-                    "ok": False,
-                    "reason": "no_scenario"
-                }
-
-            # Do not allow updates while the tree is being recovered.
+                return {"ok": False, "reason": "no_scenario"}
             if self.recovering:
-                return {
-                    "ok": False,
-                    "reason": "busy"
-                }
+                return {"ok": False, "reason": "busy"}
 
-            # Read and validate the immutable event ID sent by the client.
-            event_id = data.get("event_id")
-            if isinstance(event_id, bool) or not isinstance(event_id, int):
-                return {
-                    "ok": False,
-                    "reason": "invalid_event_id"
-                }
-
-            # The event can still be active or archived in history.
-            event = self.observatory.searchEventById(event_id)
-            if event is None:
-                event = self.observatory.getHistory().getArchived().get(event_id)
-            if event is None:
-                return {
-                    "ok": False,
-                    "reason": "event_not_found"
-                }
-
-            try:
-                # Build and validate the report for this correction.
-                report = self.service.build_manual_update_report(
-                    self.observatory,
-                    event_id,
-                    data
-                )
-            except ValueError as error:
-                return {
-                    "ok": False,
-                    "reason": str(error)
-                }
-
-            # Save the current state before changing anything.
-            # This allows the action to be undone later.
-            before_version = self.observatory.toVersion()
-            before_indicators = self.service.metrics_service.capture_display(
-                self.observatory
+            result = self.event_lifecycle_service.update_manual_event(
+                self.observatory,
+                data,
+                self._complete_operation,
+                self._save_observatory,
+                self.scenario_id,
             )
-            queue = self.observatory.getReportQueue()
+            response = result["response"]
+            if not response.get("ok"):
+                return response
 
-            # Keep a tree notification only when the event key changes.
-            tree_operation = None
-
-            # Keep FIFO order when reports are already pending.
-            if not queue.is_empty():
-                self.observatory.enqueueReport(report)
-
-                # Save the queue change in the undo stack.
-                self.service.metrics_service.record_operation(
-                    observatory=self.observatory,
-                    action_type="updated_event",
-                    before_version=before_version,
-                    before_indicators=before_indicators,
-                    details={
-                        "event_id": event_id,
-                        "revision": report.getRevision(),
-                        "queued": True
-                    }
-                )
-
-                self.service.saveObservatory(self.observatory)
-                snapshot = self.report_queue_service.snapshot(self.observatory)
-
-                response = {
-                    "ok": True,
-                    "queued": True,
-                    "revision": report.getRevision(),
-                    "snapshot": snapshot
-                }
-
-            # Apply the correction immediately when the queue is empty.
-            else:
-                self.observatory.begin_visual_operation()
-                try:
-                    result = self.report_processor.apply(
-                        self.observatory,
-                        report
-                    )
-                finally:
-                    # Always close the visual operation.
-                    steps = self.observatory.finish_visual_operation()
-
-                if result.decision not in ("updated", "reactivated"):
-                    return {
-                        "ok": False,
-                        "reason": result.reason,
-                        "decision": result.decision
-                    }
-
-                self.service.metrics_service.refresh_derived_metrics(
-                    self.observatory
-                )
-                self.service.metrics_service.register_rotation_steps(
-                    self.observatory.getMetrics(),
-                    steps
-                )
-
-                # Save the state before the direct update for undo.
-                self.service.metrics_service.record_operation(
-                    observatory=self.observatory,
-                    action_type="updated_event",
-                    before_version=before_version,
-                    before_indicators=before_indicators,
-                    details={
-                        "event_id": event_id,
-                        "revision": report.getRevision(),
-                        "queued": False,
-                        "key_changed": result.tree_changed
-                    }
-                )
-
-                self.service.saveObservatory(self.observatory)
-                snapshot = self.report_queue_service.snapshot(self.observatory)
-                event = self.observatory.searchEventById(event_id)
-
-                response = {
-                    "ok": True,
-                    "queued": False,
-                    "revision": report.getRevision(),
-                    "event": event.toDict(),
-                    "snapshot": snapshot
-                }
-
-                # Build the tree notification only if the key changed.
-                if result.tree_changed:
-                    self.sequence += 1
-                    tree_operation = {
-                        "scenarioId": self.scenario_id,
-                        "sequence": self.sequence,
-                        "mode": self.observatory.getExecutionMode(),
-                        "stationId": report.getStation().getId(),
-                        "event": event.toDict(),
-                        "steps": steps,
-                    }
+            event_id = data["event_id"]
+            snapshot = response["snapshot"]
+            tree_operation = result["tree_operation"]
+            if tree_operation is not None:
+                self.sequence += 1
+                tree_operation["sequence"] = self.sequence
 
         # Emit Socket.IO events after releasing the lock.
         if tree_operation is not None:
@@ -1033,116 +842,23 @@ class EventEngine:
                     "reason": "busy"
                 }
 
-            event = self.observatory.searchEventById(event_id)
-            if event is None:
-                return {
-                    "ok": False, 
-                    "reason": "event_not_found"
-                }
-
-            # No registrar una acción si no hay cambio real.
-            if event.getAttentionStatus() == "reviewed":
-                return {
-                    "ok": True,
-                    "changed": False,
-                    "event": event.toDict(),
-                }
-
-            # 1. Guardar el estado ANTES del cambio.
-            before_version = self.observatory.toVersion()
-            before_indicators = self.service.metrics_service.capture_display(
-                self.observatory
-            )
-            previous_status = event.getAttentionStatus()
-
-            # 2. Ejecutar la operación.
-            event.setAttentionStatus("reviewed")
-
-            # 3. Recalcular indicadores y registrar la acción exitosa.
-            self.service.metrics_service.refresh_derived_metrics(self.observatory)
-            self.service.metrics_service.record_operation(
-                observatory=self.observatory,
-                action_type="mark_reviewed",
-                before_version=before_version,
-                before_indicators=before_indicators,
-                details={
-                    "event_id": event_id,
-                    "previous_attention_status": previous_status,
-                    "new_attention_status": "reviewed",
-                },
+            return self.event_lifecycle_service.mark_reviewed(
+                self.observatory,
+                event_id,
+                self._complete_operation,
             )
 
-            # 4. Persistir tanto el cambio como la pila de acciones.
-            self.service.saveObservatory(self.observatory)
-
-            return {
-                "ok": True,
-                "changed": True,
-                "event": event.toDict(),
-            }
-            
     def delete_event_by_id(self, eventId):
         with self.lock:
             if self.observatory is None:
-                return {
-                    "ok": False,
-                    "reason": "no_scenario"
-                }
-            
+                return {"ok": False, "reason": "no_scenario"}
             if self.recovering:
-                return {
-                    "ok": False,
-                    "reason": "recovering"
-                }
-            
-            if not isinstance(eventId, int):
-                return {
-                    "ok": False,
-                    "reason": "invalid_id"
-                }
-                
-            event = self.observatory.searchEventById(eventId)
-            if event is None:
-                return {
-                    "ok": False,
-                    "reason": "event_not_found"
-                }
-                
-            before_version = self.observatory.toVersion()
-            before_indicators = self.service.metrics_service.capture_display(self.observatory)
-            
-            try:
-                deleted = self.observatory.deleteEventById(eventId)
-                
-                if not deleted:
-                    return {
-                        "ok": False,
-                        "reason": "delete_failed"
-                    }
-                
-                self.service.metrics_service.refresh_derived_metrics(self.observatory)
-                self.service.metrics_service.record_operation(
-                    self.observatory,
-                    "delete_event",
-                    before_version,
-                    before_indicators,
-                    {
-                        "event_id": eventId,
-                        "deleted_event": event.toDict()
-                    }
-                )
-                
-                self.service.saveObservatory(self.observatory)
-                return {
-                    "ok": True,
-                    "event_id": eventId
-                }
-            
-            except (ValueError, KeyError) as error:
-                return {
-                    "ok": False,
-                    "reason": str(error)
-                }
+                return {"ok": False, "reason": "recovering"}
+            return self.event_lifecycle_service.delete_event(
+                self.observatory,
+                eventId,
+                self._complete_operation,
+            )
       
     # ===================== Execution mode (normal / stress) =====================
 
@@ -1183,10 +899,10 @@ class EventEngine:
                 before_indicators = self.service.metrics_service.capture_display(
                     self.observatory
                 )
-                report = self.stress_mode_manager.activateStressMode(
+                report = self.execution_mode_service.activate_stress(
                     self.observatory
                 )
-                self.service.saveObservatory(self.observatory)
+                self._save_observatory(self.observatory)
                 self._notify_mode(report, "stress", "changed")
                 return {"ok": True, "mode": "stress"}
 
@@ -1207,27 +923,12 @@ class EventEngine:
     def _recover(self):
         try:
             with self.lock:
-                report = self.stress_mode_manager.deactivateStressMode(
-                    self.observatory
+                report = self.execution_mode_service.recover_normal(
+                    self.observatory,
+                    self._recovery_before_version,
+                    self._recovery_before_indicators,
                 )
-                self.service.metrics_service.refresh_derived_metrics(
-                    self.observatory
-                )
-                self.service.metrics_service.register_rotation_steps(
-                    self.observatory.getMetrics(),
-                    report["steps"],
-                )
-                self.service.metrics_service.record_operation(
-                    observatory=self.observatory,
-                    action_type="recover_avl_balance",
-                    before_version=self._recovery_before_version,
-                    before_indicators=self._recovery_before_indicators,
-                    details={
-                        "mode_before": "stress",
-                        "mode_after": self.observatory.getExecutionMode(),
-                    },
-                )
-                self.service.saveObservatory(self.observatory)
+                self._save_observatory(self.observatory)
                 steps = report["steps"]
                 payload = None
 
@@ -1281,13 +982,11 @@ class EventEngine:
             snapshot = empty.toVersion()
             snapshot["scenario_id"] = None
             snapshot["action_stack"] = empty.getActionStack().toDict()
-            snapshot["saved_versions"] = empty.getSavedVersions()
             return snapshot
 
         snapshot = observatory.toVersion()
         snapshot["scenario_id"] = observatory.getScenarioId()
         snapshot["action_stack"] = observatory.getActionStack().toDict()
-        snapshot["saved_versions"] = observatory.getSavedVersions()
         return snapshot
 
     def _record_loaded_scenario(self, observatory, previous_snapshot):
@@ -1299,8 +998,7 @@ class EventEngine:
                 previous_snapshot,
                 {"source": "scenario_load"},
             )
-            if hasattr(self.service, "saveObservatory"):
-                self.service.saveObservatory(observatory)
+            self._save_observatory(observatory)
 
     def _announce_scenario_loaded(self, observatory):
         """Publish scenario activation from the engine, after all state is ready."""
@@ -1322,60 +1020,17 @@ class EventEngine:
     # ------------------------------------------------------------------
 
     def _start_realtime_clock_locked(self):
-        """Start the authoritative clock loop after a scenario is available."""
-        if self.observatory is None or self.clock_realtime_running:
-            return
-
-        self.clock_realtime_running = True
-        now = time.monotonic()
-        self._clock_realtime_anchor_monotonic = now
-        self._clock_realtime_anchor_time = self.observatory.getClock().getCurrentTime()
-        self._clock_last_persist_monotonic = now
-        self.socketio.start_background_task(self._run_realtime_clock)
+        """Delegate automatic clock startup to the clock service."""
+        self.clock_service.start(self._run_realtime_clock)
 
     def _stop_realtime_clock_locked(self):
-        """Stop the clock loop before replacing the active scenario."""
-        self.clock_realtime_running = False
-        self._clock_realtime_anchor_monotonic = None
-        self._clock_realtime_anchor_time = None
-        self._clock_last_persist_monotonic = None
+        """Delegate automatic clock shutdown to the clock service."""
+        self.clock_service.stop()
 
     def _reset_realtime_anchor_locked(self, current_time):
-        """Continue real-time progression from a manually selected instant."""
-        now = time.monotonic()
-        self._clock_realtime_anchor_monotonic = now
-        self._clock_realtime_anchor_time = current_time
-        # Manual advances persist immediately in their own operation, so the
-        # next automatic checkpoint starts a fresh ten-second interval.
-        self._clock_last_persist_monotonic = now
+        """Restart automatic progression from a manually selected instant."""
+        self.clock_service.reset_anchor(current_time)
 
     def _run_realtime_clock(self):
-        """Advance and broadcast the simulation clock once per real second."""
-        while True:
-            self.socketio.sleep(self.clock_realtime_interval)
-
-            with self.lock:
-                if not self.clock_realtime_running or self.observatory is None:
-                    return
-
-                now = time.monotonic()
-                elapsed_seconds = int(now - self._clock_realtime_anchor_monotonic)
-                target_time = self._clock_realtime_anchor_time + timedelta(
-                    seconds=elapsed_seconds
-                )
-                clock = self.observatory.getClock()
-
-                if target_time <= clock.getCurrentTime():
-                    continue
-
-                clock.advanceTo(target_time)
-                self.service.metrics_service.refresh_derived_metrics(self.observatory)
-                if now - self._clock_last_persist_monotonic >= self.clock_persistence_interval:
-                    self.service.saveObservatory(self.observatory)
-                    self._clock_last_persist_monotonic = now
-                payload = {
-                    "scenarioId": self.scenario_id,
-                    "currentTime": clock.getCurrentTimeText(),
-                }
-
-            self.socketio.emit("clock:updated", payload)
+        """Keep the old engine entry point while the service owns the loop."""
+        self.clock_service.run()

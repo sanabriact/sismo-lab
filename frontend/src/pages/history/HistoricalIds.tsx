@@ -1,3 +1,7 @@
+// ------------------------------------------------------------------
+// H is to ri ca lI ds
+// ------------------------------------------------------------------
+
 import { ArrowLeft, Hash } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";

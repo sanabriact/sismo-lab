@@ -2,13 +2,12 @@ from backend.models.action import Action
 
 
 class MetricsService:
-    """
-    Centraliza indicadores y trazabilidad de acciones.
 
-    Las métricas derivables se recalculan desde el árbol.
-    Los contadores acumulativos se conservan en Metrics.
-    """
+    # -------------------------------------------------------------------------
+    # Initialization
+    # -------------------------------------------------------------------------
 
+    # Create the service with empty traversal buffers
     def __init__(self):
         self._inorder = []
         self._preorder = []
@@ -16,6 +15,11 @@ class MetricsService:
         self._leaves = 0
         self.action_stack_service = None
 
+    # -------------------------------------------------------------------------
+    # Display indicators
+    # -------------------------------------------------------------------------
+
+    # Capture the tree indicators and cumulative counters for display
     def capture_display(self, observatory):
         self._reset_traversals()
 
@@ -38,6 +42,11 @@ class MetricsService:
             "counters": observatory.getMetrics().toDict(),
         }
 
+    # -------------------------------------------------------------------------
+    # Derived metrics
+    # -------------------------------------------------------------------------
+
+    # Recalculate every derivable metric from the current tree
     def refresh_derived_metrics(self, observatory):
         metrics = observatory.getMetrics()
         root = observatory.getAVLTree().root
@@ -61,6 +70,11 @@ class MetricsService:
         metrics.setEventsByPriority(3, 0)
         self._count_priorities(observatory.getAVLTree().root, metrics)
 
+    # -------------------------------------------------------------------------
+    # Rotation tracking
+    # -------------------------------------------------------------------------
+
+    # Update the rotation counters from the steps of one operation
     def register_rotation_steps(self, metrics, steps):
         for step in steps:
             if step.get("kind") != "rotation":
@@ -87,6 +101,11 @@ class MetricsService:
                 metrics.incrementSimpleRightRotations()
                 metrics.incrementSimpleLeftRotations()
 
+    # -------------------------------------------------------------------------
+    # Action recording
+    # -------------------------------------------------------------------------
+
+    # Push an action with before/after indicators and their delta
     def record_operation(
         self,
         observatory,
@@ -120,6 +139,11 @@ class MetricsService:
             # Keep direct service usage compatible with existing callers.
             observatory.getActionStack().push(action)
 
+    # -------------------------------------------------------------------------
+    # Delta calculation
+    # -------------------------------------------------------------------------
+
+    # Calculate the change between two indicator snapshots
     def calculate_delta(self, before_indicators, after_indicators):
         return {
             "tree": self._calculate_numeric_delta(
@@ -132,6 +156,7 @@ class MetricsService:
             ),
         }
 
+    # Subtract numeric values key by key and ignore the rest
     def _calculate_numeric_delta(self, before, after):
         result = {}
 
@@ -146,12 +171,18 @@ class MetricsService:
 
         return result
 
+    # -------------------------------------------------------------------------
+    # Traversal helpers
+    # -------------------------------------------------------------------------
+
+    # Clear the traversal buffers before a new collection
     def _reset_traversals(self):
         self._inorder = []
         self._preorder = []
         self._postorder = []
         self._leaves = 0
 
+    # Collect keys in pre-order
     def _collect_preorder(self, node):
         if node is None:
             return
@@ -160,6 +191,7 @@ class MetricsService:
         self._collect_preorder(node.getLeftChild())
         self._collect_preorder(node.getRightChild())
 
+    # Collect keys in in-order and count the leaves along the way
     def _collect_inorder(self, node):
         if node is None:
             return
@@ -172,6 +204,7 @@ class MetricsService:
 
         self._collect_inorder(node.getRightChild())
 
+    # Collect keys in post-order
     def _collect_postorder(self, node):
         if node is None:
             return
@@ -180,6 +213,7 @@ class MetricsService:
         self._collect_postorder(node.getRightChild())
         self._postorder.append(node.getValue().getKey())
 
+    # Collect keys level by level using a queue
     def _collect_levels(self, root, queue=None, result=None):
         if queue is None:
             queue = []
@@ -203,11 +237,17 @@ class MetricsService:
 
         return self._collect_levels(None, queue, result)
 
+    # Return the height of a node, using -1 for an empty tree
     def _height(self, node):
         if node is None:
             return -1
         return node.getHeight()
 
+    # -------------------------------------------------------------------------
+    # Counting helpers
+    # -------------------------------------------------------------------------
+
+    # Count events whose attention status is pending
     def _count_pending(self, node):
         if node is None:
             return 0
@@ -220,6 +260,7 @@ class MetricsService:
             + self._count_pending(node.getRightChild())
         )
 
+    # Count events flagged as expensive to access
     def _count_expensive(self, node):
         if node is None:
             return 0
@@ -232,6 +273,7 @@ class MetricsService:
             + self._count_expensive(node.getRightChild())
         )
 
+    # Accumulate the number of events per priority level
     def _count_priorities(self, node, metrics):
         if node is None:
             return

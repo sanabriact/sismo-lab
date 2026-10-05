@@ -1,3 +1,7 @@
+// ------------------------------------------------------------------
+// u se Ob se rv ab le
+// ------------------------------------------------------------------
+
 import { useSyncExternalStore } from "react";
 import type { Observable } from "./Observable";
 

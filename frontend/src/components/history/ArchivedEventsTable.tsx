@@ -1,14 +1,13 @@
+// ------------------------------------------------------------------
+// A rc hi ve dE ve nt sT ab le
+// ------------------------------------------------------------------
+
 import type { ArchivedEvent } from "../../models/interfaces/history/History";
+import { formatDateTime } from "../../utils/formatDateTime";
 
 interface ArchivedEventsTableProps {
     events: ArchivedEvent[];
 }
-
-const formatDateTime = (value: string) => `${new Date(value).toLocaleString("es-CO", {
-    timeZone: "UTC",
-    dateStyle: "short",
-    timeStyle: "medium",
-})} UTC`;
 
 const ArchivedEventsTable = ({ events }: ArchivedEventsTableProps) => (
     <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">

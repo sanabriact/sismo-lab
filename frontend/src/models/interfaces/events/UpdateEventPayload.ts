@@ -1,3 +1,7 @@
+// ------------------------------------------------------------------
+// U pd at eE ve nt Pa yl oa d
+// ------------------------------------------------------------------
+
 export interface UpdateEventPayload {
     event_id: number;
     magnitude: number;

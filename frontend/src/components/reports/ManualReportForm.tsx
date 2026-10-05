@@ -1,3 +1,7 @@
+// ------------------------------------------------------------------
+// M an ua lR ep or tF or m
+// ------------------------------------------------------------------
+
 import { useEffect, useState, type FormEvent } from "react";
 import type { Station } from "../../models/interfaces/station/Station";
 import type { ReportInput } from "../../models/interfaces/reports/Report";

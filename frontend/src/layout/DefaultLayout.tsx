@@ -1,3 +1,7 @@
+// ------------------------------------------------------------------
+// D ef au lt La yo ut
+// ------------------------------------------------------------------
+
 import { Outlet } from "react-router-dom";
 import Sidebar from "../components/sidebar/Sidebar";
 

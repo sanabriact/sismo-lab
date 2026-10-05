@@ -1,3 +1,7 @@
+// ------------------------------------------------------------------
+// t oS ce na ri oM ap
+// ------------------------------------------------------------------
+
 import type { SeismicObservatory } from "../../models/interfaces/observatory/SeismicObservatory";
 import type { Node } from "../../models/interfaces/tree/Node";
 import type { SeismicEvent } from "../../models/interfaces/tree/SeismicEvent";

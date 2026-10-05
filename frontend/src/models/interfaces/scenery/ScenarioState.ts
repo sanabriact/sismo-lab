@@ -1,3 +1,7 @@
+// ------------------------------------------------------------------
+// S ce na ri oS ta te
+// ------------------------------------------------------------------
+
 import type { ScenarioOperation } from "../../types/scenario/ScenarioOperation";
 import type { ScenarioSource } from "../../types/scenario/ScenarioSource";
 import type { Zone } from "./Zone";

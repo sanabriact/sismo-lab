@@ -1,3 +1,7 @@
+// ------------------------------------------------------------------
+// s oc ke tB ri dg e
+// ------------------------------------------------------------------
+
 import { socketService } from "./socketService";
 import { ObservatoryService } from "../seismicObservatory/seismicObservatoryService";
 import { applyModeChanged } from "../../utils/mode/ApplyModeChanged";

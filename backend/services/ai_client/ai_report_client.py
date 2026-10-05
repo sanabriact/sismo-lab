@@ -2,15 +2,15 @@ import json
 import os
 import random
 from datetime import timedelta
-
 from dotenv import load_dotenv
 from groq import Groq
+from backend.utils.quantities import hasAtMostOneDecimal, normalizeDatetime, parseDatetime
 
-from backend.utils.quantities import hasAtMostOneDecimal, parseDatetime
-
+# Load the environment variables from the .env file
 load_dotenv()
 
 
+# JSON schema that the AI response must follow
 REPORT_SCHEMA = {
     "type": "object",
     "additionalProperties": False,
@@ -48,14 +48,19 @@ REPORT_SCHEMA = {
 
 
 class AIReportClient:
-    """Generate report batches using the same Groq pattern as the scenario client."""
 
+    # Initialize the client with the Groq API key and model from the environment
     def __init__(self):
         api_key = os.getenv("GROQ_API_KEY_REPORTS")
         model = os.getenv("GROQ_MODEL")
         self.client = Groq(api_key=api_key)
         self.model = model
 
+    # -------------------------------------------------------------------------
+    # Generating reports with the AI
+    # -------------------------------------------------------------------------
+
+    # Request a batch of reports from the AI and return at most count of them
     def generate(self, context, count, scenario_hint=None):
         prompt = self._build_prompt(context, count, scenario_hint)
 
@@ -93,6 +98,11 @@ class AIReportClient:
 
         return reports[:count]
 
+    # -------------------------------------------------------------------------
+    # Building the prompt
+    # -------------------------------------------------------------------------
+
+    # Build the prompt with the clock, stations, existing events and generation rules
     def _build_prompt(self, context, count, scenario_hint):
         existing = context["events"]
         return f"""
@@ -111,14 +121,14 @@ class AIReportClient:
                 {context["deleted_ids"]}
 
                 REGLAS DE IDENTIDAD:
-                1. Un reporte crea un evento ÚNICAMENTE si su event_id no existe entre los eventos
-                activos ni archivados Y revision = 1.
+                1. Un reporte crea un evento si su event_id no existe entre los eventos
+                activos ni archivados. La primera revision puede ser cualquier entero positivo.
                 2. Si event_id ya existe en activos o archivados, el reporte debe usar ese mismo id.
                 3. Para un evento existente puedes generar:
                 - revision igual a la actual y exactamente los mismos datos: confirmación;
                 - revision menor que la actual: reporte antiguo;
                 - revision mayor que la actual: corrección.
-                4. Nunca generes revision > 1 para un event_id que no exista en activos o archivados.
+                4. Para un event_id nuevo, conserva la revision positiva que genere el reporte.
                 5. No uses IDs eliminados.
 
                 REGLAS DE DATOS:
@@ -133,7 +143,8 @@ class AIReportClient:
                 - Para confirmaciones, conserva exactamente magnitud, profundidad, epicentro y fecha
                 del evento existente y cambia solamente la estación si quieres representar otra estación.
                 - Para correcciones, aumenta la revisión y modifica al menos un dato del evento.
-                - Prioriza una mezcla natural de creaciones, confirmaciones y correcciones.
+                - Incluye al menos una creación con un event_id nuevo y revision 1.
+                - Completa el lote con una mezcla natural de creaciones, confirmaciones y correcciones.
                 - Si no hay eventos existentes, genera creaciones nuevas con revision 1.
 
                 CONTEXTO OPCIONAL:
@@ -143,13 +154,21 @@ class AIReportClient:
                 """
 
 
+# -----------------------------------------------------------------------------
+# Compatibility wrapper
+# -----------------------------------------------------------------------------
+
+# Request a batch of reports using the report client
 def request_reports_from_llm(context, count, scenario_hint=None):
-    """Compatibility wrapper around the report client."""
     return AIReportClient().generate(context, count, scenario_hint)
 
 
-def generate_deterministic_reports(context, count, seed):
-    """Deterministic fallback that respects active/archived identity semantics."""
+# -----------------------------------------------------------------------------
+# Deterministic fallback generation
+# -----------------------------------------------------------------------------
+
+# Generate reports without the AI, respecting active/archived identity semantics
+def generate_deterministic_reports(context, count, seed, include_new=False):
     rng = random.Random(seed)
     clock = context["clock"]
     stations = list(context["station_ids"])
@@ -161,7 +180,9 @@ def generate_deterministic_reports(context, count, seed):
         if not stations:
             break
 
-        if not existing:
+        if include_new and not reports:
+            kind = "new"
+        elif not existing:
             kind = "new"
         else:
             kind = rng.choice(["new", "new", "confirm", "stale", "correct"])
@@ -211,8 +232,12 @@ def generate_deterministic_reports(context, count, seed):
     return reports
 
 
+# -----------------------------------------------------------------------------
+# Validation of generated reports
+# -----------------------------------------------------------------------------
+
+# Validate only transport/domain shape; identity is validated by EventEngine
 def validate_generated_report_shape(report, station_ids, clock):
-    """Validate only transport/domain shape; identity is validated by EventEngine."""
     if not isinstance(report, dict):
         return "El reporte debe ser un objeto"
 
@@ -256,7 +281,15 @@ def validate_generated_report_shape(report, station_ids, clock):
     except (TypeError, ValueError, KeyError):
         return "datetime inválido"
 
-    if not clock.canOccurAt(date):
+    # The detached AI context stores the current clock value as a datetime.
+    # Accept a SimulationClock too, because this validator is also useful for
+    # callers that validate a report before detaching the context.
+    if hasattr(clock, "canOccurAt"):
+        can_occur = clock.canOccurAt(date)
+    else:
+        can_occur = date <= normalizeDatetime(clock)
+
+    if not can_occur:
         return "La fecha del reporte supera el reloj del escenario"
 
     return None

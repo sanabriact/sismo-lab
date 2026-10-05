@@ -1,3 +1,7 @@
+// ------------------------------------------------------------------
+// c lo ck Se rv ic e
+// ------------------------------------------------------------------
+
 import { socketService } from "./socketService";
 import { clockStore } from "../../stores/clock/clockStore";
 import type { ClockAdvanceResponse } from "../../models/interfaces/realTime/ClockAdvanceResponse";

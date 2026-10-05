@@ -1,3 +1,7 @@
+// ------------------------------------------------------------------
+// T re eV ie wP ro ps
+// ------------------------------------------------------------------
+
 import type { Tree } from "./Tree";
 import type { NodeCharacteristics } from "./NodeCharacteristics";
 

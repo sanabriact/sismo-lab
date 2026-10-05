@@ -1,3 +1,7 @@
+// ------------------------------------------------------------------
+// A pp ly Sn ap sh ot
+// ------------------------------------------------------------------
+
 import type { ExecutionMode } from "../../models/types/observatory/ExecutionMode";
 import { modeStore } from "../../stores/mode/modeStore";
 

@@ -1,3 +1,7 @@
+# ------------------------------------------------------------------
+# s oc ke t b ro ad ca st er
+# ------------------------------------------------------------------
+
 from backend.services.socket.realtime_service import emit_event
 
 class SocketBroadcaster:

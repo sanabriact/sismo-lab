@@ -1,3 +1,7 @@
+// ------------------------------------------------------------------
+// s tr uc tu re Au di tS er vi ce
+// ------------------------------------------------------------------
+
 import { socketService } from "./socketService";
 import type { StructureAuditResponse } from "../../models/interfaces/realTime/StructureAudit";
 

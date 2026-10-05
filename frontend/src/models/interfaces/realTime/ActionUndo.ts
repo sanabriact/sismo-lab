@@ -1,3 +1,7 @@
+// ------------------------------------------------------------------
+// A ct io nU nd o
+// ------------------------------------------------------------------
+
 export interface ActionUndonePayload {
     scenarioId: string | null;
     actionType: string;

@@ -1,3 +1,7 @@
+// ------------------------------------------------------------------
+// M an ua lE ve nt Pa yl oa d
+// ------------------------------------------------------------------
+
 export interface ManualEventPayload {
     id: number;
     magnitude: number;

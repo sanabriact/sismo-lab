@@ -1,9 +1,10 @@
 class AuditState:
-    """
-    Guarda el resultado mientras se recorre el árbol.
-    Esta clase no modifica el AVL.
-    """
 
+    # -------------------------------------------------------------------------
+    # Initialization
+    # -------------------------------------------------------------------------
+
+    # Create an empty audit state for one traversal of the tree
     def __init__(self, tree, mode):
         self.tree = tree
         self.mode = mode
@@ -17,6 +18,11 @@ class AuditState:
         self.keys = set()
         self.max_imbalance = 0
 
+    # -------------------------------------------------------------------------
+    # Recording issues and warnings
+    # -------------------------------------------------------------------------
+
+    # Record a generic structural issue for one event
     def add_issue(self, event_id, issue_type, message):
         issue = {
             "id": event_id,
@@ -27,6 +33,7 @@ class AuditState:
         self.issues.append(issue)
         self.get_node_report(event_id)["issues"].append(issue)
 
+    # Record a mismatch between the stored height and the recalculated one
     def add_height_issue(self, event_id, stored, calculated):
         issue = {
             "id": event_id,
@@ -42,6 +49,7 @@ class AuditState:
         self.issues.append(issue)
         self.get_node_report(event_id)["issues"].append(issue)
 
+    # Record a balance factor outside the valid AVL range
     def add_balance_issue(self, event_id, balance_factor):
         issue = {
             "id": event_id,
@@ -56,6 +64,7 @@ class AuditState:
         self.issues.append(issue)
         self.get_node_report(event_id)["issues"].append(issue)
 
+    # Record an imbalance that is tolerated because of stress mode
     def add_imbalance_warning(self, event_id, balance_factor):
         warning = {
             "id": event_id,
@@ -70,6 +79,11 @@ class AuditState:
         self.warnings.append(warning)
         self.get_node_report(event_id)["warnings"].append(warning)
 
+    # -------------------------------------------------------------------------
+    # Building the result
+    # -------------------------------------------------------------------------
+
+    # Return the report of a node, creating it on first access
     def get_node_report(self, event_id):
         report_key = str(event_id)
 
@@ -82,10 +96,12 @@ class AuditState:
 
         return self.node_reports[report_key]
 
+    # Summarize the traversal into the final audit result
     def build_result(self):
         balanced = self.max_imbalance <= 1
         has_structure_errors = len(self.issues) > 0
 
+        # Stress mode tolerates imbalance, so only structural errors count
         if self.mode == "stress":
             ok = not has_structure_errors
         else:
@@ -99,4 +115,3 @@ class AuditState:
             "warnings": self.warnings,
             "node_reports": list(self.node_reports.values()),
         }
-

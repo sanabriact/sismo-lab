@@ -1,3 +1,7 @@
+// ------------------------------------------------------------------
+// P ar am et er s
+// ------------------------------------------------------------------
+
 import { useEffect, useState, type FormEvent } from "react";
 import { Activity, Clock3, MapPin, Save, Settings2 } from "lucide-react";
 import { parametersService } from "../../services/parameters/parametersService";
