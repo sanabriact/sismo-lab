@@ -1,3 +1,7 @@
+// ------------------------------------------------------------------
+// S ce na ri oS er vi ce
+// ------------------------------------------------------------------
+
 import { socketService } from "../socket/socketService";
 import { applyScenarioFailed, applyScenarioPayload, applyScenarioPending } from "../../utils/scenario/ApplyScenario";
 import type { ScenarioLoadRequest } from "../../models/types/scenario/ScenarioLoadRequest";

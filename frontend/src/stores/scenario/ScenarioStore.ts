@@ -1,3 +1,7 @@
+// ------------------------------------------------------------------
+// S ce na ri oS to re
+// ------------------------------------------------------------------
+
 import type { ScenarioState } from "../../models/interfaces/scenery/ScenarioState";
 import { Observable } from "../Observable";
 

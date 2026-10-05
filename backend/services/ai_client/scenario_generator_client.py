@@ -2,14 +2,16 @@ import json
 import os
 import random
 from datetime import timedelta, datetime, timezone
-from pathlib import Path
-from dotenv import load_dotenv
 from groq import Groq
-from backend.utils.quantities import parseDatetime
+
+# -----------------------------------------------------------------------------
+# Generation modes and response schema
+# -----------------------------------------------------------------------------
 
 # Accepted spellings for the three generation modes (Spanish and English).
 VALID_MODES = ("empty", "insertion", "topology")
 
+# JSON schema that the AI response must follow
 SCENARIO_SCHEMA = {
     "type": "object",
     "additionalProperties": False,
@@ -43,6 +45,10 @@ response_format={
     "type": "json_schema",
     "json_schema": {"name": "scenario", "strict": True, "schema": SCENARIO_SCHEMA},
 }
+
+# -----------------------------------------------------------------------------
+# Prompt template
+# -----------------------------------------------------------------------------
 
 # Placeholders use <<NAME>> so they never collide with the JSON braces
 # inside the prompt (an f-string would break on them).
@@ -168,6 +174,12 @@ AUTOVERIFICACIÓN FINAL (hazla en silencio antes de responder)
 - ¿El orden del arreglo "events" respeta EXECUTION_MODE?
 Si alguna comprobación falla, corrige antes de responder.
 """
+
+# -----------------------------------------------------------------------------
+# Random clock generation
+# -----------------------------------------------------------------------------
+
+# Generate a random UTC clock text inside the year 2026
 def generate_random_clock():
     start = datetime(2026, 1, 1, tzinfo=timezone.utc)
     end = datetime(2026, 12, 31, 23, 59, 59, tzinfo=timezone.utc)
@@ -175,13 +187,21 @@ def generate_random_clock():
     clock = start + timedelta(seconds=random.randint(0, span_seconds))
     return clock.strftime("%Y-%m-%dT%H:%M:%SZ")
 
+
 class AIScenarioGeneratorService:
+
+    # Initialize the service with the Groq API key and model from the environment
     def __init__(self):
         api_key = os.getenv("GROQ_API_KEY_SCENARIO")
         model = os.getenv("GROQ_MODEL")
         self.client = Groq(api_key=api_key)
         self.model = model
 
+    # -------------------------------------------------------------------------
+    # Generating scenarios with the AI
+    # -------------------------------------------------------------------------
+
+    # Request a random scenario for the given mode from the AI and return its data
     def generate(self, mode):
         if mode not in VALID_MODES:
             raise ValueError(f"Modo de generación no soportado: {mode}. Utiliza {', '.join(VALID_MODES)}")
@@ -202,7 +222,7 @@ class AIScenarioGeneratorService:
             "<<N_EVENTS>>": str(event_quantity),
             "<<EXECUTION_MODE>>": execution_mode,
         }
-        
+
         prompt = SCENARIO_PROMPT_TEMPLATE
         for placeholder, value in replacements.items():
             prompt = prompt.replace(placeholder, value)

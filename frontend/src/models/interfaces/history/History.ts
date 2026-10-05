@@ -1,3 +1,7 @@
+// ------------------------------------------------------------------
+// H is to ry
+// ------------------------------------------------------------------
+
 import type { SeismicEvent } from "../tree/SeismicEvent";
 
 export interface ArchivedEvent extends SeismicEvent {

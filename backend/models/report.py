@@ -1,66 +1,31 @@
 from datetime import datetime
-
 from backend.models.station import Station
 from backend.utils.quantities import normalizeDatetime, parseDatetime
 
 
 class Report:
-    def __init__(self, event_id, revision, station,magnitude, depth, epicenter_x, epicenter_y, datetime_: datetime):
+
+    # Initialize the report sent by a station about an event
+    def __init__(self, event_id, revision, station, magnitude, depth, epicenter_x, epicenter_y, datetime_: datetime):
         if isinstance(datetime_, datetime):
             datetime_ = normalizeDatetime(datetime_)
-        self._validateData(event_id, revision, magnitude, depth,epicenter_x, epicenter_y, datetime_, station)
+        self._validateData(event_id, revision, magnitude, depth, epicenter_x, epicenter_y, datetime_, station)
 
-        self.event_id = event_id #int
-        self.revision = revision #int
-        self.station = station #station
+        self.event_id = event_id  # int
+        self.revision = revision  # int
+        self.station = station  # station
         self.magnitude = round(magnitude, 1)
         self.depth = round(depth, 1)
         self.epicenter_x = round(epicenter_x, 1)
         self.epicenter_y = round(epicenter_y, 1)
         self.datetime = datetime_
 
+    # -------------------------------------------------------------------------
+    # Validates the data used to create a report
+    # -------------------------------------------------------------------------
 
-    def getEventId(self):
-        return self.event_id
-    def setEventId(self, id):
-        self.event_id = id
-
-    def getRevision(self):
-        return self.revision
-    def setRevision(self, number):
-        self.revision = number
-
-    def getStation(self):
-        return self.station
-    def setStation(self, station):
-        self.station = station
-
-    def getMagnitude(self):
-        return self.magnitude
-    def setMagnitude(self, magnitude):
-        self.magnitude = magnitude
-
-    def getDepth(self):
-        return self.depth
-    def setDepth(self, depth):
-        self.depth = depth
-
-    def getEpicenterX(self):
-        return self.epicenter_x
-    def setEpicenterX(self, x):
-        self.epicenter_x = x
-
-    def getEpicenterY(self):
-        return self.epicenter_y
-    def serEpicenterY(self, y):
-        self.epicenter_y = y
-
-    def getDatetime(self):
-        return self.datetime
-    def setDatetime(self, date):
-        self.datetime = date
-
-    def _validateData(self, event_id, revision, magnitude, depth,epicenter_x, epicenter_y, datetime_, station):
+    # Validate the ranges and types of the report data
+    def _validateData(self, event_id, revision, magnitude, depth, epicenter_x, epicenter_y, datetime_, station):
 
         if not isinstance(event_id, int) or not (1 <= event_id <= 999999):
             raise ValueError("event_id must be an integer between 1 and 999999")
@@ -82,19 +47,103 @@ class Report:
 
         if not isinstance(station, Station):
             raise ValueError("station must be a Station instance")
-    
+
+    # ------------------------------------------------------------------
+    # Reading and writing the report attributes
+    # ------------------------------------------------------------------
+
+    # Get the id of the reported event
+    def getEventId(self):
+        return self.event_id
+
+    # Set the id of the reported event
+    def setEventId(self, id):
+        self.event_id = id
+
+    # ------------------------------------------------------------------
+
+    # Get the revision number of the report
+    def getRevision(self):
+        return self.revision
+
+    # Set the revision number of the report
+    def setRevision(self, number):
+        self.revision = number
+
+    # ------------------------------------------------------------------
+
+    # Get the station that sent the report
+    def getStation(self):
+        return self.station
+
+    # Set the station that sent the report
+    def setStation(self, station):
+        self.station = station
+
+    # ------------------------------------------------------------------
+
+    # Get the reported magnitude
+    def getMagnitude(self):
+        return self.magnitude
+
+    # Set the reported magnitude
+    def setMagnitude(self, magnitude):
+        self.magnitude = magnitude
+
+    # Get the reported depth
+    def getDepth(self):
+        return self.depth
+
+    # Set the reported depth
+    def setDepth(self, depth):
+        self.depth = depth
+
+    # ------------------------------------------------------------------
+
+    # Get the x coordinate of the reported epicenter
+    def getEpicenterX(self):
+        return self.epicenter_x
+
+    # Set the x coordinate of the reported epicenter
+    def setEpicenterX(self, x):
+        self.epicenter_x = x
+
+    # Get the y coordinate of the reported epicenter
+    def getEpicenterY(self):
+        return self.epicenter_y
+
+    # Set the y coordinate of the reported epicenter
+    def serEpicenterY(self, y):
+        self.epicenter_y = y
+
+    # ------------------------------------------------------------------
+
+    # Get the instant when the event occurred
+    def getDatetime(self):
+        return self.datetime
+
+    # Set the instant when the event occurred
+    def setDatetime(self, date):
+        self.datetime = date
+
+    # ------------------------------------------------------------------
+    # Serialization
+    # ------------------------------------------------------------------
+
+    # Convert object to dictionary
     def toDict(self):
-        return{
-            "event_id":self.event_id,
-            "revision":self.revision,
+        return {
+            "event_id": self.event_id,
+            "revision": self.revision,
             "station": self.station.toDict(),
-            "magnitude":self.magnitude,
-            "depth":self.depth,
-            "epicenter_x":self.epicenter_x,
-            "epicenter_y":self.epicenter_y,
-            "datetime":self.datetime.isoformat()
+            "magnitude": self.magnitude,
+            "depth": self.depth,
+            "epicenter_x": self.epicenter_x,
+            "epicenter_y": self.epicenter_y,
+            "datetime": self.datetime.isoformat()
         }
 
+    # Convert dictionary to object
     @classmethod
     def fromDict(cls, data, stations_by_id):
         station_data = data["station"]
@@ -102,10 +151,10 @@ class Report:
             station = Station.fromDict(station_data)
         else:
             station = stations_by_id(station_data["id"])
-        
+
             if station is None:
                 raise ValueError(f"No existe una estación con id {station_data['id']} para restaurar el reporte.")
-            
+
         report = cls.__new__(cls)
         report.event_id = data["event_id"]
         report.revision = data["revision"]
@@ -116,4 +165,3 @@ class Report:
         report.epicenter_y = data["epicenter_y"]
         report.datetime = parseDatetime(data["datetime"])
         return report
-        

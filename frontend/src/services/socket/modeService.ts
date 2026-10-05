@@ -1,3 +1,7 @@
+// ------------------------------------------------------------------
+// m od eS er vi ce
+// ------------------------------------------------------------------
+
 import { socketService } from "./socketService";
 import { modeStore } from "../../stores/mode/modeStore";
 import type { ExecutionMode } from "../../models/types/observatory/ExecutionMode";

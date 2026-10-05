@@ -2,15 +2,15 @@ import json
 import os
 import random
 from datetime import timedelta
-
 from dotenv import load_dotenv
 from groq import Groq
-
 from backend.utils.quantities import hasAtMostOneDecimal, normalizeDatetime, parseDatetime
 
+# Load the environment variables from the .env file
 load_dotenv()
 
 
+# JSON schema that the AI response must follow
 REPORT_SCHEMA = {
     "type": "object",
     "additionalProperties": False,
@@ -48,14 +48,19 @@ REPORT_SCHEMA = {
 
 
 class AIReportClient:
-    """Generate report batches using the same Groq pattern as the scenario client."""
 
+    # Initialize the client with the Groq API key and model from the environment
     def __init__(self):
         api_key = os.getenv("GROQ_API_KEY_REPORTS")
         model = os.getenv("GROQ_MODEL")
         self.client = Groq(api_key=api_key)
         self.model = model
 
+    # -------------------------------------------------------------------------
+    # Generating reports with the AI
+    # -------------------------------------------------------------------------
+
+    # Request a batch of reports from the AI and return at most count of them
     def generate(self, context, count, scenario_hint=None):
         prompt = self._build_prompt(context, count, scenario_hint)
 
@@ -93,6 +98,11 @@ class AIReportClient:
 
         return reports[:count]
 
+    # -------------------------------------------------------------------------
+    # Building the prompt
+    # -------------------------------------------------------------------------
+
+    # Build the prompt with the clock, stations, existing events and generation rules
     def _build_prompt(self, context, count, scenario_hint):
         existing = context["events"]
         return f"""
@@ -144,13 +154,21 @@ class AIReportClient:
                 """
 
 
+# -----------------------------------------------------------------------------
+# Compatibility wrapper
+# -----------------------------------------------------------------------------
+
+# Request a batch of reports using the report client
 def request_reports_from_llm(context, count, scenario_hint=None):
-    """Compatibility wrapper around the report client."""
     return AIReportClient().generate(context, count, scenario_hint)
 
 
+# -----------------------------------------------------------------------------
+# Deterministic fallback generation
+# -----------------------------------------------------------------------------
+
+# Generate reports without the AI, respecting active/archived identity semantics
 def generate_deterministic_reports(context, count, seed, include_new=False):
-    """Deterministic fallback that respects active/archived identity semantics."""
     rng = random.Random(seed)
     clock = context["clock"]
     stations = list(context["station_ids"])
@@ -214,8 +232,12 @@ def generate_deterministic_reports(context, count, seed, include_new=False):
     return reports
 
 
+# -----------------------------------------------------------------------------
+# Validation of generated reports
+# -----------------------------------------------------------------------------
+
+# Validate only transport/domain shape; identity is validated by EventEngine
 def validate_generated_report_shape(report, station_ids, clock):
-    """Validate only transport/domain shape; identity is validated by EventEngine."""
     if not isinstance(report, dict):
         return "El reporte debe ser un objeto"
 

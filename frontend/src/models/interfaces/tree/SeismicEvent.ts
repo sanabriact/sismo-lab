@@ -1,3 +1,7 @@
+// ------------------------------------------------------------------
+// S ei sm ic Ev en t
+// ------------------------------------------------------------------
+
 import type { Station } from "../station/Station";
 import type { AttentionStatus } from "../../types/event/AttentionStatus";
 import type { EventKey } from "../../types/event/EventKey";

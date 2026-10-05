@@ -1,3 +1,7 @@
+// ------------------------------------------------------------------
+// T re eO pe ra ti on
+// ------------------------------------------------------------------
+
 import type { SeismicEvent } from "../tree/SeismicEvent";
 import type { TreeStep } from "./TreeStep";
 

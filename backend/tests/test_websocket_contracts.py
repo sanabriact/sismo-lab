@@ -1,3 +1,7 @@
+# ------------------------------------------------------------------
+# t es t w eb so ck et c on tr ac ts
+# ------------------------------------------------------------------
+
 """WebSocket contract tests for the public backend events."""
 
 import backend.app as app_module

@@ -1,3 +1,7 @@
+// ------------------------------------------------------------------
+// E ve nt Li st
+// ------------------------------------------------------------------
+
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { SeismicEvent } from "../../../models/interfaces/tree/SeismicEvent";
 import { eventService } from "../../../services/events/eventService";

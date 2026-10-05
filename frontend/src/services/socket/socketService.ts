@@ -1,3 +1,7 @@
+// ------------------------------------------------------------------
+// s oc ke tS er vi ce
+// ------------------------------------------------------------------
+
 import { io, Socket } from "socket.io-client"
 
 const API_URL = import.meta.env.VITE_API_URL;

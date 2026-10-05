@@ -1,3 +1,7 @@
+// ------------------------------------------------------------------
+// l oa dS ce na ri o
+// ------------------------------------------------------------------
+
 import type { ChangeEvent } from "react";
 import { NavLink } from "react-router-dom";
 import { useObservable } from "../../stores/useObservable";

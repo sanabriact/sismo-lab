@@ -7,15 +7,26 @@ from backend.models.station import Station
 from backend.utils.quantities import parseDatetime
 from backend.services.parameters.scenario_parameters_service import ScenarioParametersService
 
+
+# Validate scenario data and load its optional sections
 class ScenarioValidator:
-    
+
+    # -------------------------------------------------------------------------
+    # Initialization
+    # -------------------------------------------------------------------------
+
+    # Create the validator with its repository and parameters service
     def __init__(self, parameters_service=None):
         self.errors = []
         self.eventIds = set()
         self.repository = JsonScenarioRepository()
         self.parameters_service = parameters_service or ScenarioParametersService()
-    
-    # Method to load the scenario
+
+    # -------------------------------------------------------------------------
+    # Scenario loading
+    # -------------------------------------------------------------------------
+
+    # Load the scenario
     def load(self, data, stress_mode):
         self.errors = []
         if not isinstance(data, dict):
@@ -35,15 +46,16 @@ class ScenarioValidator:
             }
         return scenario
 
+    # Validate the optional scenario parameter object and apply defaults
     def _normalize_parameters(self, data):
-        """Validate the optional scenario parameter object and apply defaults."""
         try:
             normalized_parameters = self.parameters_service.parameters_from_scenario(data)
         except (TypeError, ValueError) as error:
             self.errors.append(f"parameters: {error}")
             return None
         return normalized_parameters
-    
+
+    # Load and validate a scenario from a file path
     def loadFromFile(self, filepath, stress_mode):
         self.errors = []
         data = self.repository.load(filepath)
@@ -59,8 +71,8 @@ class ScenarioValidator:
             self.errors.append(f"invalid scenario data: {error}")
             return None
 
+    # Validate JSON content received from an uploaded scenario file
     def loadFromText(self, content, stress_mode=False):
-        """Validate JSON content received from an uploaded scenario file."""
         self.errors = []
         if not isinstance(content, str) or not content.strip():
             self.errors.append("the json file is empty")
@@ -91,8 +103,12 @@ class ScenarioValidator:
         except (AttributeError, IndexError, KeyError, TypeError, ValueError) as error:
             self.errors.append(f"invalid scenario data: {error}")
             return None
-    
-    # Method to see the case of scenario
+
+    # -------------------------------------------------------------------------
+    # Scenario type dispatch
+    # -------------------------------------------------------------------------
+
+    # Check which type of scenario was received and validate it
     def caseScenary(self, data, stress_mode):
         match data.get("load_type"):
             case "insertion":
@@ -114,8 +130,13 @@ class ScenarioValidator:
                 self.errors.append("load_type must be 'insertion' or 'topology'")
                 return None
 
-    # Method to comprobate if json is usable
+    # -------------------------------------------------------------------------
+    # Insertion scenario validation
+    # -------------------------------------------------------------------------
+
+    # Check that an insertion scenario is usable
     def comprobateJson(self, data):
+        # Check the required top-level fields
         required_fields = ["datetime", "zones", "stations", "events"]
         valid = True
         for field in required_fields:
@@ -138,6 +159,7 @@ class ScenarioValidator:
         stations = data.get("stations", []) if isinstance(data.get("stations", []), list) else []
         events = data.get("events", []) if isinstance(data.get("events", []), list) else []
 
+        # Validate the zones
         zone_ids = set()
         for index, zone in enumerate(zones):
             label = f"zone at index {index}"
@@ -170,6 +192,7 @@ class ScenarioValidator:
                 self.errors.append(f"{label} minimum boundaries must be less than maximum boundaries")
                 valid = False
 
+        # Validate the stations
         station_ids = set()
         for index, station in enumerate(stations):
             label = f"station at index {index}"
@@ -197,6 +220,7 @@ class ScenarioValidator:
                     self.errors.append(f"{label} {coordinate} must be numeric and between 0 and 1000")
                     valid = False
 
+        # Validate the events
         # Insertion scenarios sent by the current API use the event fields
         # consumed by SeismicObservatoryService. Legacy tree events are also
         # accepted when the manager is used directly with old scenario files.
@@ -253,6 +277,8 @@ class ScenarioValidator:
                 missing = [field for field in event_fields if field not in event]
                 self.errors.append(f"event at index {index} is missing required fields: {', '.join(missing)}")
                 valid = False
+
+        # Check that the events emitted by each station exist
         for index, station in enumerate(stations):
             if not isinstance(station, dict):
                 continue
@@ -269,8 +295,8 @@ class ScenarioValidator:
 
         return valid
 
+    # Validate event metadata shared by insertion event representations
     def validateInsertionEventMetadata(self, event, index):
-        """Validate event metadata shared by insertion event representations."""
         valid = True
         if "revision" in event:
             revision = event["revision"]
@@ -296,8 +322,12 @@ class ScenarioValidator:
                 self.errors.append(f"event at index {index} {field} must be boolean")
                 valid = False
         return valid
-    
-    # Method to comprobate if json is usable
+
+    # -------------------------------------------------------------------------
+    # Topology scenario validation
+    # -------------------------------------------------------------------------
+
+    # Check that a topology scenario is usable
     def comprobateJsonTopology(self, data):
         required_fields = ["datetime", "zones", "stations", "tree"]
         valid = True
@@ -317,7 +347,7 @@ class ScenarioValidator:
                 valid = False
         return valid
 
-    # Method to comprobate if tree is usable
+    # Check that the tree is usable
     def comprobateTree(self, data, stress_mode):
         self.eventIds = []
 
@@ -329,7 +359,7 @@ class ScenarioValidator:
         _, metadata_valid = self.validateTreeMetadata(root)
         valid = self.validateAutenticityIds(root, self.eventIds)
         valid = self.validateOrder(root, None, None) and valid
-        
+
         if not stress_mode:
             valid = self.validateBalance(root) and valid
 
@@ -341,8 +371,8 @@ class ScenarioValidator:
             valid = self.validatePriority(root, zones) and valid
         return valid and metadata_valid
 
+    # Check saved node heights and balance factors against the links
     def validateTreeMetadata(self, node):
-        """Check saved node heights and balance factors against the links."""
         if node is None:
             return -1, True
 
@@ -372,7 +402,12 @@ class ScenarioValidator:
             valid = False
 
         return expected_height, valid
-    
+
+    # -------------------------------------------------------------------------
+    # Tree structure validation
+    # -------------------------------------------------------------------------
+
+    # Validate the tree object and every node it contains
     def validateDataTree(self, tree):
         if not isinstance(tree, dict):
             self.errors.append("'tree' must be an object.")
@@ -388,7 +423,8 @@ class ScenarioValidator:
         if "root" in tree:
             valid = self.validateData(tree["root"]) and valid
         return valid
-        
+
+    # Validate the required fields of a node
     def validateDataRootFields(self, currentRoot):
         if not isinstance(currentRoot, dict):
             self.errors.append("a node must be an object or null")
@@ -403,7 +439,8 @@ class ScenarioValidator:
                 if field in currentRoot and not self.validateDataEventFields(currentRoot[field]):
                     valid = False
         return valid
-                
+
+    # Validate the required fields of an event
     def validateDataEventFields(self, event):
         if not isinstance(event, dict):
             self.errors.append("'event' must be an object")
@@ -421,7 +458,8 @@ class ScenarioValidator:
             self.errors.append("event reporting_stations must be a list")
             valid = False
         return valid
-    
+
+    # Check that a key has exactly three numeric values
     def validateDataKey(self, key):
         try:
             if len(key) != 3:
@@ -432,7 +470,8 @@ class ScenarioValidator:
             return True
         except Exception:
             return False
-        
+
+    # Validate a node and its descendants recursively
     def validateData(self, currentRoot):
         if currentRoot is None:
             return True
@@ -461,7 +500,8 @@ class ScenarioValidator:
             if child in currentRoot:
                 valid = self.validateData(currentRoot[child]) and valid
         return valid
-    
+
+    # Return the list of issues found in the basic values of an event
     def _validateData(self, id, magnitude, depth, epicenter_x, epicenter_y, date):
         issues = []
         if isinstance(magnitude, bool) or not isinstance(magnitude, (int, float)) or not (-2 <= magnitude <= 10):
@@ -476,6 +516,11 @@ class ScenarioValidator:
             issues.append("La fecha debe ser de tipo datetime")
         return issues
 
+    # -------------------------------------------------------------------------
+    # Tree integrity checks
+    # -------------------------------------------------------------------------
+
+    # Check that no event id appears twice in the tree
     def validateAutenticityIds(self, currentRoot, list_ids):
         if currentRoot is not None:
             event = currentRoot["event"]
@@ -489,19 +534,77 @@ class ScenarioValidator:
             return left_child and right_child
         else:
             return True
-        
+
+    # Check that the tree keeps the binary search order
+    def validateOrder(self, currentRoot, minKey, maxKey):
+        if currentRoot is None:
+            return True
+
+        valid = True
+        key = currentRoot["event"]["key"]
+        eventId = key[2]
+
+        if minKey is not None and self.compareKeys(key, minKey) <= 0:
+            self.errors.append(f"Event {eventId}: key {key} must be greater than {list(minKey)}")
+            valid = False
+        if maxKey is not None and self.compareKeys(key, maxKey) >= 0:
+            self.errors.append(f"Event {eventId}: key {key} must be less than {list(maxKey)}")
+            valid = False
+
+        left = self.validateOrder(currentRoot["left_child"], minKey, key)
+        right = self.validateOrder(currentRoot["right_child"], key, maxKey)
+        return valid and left and right
+
+    # Compare two keys and return -1, 0 or 1
+    def compareKeys(self, a, b):
+        a = tuple(a)
+        b = tuple(b)
+        if a < b:
+            return -1
+        if a > b:
+            return 1
+        return 0
+
+    # Check that the tree is balanced like an AVL tree
+    def validateBalance(self, root):
+        errorsBefore = len(self.errors)
+        self.calculateHeight(root)
+        return len(self.errors) == errorsBefore
+
+    # Calculate node heights and report any invalid balance factor
+    def calculateHeight(self, currentRoot):
+        if currentRoot is None:
+            return -1
+
+        leftHeight = self.calculateHeight(currentRoot["left_child"])
+        rightHeight = self.calculateHeight(currentRoot["right_child"])
+
+        balance = leftHeight - rightHeight
+        if balance not in (-1, 0, 1):
+            eventId = currentRoot["event"]["key"][2]
+            self.errors.append(f"Event {eventId}: balance factor {balance}, the tree is not AVL")
+
+        return 1 + max(leftHeight, rightHeight)
+
+    # -------------------------------------------------------------------------
+    # Station and event references
+    # -------------------------------------------------------------------------
+
+    # Check the references between events and stations in both directions
     def validateReferences(self, data):
         stationIds = self.getStationIds(data["stations"])
         event_stations_valid = self.validateEventStations(data["tree"]["root"], stationIds)
         station_events_valid = self.validateStationEvents(data["stations"])
         return event_stations_valid and station_events_valid
 
+    # Return the set of station ids
     def getStationIds(self, stations):
         stationIds = set()
         for station in stations:
             stationIds.add(station["id"])
         return stationIds
-    
+
+    # Check that every station reported by an event exists
     def validateEventStations(self, currentRoot, stationIds):
         if currentRoot is not None:
             event = currentRoot["event"]
@@ -515,7 +618,8 @@ class ScenarioValidator:
             own_valid = all(stationId in stationIds for stationId in event["reporting_stations"])
             return own_valid and left_valid and right_valid
         return True
-    
+
+    # Check that every event emitted by a station exists
     def validateStationEvents(self, stations):
         valid = True
         for station in stations:
@@ -524,8 +628,60 @@ class ScenarioValidator:
                     self.errors.append(f"Station {station['id']} references unknown event {eventId}")
                     valid = False
         return valid
-            
-    # Method to create archive to return to frontend, completar
+
+    # -------------------------------------------------------------------------
+    # Priority validation
+    # -------------------------------------------------------------------------
+
+    # Check the stored priority and populated zone of every event
+    def validatePriority(self, currentRoot, zones):
+        if currentRoot is not None:
+            event = currentRoot["event"]
+            key = event["key"]
+            storedPriority = key[0]
+            magnitude = key[1]
+            eventId = key[2]
+            depth = event["depth"]
+            valid = True
+            populated = self.isPopulatedZone(event["epicenter_x"], event["epicenter_y"], zones)
+            calculatedPriority = self.calculatePriority(magnitude, depth, populated)
+            if storedPriority != calculatedPriority:
+                self.errors.append(
+                    f"Event {eventId}: stored priority: {storedPriority}, not is correct, real priority: {calculatedPriority}"
+                )
+                valid = False
+            if event["populated_zone"] != populated:
+                self.errors.append(
+                    f"Event {eventId}: populated_zone is : {event['populated_zone']},not is correct, real populated_zona: {populated}"
+                )
+                valid = False
+            left_child = self.validatePriority(currentRoot["left_child"], zones)
+            rigth_child = self.validatePriority(currentRoot["right_child"], zones)
+            return left_child and rigth_child and valid
+        return True
+
+    # Return whether a point falls inside any populated zone
+    def isPopulatedZone(self, x, y, zones):
+        for zone in zones:
+            if (zone["is_populated"] and zone["x_min"] <= x <= zone["x_max"] and zone["y_min"] <= y <= zone["y_max"]):
+                return True
+        return False
+
+    # Calculate the priority of an event from its magnitude, depth and zone
+    def calculatePriority(self, magnitude, depth, populated):
+        if magnitude >= 6.0:
+            return 3
+        if magnitude >= 4.5 and depth <= 30.0 and populated:
+            return 3
+        if magnitude >= 4.5:
+            return 2
+        return 1
+
+    # -------------------------------------------------------------------------
+    # Archive creation
+    # -------------------------------------------------------------------------
+
+    # Create the archive to return to the frontend (pending completion)
     def createArchive(self, data, events):
         result = {}
         result["datetime"] = data["datetime"]
@@ -537,8 +693,21 @@ class ScenarioValidator:
                 result[section] = data[section]
         return result
 
+    # Collect the events of the tree in order
+    def getEvents(self, currentRoot, events):
+        if currentRoot is None:
+            return events
+        self.getEvents(currentRoot["left_child"], events)
+        events.append(currentRoot["event"])
+        self.getEvents(currentRoot["right_child"], events)
+        return events
+
+    # -------------------------------------------------------------------------
+    # Optional sections
+    # -------------------------------------------------------------------------
+
+    # Restore optional state included in a topology scenario export
     def loadOptionalSections(self, observatory, data):
-        """Restore optional state included in a topology scenario export."""
         if not isinstance(data, dict):
             return observatory
         self.loadOptionalHistory(observatory, data.get("history"))
@@ -548,6 +717,11 @@ class ScenarioValidator:
         self.loadOptionalMetrics(observatory, data.get("metrics"))
         return observatory
 
+    # -------------------------------------------------------------------------
+    # Optional history
+    # -------------------------------------------------------------------------
+
+    # Restore the archived and deleted events of the history
     def loadOptionalHistory(self, observatory, section):
         if section is None:
             return
@@ -606,6 +780,7 @@ class ScenarioValidator:
             raise ValueError("history.archivedTrees must be a list")
         history.archivedTrees = archived_trees
 
+    # Build and validate an event from a history entry
     def _event_from_optional_history(self, item, observatory, status):
         if "key" in item:
             normalized = dict(item)
@@ -644,8 +819,8 @@ class ScenarioValidator:
         event = Event.fromDict(event_data)
         return self._validateHistoricalEvent(event, observatory, status)
 
+    # Validate retained event data before adding it to scenario history
     def _validateHistoricalEvent(self, event, observatory, expected_status):
-        """Validate retained event data before adding it to scenario history."""
         priority, magnitude, event_id = event.getKey()
         issues = self._validateData(
             event_id,
@@ -681,6 +856,11 @@ class ScenarioValidator:
             )
         return event
 
+    # -------------------------------------------------------------------------
+    # Optional report queue
+    # -------------------------------------------------------------------------
+
+    # Restore the pending reports of the report queue
     def loadOptionalReportQueue(self, observatory, section):
         if section is None:
             return
@@ -713,6 +893,11 @@ class ScenarioValidator:
                 datetime_=parseDatetime(item["datetime"]),
             ))
 
+    # -------------------------------------------------------------------------
+    # Optional associations
+    # -------------------------------------------------------------------------
+
+    # Check that the stored associations match the ones calculated for the scenario
     def loadOptionalAssociations(self, observatory, section):
         if section is None:
             return
@@ -743,6 +928,11 @@ class ScenarioValidator:
             if restored_references != manager.getSelectedReferences():
                 raise ValueError("association_manager selected references do not match the scenario")
 
+    # -------------------------------------------------------------------------
+    # Optional metrics
+    # -------------------------------------------------------------------------
+
+    # Restore the stored metrics over the current ones
     def loadOptionalMetrics(self, observatory, section):
         if section is None:
             return
@@ -752,99 +942,3 @@ class ScenarioValidator:
         values = observatory.getMetrics().toDict()
         values.update(section)
         observatory.setMetrics(Metrics.fromDict(values))
-
-    def validatePriority(self, currentRoot, zones):
-        if currentRoot is not None:
-            event = currentRoot["event"]
-            key = event["key"]
-            storedPriority = key[0]
-            magnitude = key[1]
-            eventId = key[2]
-            depth = event["depth"]
-            valid = True
-            populated = self.isPopulatedZone(event["epicenter_x"], event["epicenter_y"], zones)
-            calculatedPriority = self.calculatePriority(magnitude, depth, populated)
-            if storedPriority != calculatedPriority:
-                self.errors.append(
-                    f"Event {eventId}: stored priority: {storedPriority}, not is correct, real priority: {calculatedPriority}"
-                )
-                valid = False
-            if event["populated_zone"] != populated:
-                self.errors.append(
-                    f"Event {eventId}: populated_zone is : {event['populated_zone']},not is correct, real populated_zona: {populated}"
-                )
-                valid = False
-            left_child = self.validatePriority(currentRoot["left_child"], zones)
-            rigth_child = self.validatePriority(currentRoot["right_child"], zones)
-            return left_child and rigth_child and valid
-        return True
-    
-    def isPopulatedZone(self, x, y, zones):
-        for zone in zones:
-            if (zone["is_populated"] and zone["x_min"] <= x <= zone["x_max"] and zone["y_min"] <= y <= zone["y_max"]):
-                return True
-        return False
-
-    def calculatePriority(self, magnitude, depth, populated):
-        if magnitude >= 6.0:
-            return 3
-        if magnitude >= 4.5 and depth <= 30.0 and populated:
-            return 3
-        if magnitude >= 4.5:
-            return 2
-        return 1
-    
-    def validateOrder(self, currentRoot, minKey, maxKey):
-        if currentRoot is None:
-            return True
-
-        valid = True
-        key = currentRoot["event"]["key"]
-        eventId = key[2]
-
-        if minKey is not None and self.compareKeys(key, minKey) <= 0:
-            self.errors.append(f"Event {eventId}: key {key} must be greater than {list(minKey)}")
-            valid = False
-        if maxKey is not None and self.compareKeys(key, maxKey) >= 0:
-            self.errors.append(f"Event {eventId}: key {key} must be less than {list(maxKey)}")
-            valid = False
-
-        left = self.validateOrder(currentRoot["left_child"], minKey, key)
-        right = self.validateOrder(currentRoot["right_child"], key, maxKey)
-        return valid and left and right
-    
-    def compareKeys(self, a, b):
-        a = tuple(a)
-        b = tuple(b)
-        if a < b:
-            return -1
-        if a > b:
-            return 1
-        return 0
-    
-    def validateBalance(self, root):
-        errorsBefore = len(self.errors)
-        self.calculateHeight(root)
-        return len(self.errors) == errorsBefore
-
-    def calculateHeight(self, currentRoot):
-        if currentRoot is None:
-            return -1
-
-        leftHeight = self.calculateHeight(currentRoot["left_child"])
-        rightHeight = self.calculateHeight(currentRoot["right_child"])
-
-        balance = leftHeight - rightHeight
-        if balance not in (-1, 0, 1):
-            eventId = currentRoot["event"]["key"][2]
-            self.errors.append(f"Event {eventId}: balance factor {balance}, the tree is not AVL")
-
-        return 1 + max(leftHeight, rightHeight)
-    
-    def getEvents(self, currentRoot, events):
-        if currentRoot is None:
-            return events
-        self.getEvents(currentRoot["left_child"], events)
-        events.append(currentRoot["event"])
-        self.getEvents(currentRoot["right_child"], events)
-        return events

@@ -1,3 +1,7 @@
+// ------------------------------------------------------------------
+// u se Ob se rv at or yS oc ke t
+// ------------------------------------------------------------------
+
 import { useEffect } from "react";
 import { socketService } from "../../services/socket/socketService";
 import type { TreeOperation } from "../../models/interfaces/realTime/TreeOperation";

@@ -1,12 +1,17 @@
+# Convert legacy scenario data into the current internal shape
 class ScenarioDataNormalizer:
-    """Convert legacy scenario data into the current internal shape."""
 
+    # -------------------------------------------------------------------------
+    # Event normalization
+    # -------------------------------------------------------------------------
+
+    # Normalize key-based events and keep API-shaped events unchanged
     @staticmethod
     def insertion_event(item, station_ids):
-        """Normalize key-based events and keep API-shaped events unchanged."""
         if not isinstance(item, dict) or "key" not in item:
             return item
 
+        # Validate the key and the reporting stations
         key = item["key"]
         if not isinstance(key, (list, tuple)) or len(key) != 3:
             raise ValueError("'key' debe contener prioridad, magnitud e id")
@@ -15,6 +20,7 @@ class ScenarioDataNormalizer:
         if not isinstance(reporting_stations, list):
             raise TypeError("'reporting_stations' debe ser una lista")
 
+        # Pick the first reporting station or fall back to any known station
         station = (
             reporting_stations[0]
             if reporting_stations
@@ -34,12 +40,17 @@ class ScenarioDataNormalizer:
             "station": station,
         }
 
+    # -------------------------------------------------------------------------
+    # Topology normalization
+    # -------------------------------------------------------------------------
+
+    # Normalize compact tree nodes to the persistence node shape
     @staticmethod
     def topology_tree(tree):
-        """Normalize compact tree nodes to the persistence node shape."""
         if not isinstance(tree, dict) or "root" not in tree:
             raise ValueError("la topología debe contener un root")
 
+        # Normalize a node recursively and return it with its height
         def normalize_node(node):
             if node is None:
                 return None, -1

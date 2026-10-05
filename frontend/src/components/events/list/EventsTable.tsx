@@ -5,6 +5,7 @@ import type { EventsTableProps } from "../../../models/interfaces/table/EventsTa
 import { useNavigate } from "react-router-dom";
 import type { SeismicEvent } from "../../../models/interfaces/tree/SeismicEvent";
 import { eventService } from "../../../services/events/eventService";
+import { formatDateTime as formatUtcDateTime } from "../../../utils/formatDateTime";
 
 /* Here we define the columns headers */
 const HEADERS = [
@@ -21,11 +22,7 @@ const HEADERS = [
 
 /* Here we format the date time for better visual appearance */
 const formatDateTime = (iso: string) => {
-    return new Date(iso).toLocaleString("es-CO", {
-        timeZone: "UTC",
-        dateStyle: "short",
-        timeStyle: "medium",
-    }) + " UTC";
+    return formatUtcDateTime(iso);
 };
 
 /* We define a common Tailwind CSS classname for all buttons */

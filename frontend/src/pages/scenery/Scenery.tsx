@@ -1,3 +1,7 @@
+// ------------------------------------------------------------------
+// S ce ne ry
+// ------------------------------------------------------------------
+
 import { useState } from "react";
 import MapScenery from "../../components/scenery/MapScenery";
 import { useObservable } from "../../stores/useObservable";

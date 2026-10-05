@@ -1,6 +1,13 @@
 from backend.services.audit.audit_state import AuditState
 
+
 class StructureAuditService:
+
+    # -------------------------------------------------------------------------
+    # Entry point
+    # -------------------------------------------------------------------------
+
+    # Audit the whole AVL tree and return the final result
     def audit_avl(self, tree, mode="normal"):
         state = AuditState(tree, mode)
 
@@ -16,6 +23,11 @@ class StructureAuditService:
 
         return state.build_result()
 
+    # -------------------------------------------------------------------------
+    # Node traversal
+    # -------------------------------------------------------------------------
+
+    # Audit one node recursively and return its recalculated height
     def _audit_node(
         self,
         node,
@@ -99,18 +111,30 @@ class StructureAuditService:
 
         return calculated_height
 
+    # Check whether a node was already reached during this traversal
     def _was_visited(self, node, state):
         return id(node) in state.visited_nodes
 
+    # -------------------------------------------------------------------------
+    # Key helpers
+    # -------------------------------------------------------------------------
+
+    # Extract the event id from a key, or None when the key is malformed
     def _get_event_id(self, key):
         if not self._is_valid_key(key):
             return None
 
         return key[2]
 
+    # Check that a key is a tuple of exactly three values
     def _is_valid_key(self, key):
         return isinstance(key, tuple) and len(key) == 3
 
+    # -------------------------------------------------------------------------
+    # Key and identity checks
+    # -------------------------------------------------------------------------
+
+    # Validate the key shape and register its uniqueness
     def _audit_key(self, key, event_id, state):
         if not self._is_valid_key(key):
             state.add_issue(
@@ -125,6 +149,7 @@ class StructureAuditService:
 
         return True
 
+    # Report an event id that appears more than once
     def _audit_unique_id(self, event_id, state):
         if event_id in state.event_ids:
             state.add_issue(
@@ -135,6 +160,7 @@ class StructureAuditService:
 
         state.event_ids.add(event_id)
 
+    # Report a key that appears more than once
     def _audit_unique_key(self, key, event_id, state):
         if key in state.keys:
             state.add_issue(
@@ -145,6 +171,11 @@ class StructureAuditService:
 
         state.keys.add(key)
 
+    # -------------------------------------------------------------------------
+    # Structural checks
+    # -------------------------------------------------------------------------
+
+    # Verify that the parent reference matches the tree topology
     def _audit_parent(self, node, expected_parent, event_id, state):
         if node.getParent() is expected_parent:
             return
@@ -155,6 +186,7 @@ class StructureAuditService:
             message="La referencia al padre no coincide con la topología.",
         )
 
+    # Verify that a key respects the global bounds inherited from its ancestors
     def _audit_order(
         self,
         key,
@@ -177,6 +209,7 @@ class StructureAuditService:
                 message="La clave K incumple su límite superior global.",
             )
 
+    # Compare the stored height against the recalculated one
     def _audit_height(
         self,
         node,
@@ -195,6 +228,7 @@ class StructureAuditService:
             calculated=calculated_height,
         )
 
+    # Track the maximum imbalance and report factors outside the AVL range
     def _audit_balance(
         self,
         event_id,
@@ -209,6 +243,7 @@ class StructureAuditService:
         if absolute_balance <= 1:
             return
 
+        # Stress mode expects imbalance, so it is a warning instead of an issue
         if state.mode == "stress":
             state.add_imbalance_warning(
                 event_id,
@@ -221,6 +256,11 @@ class StructureAuditService:
             balance_factor,
         )
 
+    # -------------------------------------------------------------------------
+    # Index checks
+    # -------------------------------------------------------------------------
+
+    # Verify that the index entry of an event points to the traversed node
     def _audit_node_index(self, node, event_id, state):
         if event_id is None:
             return
@@ -236,6 +276,7 @@ class StructureAuditService:
             message="El índice no apunta al nodo correcto.",
         )
 
+    # Report index entries whose nodes were never reached from the root
     def _audit_index(self, state):
         for event_id, node in state.tree.index.items():
             if id(node) in state.visited_nodes:

@@ -1,3 +1,7 @@
+# ------------------------------------------------------------------
+# t es t b st s tr uc tu re
+# ------------------------------------------------------------------
+
 """Focused tests for the unbalanced BST implementation."""
 
 from datetime import datetime, timezone

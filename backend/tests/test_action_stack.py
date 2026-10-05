@@ -6,7 +6,6 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from backend.models.action import Action
-from backend.models.report import Report
 from backend.models.seismic_observatory import SeismicObservatory
 from backend.models.station import Station
 from backend.services.actions.action_stack_service import ActionStackError, ActionStackService

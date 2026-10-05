@@ -1,3 +1,7 @@
+// ------------------------------------------------------------------
+// D el et ed Ev en ts
+// ------------------------------------------------------------------
+
 import { ArrowLeft, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";

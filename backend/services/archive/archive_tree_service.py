@@ -3,25 +3,26 @@ from math import isfinite
 
 
 class ArchiveTreeService:
-    """Select, preview, and archive an eligible AVL subtree."""
 
+    # -------------------------------------------------------------------------
+    # Initialization
+    # -------------------------------------------------------------------------
+
+    # Create the service with an empty pending selection registry
     def __init__(self):
         # Pending selections are isolated by Socket.IO client id.
         self.pending = {}
 
+    # -------------------------------------------------------------------------
+    # Tree helpers
+    # -------------------------------------------------------------------------
+
+    # Return the event stored inside a tree node
     @staticmethod
     def _event(node):
         return node.getValue()
 
-    def _collect_ids(self, node):
-        if node is None:
-            return []
-        return (
-            [self._event(node).getKey()[2]]
-            + self._collect_ids(node.getLeftChild())
-            + self._collect_ids(node.getRightChild())
-        )
-
+    # Convert a subtree into a JSON-friendly nested dictionary
     def _tree_json(self, node):
         if node is None:
             return None
@@ -34,6 +35,11 @@ class ArchiveTreeService:
             "right": self._tree_json(node.getRightChild()),
         }
 
+    # -------------------------------------------------------------------------
+    # Preparing the selection
+    # -------------------------------------------------------------------------
+
+    # Select an eligible subtree, store it as pending, and return a preview
     def prepare(self, observatory, actual_time, threshold_hours, client_id):
         if isinstance(threshold_hours, bool):
             return {"ok": False, "reason": "invalid_threshold"}
@@ -54,7 +60,8 @@ class ArchiveTreeService:
             selected, tree_payload = selected
         else:
             tree_payload = avl.objectToSend(selected, [])
-        ids = self._collect_ids(selected)
+        # Collect the event ids of a subtree in pre-order
+        ids = avl.getIdsToPaint(selected, [])
         tree = self._tree_json(selected)
         self.pending[client_id] = {
             "scenario_id": observatory.scenario_id,
@@ -74,6 +81,11 @@ class ArchiveTreeService:
             },
         }
 
+    # -------------------------------------------------------------------------
+    # Applying the decision
+    # -------------------------------------------------------------------------
+
+    # Archive or discard the pending selection according to the client decision
     def decide(self, observatory, archive, client_id):
         pending = self.pending.get(client_id)
         if pending is None:

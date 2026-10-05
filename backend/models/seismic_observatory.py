@@ -13,105 +13,195 @@ from backend.models.event import Event
 from backend.models.station import Station
 from backend.utils.json_utils import objectToDict
 
+
 class SeismicObservatory:
+
+    # Initialize the observatory with its structures, data and services
     def __init__(self):
-        # ===================== estructuras centrales =====================
+        # ===================== core structures =====================
         self.avl_tree = AVL()
         self.bst_tree = BST()
 
-        # ===================== datos fijos del escenario =====================
-        self.stations = []          
-        self.zones = []             
-        # ===================== historial y control =====================
+        # ===================== fixed scenario data =====================
+        self.stations = []
+        self.zones = []
+        # ===================== history and control =====================
         self.history = History()
         self.report_queue = Queue()
         self.action_stack = Stack()
         self.clock = SimulationClock(datetime.now(timezone.utc))
 
-        # ===================== parámetros configurables =====================
-        self.l = 3       
-        self.t = 72.0     
+        # ===================== configurable parameters =====================
+        self.l = 3
+        self.t = 72.0
 
-        # ===================== servicios de negocio =====================
+        # ===================== business services =====================
         self.association_manager = AssociationManager()
         self.metrics = Metrics()
 
-        # ===================== modo de ejecución =====================
-        self.execution_mode = "normal"  
-        
-        # ===================== Escenario =========================
+        # ===================== execution mode =====================
+        self.execution_mode = "normal"
+
+        # ===================== scenario =====================
         self.scenario_id = None
 
-    
+    # -------------------------------------------------------------------------
+    # Reading and writing the central structures
+    # -------------------------------------------------------------------------
+
+    # Get the AVL tree
     def getAVLTree(self):
         return self.avl_tree
+
+    # Set the AVL tree
     def setAVLTree(self, avl):
         self.avl_tree = avl
+
+    # Get the BST tree
     def getBSTTree(self):
         return self.bst_tree
+
+    # Set the BST tree
     def setBSTTree(self, bst):
         self.bst_tree = bst
+
+    # ------------------------------------------------------------------
+    # Reading and writing the scenario data
+    # ------------------------------------------------------------------
+
+    # Get the list of stations
     def getStations(self):
         return self.stations
-    def setStations(self,stations):
+
+    # Set the list of stations
+    def setStations(self, stations):
         self.stations = stations
-    def addStation(self,station):
+
+    # Add a station to the list
+    def addStation(self, station):
         self.stations.append(station)
-    def deleteStation(self,station):
+
+    # Remove a station from the list, returns False if it does not exist
+    def deleteStation(self, station):
         if station in self.stations:
             self.stations.remove(station)
             return True
         return False
+
+    # ------------------------------------------------------------------
+
+    # Get the list of zones
     def getZones(self):
         return self.zones
+
+    # Set the list of zones
     def setZones(self, zones):
         self.zones = zones
-    def addZone(self,zone):
+
+    # Add a zone to the list
+    def addZone(self, zone):
         self.zones.append(zone)
-    def deleteZone(self,zone):
+
+    # Remove a zone from the list, returns False if it does not exist
+    def deleteZone(self, zone):
         if zone in self.zones:
             self.zones.remove(zone)
             return True
         return False
+
+    # ------------------------------------------------------------------
+    # Reading and writing the history and control structures
+    # ------------------------------------------------------------------
+
+    # Get the history of archived and deleted events
     def getHistory(self):
-        return self.history 
+        return self.history
+
+    # Set the history of archived and deleted events
     def setHistory(self, history):
         self.history = history
+
+    # Get the queue of pending reports
     def getReportQueue(self):
         return self.report_queue
-    def setReportQueue(self,queue):
+
+    # Set the queue of pending reports
+    def setReportQueue(self, queue):
         self.report_queue = queue
+
+    # Get the stack of actions
     def getActionStack(self):
         return self.action_stack
-    def setActionStack(self,stack):
+
+    # Set the stack of actions
+    def setActionStack(self, stack):
         self.action_stack = stack
+
+    # Get the simulation clock
     def getClock(self):
         return self.clock
-    def setClock(self,clock):
+
+    # Set the simulation clock
+    def setClock(self, clock):
         self.clock = clock
+
+    # ------------------------------------------------------------------
+    # Reading and writing the configurable parameters and services
+    # ------------------------------------------------------------------
+
+    # Get the parameter L
     def getL(self):
         return self.l
+
+    # Set the parameter L
     def setL(self, l):
         self.l = l
+
+    # Get the archive threshold T in hours
     def getT(self):
         return self.t
+
+    # Set the archive threshold T in hours
     def setT(self, t):
         self.t = t
+
+    # ------------------------------------------------------------------
+
+    # Get the association manager
     def getAssociationManager(self):
         return self.association_manager
-    def setAssociationManager(self,manager):
+
+    # Set the association manager
+    def setAssociationManager(self, manager):
         self.association_manager = manager
+
+    # Get the metrics
     def getMetrics(self):
         return self.metrics
-    def setMetrics(self,metrics):
+
+    # Set the metrics
+    def setMetrics(self, metrics):
         self.metrics = metrics
+
+    # ------------------------------------------------------------------
+
+    # Get the execution mode
     def getExecutionMode(self):
         return self.execution_mode
+
+    # Set the execution mode
     def setExecutionMode(self, mode):
         self.execution_mode = mode
+
+    # Get the id of the scenario
     def getScenarioId(self):
         return self.scenario_id
 
+    # ------------------------------------------------------------------
+    # Event operations (the user actions)
+    # ------------------------------------------------------------------
+
+    # Create an event and insert it in both trees
     def createEvent(self, id, magnitude, depth, epicenter_x, epicenter_y, datetime: datetime, revision, station):
         if self.avl_tree.searchById(id) is not None:
             return False
@@ -123,38 +213,43 @@ class SeismicObservatory:
         # AVL decides whether to rotate using its current balance attribute.
         avl_insert = self.avl_tree.insert(event)
         bst_insert = self.bst_tree.insert(event)
-        
+
         if avl_insert and bst_insert:
             self.recalculateAssociations()
-            
+
         return avl_insert, bst_insert
-    
-    def begin_visual_operation(self):
-        self.avl_tree.begin_visual_operation()
-        self.bst_tree.begin_visual_operation()
-    
-    
-    def finish_visual_operation(self):
-        avl_steps = self.avl_tree.finish_visual_operation()
-        bst_patch = self.bst_tree.finish_visual_operation()
 
-        # El BST solo cambia durante la inserción inicial.
-        if len(avl_steps) > 0:
-            avl_steps[0]["bstPatch"] = bst_patch
-
-        return avl_steps
-
+    # Search an active event by its id
     def searchEventById(self, id):
         node = self.avl_tree.searchById(id)
         if node is not None:
             return node.getValue()
         return None
 
+    # Update an existing event with a report and reposition it if its key changed
+    def editEvent(self, report):
+        # The report data is already validated when the report is created
+        event = self.searchEventById(report.getEventId())
+        if event is not None:
+            oldKey = event.getKey()
+            event.updateEventData(report, self.zones)
+
+            if event.getKey() != oldKey:
+                self.avl_tree._updateTree(event)
+                self.bst_tree._updateTree(event)
+                # TODO: recalculate associations and metrics
+
+            self.recalculateAssociations()
+
+            return True
+        return False
+
+    # Delete an event from both trees and store it in the history
     def deleteEventById(self, id):
         node = self.avl_tree.searchById(id)
         if node is None:
             return False
-        event = node.getValue()         
+        event = node.getValue()
         avl_removed = self.avl_tree.delete(id)
         bst_removed = self.bst_tree.delete(id)
 
@@ -164,55 +259,75 @@ class SeismicObservatory:
             self.recalculateAssociations()
 
         return avl_removed, bst_removed
-    
+
+    # Mark an event as revised
+    def markAsRevised(self, id):
+        event = self.searchEventById(id)
+        if event is not None:
+            event.setAttentionStatus("revised")
+
+    # Archive the subtree of events older than T hours
+    def archivateSubTree(self, actualTime, T):
+        return self.avl_tree.archiveSubTree(actualTime, T)
+
+    # Add a report to the queue of pending reports
+    def enqueueReport(self, report):
+        self.report_queue.enqueue(report)
+
+    # Remove the last id added to the historic index
+    def deleteLastId(self):
+        self.history.deleteLastAddedId
+
+    # ------------------------------------------------------------------
+    # Visual operations
+    # ------------------------------------------------------------------
+
+    # Start recording the visual steps in both trees
+    def begin_visual_operation(self):
+        self.avl_tree.begin_visual_operation()
+        self.bst_tree.begin_visual_operation()
+
+    # Stop recording and return the AVL steps with the BST patch in the first one
+    def finish_visual_operation(self):
+        avl_steps = self.avl_tree.finish_visual_operation()
+        bst_patch = self.bst_tree.finish_visual_operation()
+
+        # The BST only changes during the initial insertion.
+        if len(avl_steps) > 0:
+            avl_steps[0]["bstPatch"] = bst_patch
+
+        return avl_steps
+
+    # ------------------------------------------------------------------
+    # Associations between events
+    # ------------------------------------------------------------------
+
+    # Change association limits and rebuild all affected relations
     def setAssociationLimits(self, w=None, r=None):
-        """Change association limits and rebuild all affected relations."""
-        self.association_manager.setLimits(w,r)
+        self.association_manager.setLimits(w, r)
         self.recalculateAssociations()
 
     # Keep the old misspelled method as a compatibility alias for callers
     # that already use it.
     def setAssociatonLimits(self, w=None, r=None):
         return self.setAssociationLimits(w, r)
-    
-    def editEvent(self,report):
-        #Al crearse un reporte, sus datos ya están validados
-        event = self.searchEventById(report.getEventId())
-        if event is not None:
-            oldKey = event.getKey()
-            event.updateEventData(report, self.zones)
-            
-            if event.getKey() != oldKey:
-                self.avl_tree._updateTree(event)
-                self.bst_tree._updateTree(event)
-                #RECALCULAR ASOCIACIONES Y METRICAS
-                
-            self.recalculateAssociations()
-                
-            return True
-        return False
-    
+
+    # Rebuild the associations from the active and archived events
     def recalculateAssociations(self):
         active_events = [
             node.getValue()
             for node in self.avl_tree.index.values()
         ]
-        
+
         archived_events = list(self.history.getArchived().values())
 
         self.association_manager.recalculate(active_events, archived_events)
 
-    def markAsRevised(self, id):
-        event = self.searchEventById(id)
-        if event is not None:
-            event.setAttentionStatus("revised")
-    
-    def archivateSubTree(self, actualTime, T):
-        return self.avl_tree.archiveSubTree(actualTime, T)
+    # ------------------------------------------------------------------
+    # Versions and serialization
+    # ------------------------------------------------------------------
 
-    def enqueueReport(self, report):
-        self.report_queue.enqueue(report)
-
+    # Return a detached copy of the state used to undo actions
     def toVersion(self):
         # Return a detached value object. Some model serializers expose lists
         # owned by the observatory, and undo snapshots must not change when a
@@ -232,30 +347,29 @@ class SeismicObservatory:
             "execution_mode": self.execution_mode,
         }
         return deepcopy(version)
-    
-    def deleteLastId(self):
-        self.history.deleteLastAddedId
 
+    # Convert object to dictionary
     def toDict(self):
         return {
             "scenario_id": self.scenario_id,
             "avl_tree": objectToDict(self.avl_tree),
-            "bst_tree":objectToDict(self.bst_tree),
-            "stations":[objectToDict(station) for station in self.stations],
-            "zones":[objectToDict(zone) for zone in self.zones],
+            "bst_tree": objectToDict(self.bst_tree),
+            "stations": [objectToDict(station) for station in self.stations],
+            "zones": [objectToDict(zone) for zone in self.zones],
             "history": objectToDict(self.history),
             "report_queue": objectToDict(self.report_queue),
             "action_stack": objectToDict(self.action_stack),
-            "clock":objectToDict(self.clock),
-            "l":self.l,
-            "t":self.t,
-            "association_manager":objectToDict(self.association_manager),
+            "clock": objectToDict(self.clock),
+            "l": self.l,
+            "t": self.t,
+            "association_manager": objectToDict(self.association_manager),
             "metrics": objectToDict(self.metrics),
-            "execution_mode":self.execution_mode
+            "execution_mode": self.execution_mode
         }
 
+    # Convert dictionary to object
     @classmethod
-    def fromDict(cls,data):
+    def fromDict(cls, data):
         observatory = cls()
         observatory.scenario_id = data["scenario_id"]
         observatory.avl_tree = AVL.fromDict(data["avl_tree"], Event)

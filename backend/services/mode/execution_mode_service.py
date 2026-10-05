@@ -1,21 +1,33 @@
 class ExecutionModeService:
-    """Coordinate stress-mode changes and AVL recovery bookkeeping."""
 
+    # -------------------------------------------------------------------------
+    # Initialization
+    # -------------------------------------------------------------------------
+
+    # Store the services used to change the execution mode
     def __init__(self, stress_mode_service, metrics_service):
         self.stress_mode_service = stress_mode_service
         self.metrics_service = metrics_service
 
+    # -------------------------------------------------------------------------
+    # Stress mode
+    # -------------------------------------------------------------------------
+
+    # Apply the domain transition to stress mode
     def activate_stress(self, observatory):
-        """Apply the domain transition to stress mode."""
         return self.stress_mode_service.activateStressMode(observatory)
 
+    # -------------------------------------------------------------------------
+    # Normal mode recovery
+    # -------------------------------------------------------------------------
+
+    # Recover AVL balance and record the operation as one action
     def recover_normal(
         self,
         observatory,
         before_version,
         before_indicators,
     ):
-        """Recover AVL balance and record the operation as one action."""
         report = self.stress_mode_service.deactivateStressMode(observatory)
         if self.metrics_service is not None:
             self.metrics_service.refresh_derived_metrics(observatory)

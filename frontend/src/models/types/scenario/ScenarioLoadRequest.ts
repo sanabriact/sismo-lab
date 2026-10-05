@@ -1,3 +1,7 @@
+// ------------------------------------------------------------------
+// S ce na ri oL oa dR eq ue st
+// ------------------------------------------------------------------
+
 import type { AIScenarioMode } from "./aiScenarioMode";
 
 export type ScenarioLoadRequest = {

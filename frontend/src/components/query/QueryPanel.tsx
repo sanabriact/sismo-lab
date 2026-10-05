@@ -100,9 +100,10 @@ const QueryPanel = ({
 
                 <div className="mt-5 rounded-lg bg-slate-50 p-3 text-xs leading-5 text-slate-600">
                     <p className="font-semibold text-slate-700">Cómo leer el costo</p>
-                    <p>La búsqueda por ID usa un índice. Los primeros pendientes recorren el AVL en orden inverso de K y paran al reunir k eventos; si faltan pendientes, pueden visitar todo el árbol.</p>
-                    <p>Los rangos de magnitud y fecha/profundidad recorren todos los nodos: magnitud no forma un intervalo único porque la prioridad precede a M en K, y fecha/profundidad no pertenecen a K.</p>
-                    <p>Acceso costoso también revisa todo el AVL para comprobar profundidad. Asociaciones consulta los índices de relaciones sin recorrer nodos. Cada consulta indica cuántos nodos visitó.</p>
+                    <p>-La búsqueda por ID usa un índice.</p>
+                    <p>-Los primeros pendientes recorren el AVL en orden inverso de K y paran al reunir k eventos; si faltan pendientes, pueden visitar todo el árbol.</p>
+                    <p>-Los rangos de magnitud y fecha/profundidad recorren todos los nodos y para la magnitud no forma un intervalo único porque la prioridad precede a M en K</p>
+                    <p>-Acceso costoso también revisa todo el AVL para comprobar profundidad. Asociaciones consulta los índices de relaciones sin recorrer nodos. Cada consulta indica cuántos nodos visitó.</p>
                 </div>
 
                 <button type="submit" disabled={loading} className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#0b6e69] px-4 py-2.5 font-semibold text-white transition hover:bg-[#095b57] disabled:cursor-not-allowed disabled:opacity-60">

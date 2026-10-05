@@ -1,20 +1,24 @@
 MAX_PENDING_REPORTS = 50  # backpressure threshold
 
 class AiGenerationLoop:
-    """Periodically asks the engine for a batch of reports until it is stopped."""
 
+    # Initialize the loop with the socket server, the engine and an empty config
     def __init__(self, socketio, engine):
         self._socketio = socketio
         self._engine = engine
         self._running = False
         self._config = {}
 
+    # -------------------------------------------------------------------------
+    # Controlling the loop
+    # -------------------------------------------------------------------------
+
+    # Get whether the generation loop is currently active
     def is_running(self):
-        """Return whether the generation loop is currently active."""
         return self._running
 
+    # Start the loop and return False if it was already running
     def start(self, config):
-        """Start the loop. Returns False if it was already running."""
         if self._running:
             return False
         self._running = True
@@ -22,12 +26,16 @@ class AiGenerationLoop:
         self._socketio.start_background_task(self._run)
         return True
 
+    # Request the loop to stop; it exits at the next check
     def stop(self):
-        """Request the loop to stop; it exits at the next check."""
         self._running = False
 
+    # -------------------------------------------------------------------------
+    # Running the loop
+    # -------------------------------------------------------------------------
+
+    # Run the main loop: one batch per tick (one report per station), then wait
     def _run(self):
-        """Main loop: one batch per tick (one report per station), then wait."""
         tick = 0
         while self._running:
             try:
@@ -37,8 +45,8 @@ class AiGenerationLoop:
             tick += 1
             self._wait(self._config["interval"])
 
+    # Generate one batch and enqueue it only if the user has not stopped the loop meanwhile
     def _run_tick(self, tick):
-        """Generate one batch and enqueue it only if the user has not stopped the loop meanwhile."""
         if self._engine.pending_count() > MAX_PENDING_REPORTS:  # ASSUMPTION: queue length helper
             return  # backpressure: the user is not consuming the queue
 
@@ -57,8 +65,12 @@ class AiGenerationLoop:
             "fallbackCount": result.get("fallback_count", 0),
         })
 
+    # -------------------------------------------------------------------------
+    # Waiting between ticks
+    # -------------------------------------------------------------------------
+
+    # Sleep in short steps so a stop request takes effect almost immediately
     def _wait(self, seconds):
-        """Sleep in short steps so a stop request takes effect almost immediately."""
         waited = 0.0
         while self._running and waited < seconds:
             self._socketio.sleep(0.25)

@@ -1,3 +1,7 @@
+// ------------------------------------------------------------------
+// C or re ct Ev en t
+// ------------------------------------------------------------------
+
 import { useEffect, useState, type FormEvent } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import EventForm from "../../../components/events/EventsForm";

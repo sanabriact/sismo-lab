@@ -1,3 +1,7 @@
+// ------------------------------------------------------------------
+// A pp ly Mo de Ch an ge d
+// ------------------------------------------------------------------
+
 import type { ModeChangedPayload } from "../../models/interfaces/realTime/ModeChangedPayload";
 import { modeStore } from "../../stores/mode/modeStore";
 

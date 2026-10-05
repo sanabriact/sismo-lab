@@ -5,8 +5,13 @@ from dotenv import load_dotenv
 from groq import Groq
 from backend.utils.quantities import parseDatetime
 
+# Path of the .env file located three levels above this file
 env_path = Path(__file__).resolve().parent.parent.parent / ".env"
+
+# Load the environment variables from the .env file
 load_dotenv(env_path)
+
+# JSON schema that the AI response must follow
 EVENT_SCHEMA = {
     "type": "object",
     "additionalProperties": False,
@@ -36,6 +41,11 @@ EVENT_SCHEMA = {
     ],
 }
 
+# -----------------------------------------------------------------------------
+# Validation of the AI response
+# -----------------------------------------------------------------------------
+
+# Validate the AI response and return its values rounded and converted
 def validate_ai_response(data, clock):
     magnitude = round(float(data["magnitude"]), 1)
     depth = round(float(data["depth"]), 1)
@@ -66,12 +76,19 @@ def validate_ai_response(data, clock):
 
 
 class AIEventClient:
+
+    # Initialize the client with the Groq API key and model from the environment
     def __init__(self):
         api_key = os.getenv("GROQ_API_KEY_REPORTS")
         model = os.getenv("GROQ_MODEL")
         self.client = Groq(api_key=api_key)
         self.model = model
 
+    # -------------------------------------------------------------------------
+    # Generating events with the AI
+    # -------------------------------------------------------------------------
+
+    # Request one fictional seismic event for a station from the AI
     def generate(self, station, clock):
         current_time = clock.getCurrentTimeText()
 
@@ -115,7 +132,7 @@ class AIEventClient:
                 }
             }
         )
-        
+
         content = response.choices[0].message.content
         if not content:
             raise ValueError("La IA no devolvió contenido")

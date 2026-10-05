@@ -1,6 +1,11 @@
+# Compatibility facade that delegates queue orchestration to EventEngine
 class ReportQueueRunner:
-    """Compatibility facade that delegates queue orchestration to EventEngine."""
 
+    # -------------------------------------------------------------------------
+    # Initialization
+    # -------------------------------------------------------------------------
+
+    # Create the runner and forward any custom settings to the engine
     def __init__(self, engine, queue_service=None, processor=None, interval=1.5):
         self.engine = engine
         if interval != 1.5:
@@ -10,44 +15,66 @@ class ReportQueueRunner:
         if processor is not None:
             self.engine.report_processor = processor
 
+    # -------------------------------------------------------------------------
+    # Engine-owned components
+    # -------------------------------------------------------------------------
+
+    # Expose the engine-owned service for compatibility with callers
     @property
     def queue_service(self):
-        """Expose the engine-owned service for compatibility with callers."""
         return self.engine.report_queue_service
 
+    # Expose the engine-owned processor for compatibility with callers
     @property
     def processor(self):
-        """Expose the engine-owned processor for compatibility with callers."""
         return self.engine.report_processor
 
+    # -------------------------------------------------------------------------
+
+    # Batch preparation
+    # -------------------------------------------------------------------------
+
+    # Forward batch preparation to the engine owner
     def prepare_reports(self, raw_reports):
-        """Forward batch preparation to the engine owner."""
         return self.engine.prepare_reports(raw_reports)
 
+    # -------------------------------------------------------------------------
+    # Report processing
+    # -------------------------------------------------------------------------
+
+    # Forward one processing step to the engine owner
     def process_next(self):
-        """Forward one processing step to the engine owner."""
         return self.engine.process_report_step()
 
+    # Forward continuous processing startup to the engine owner
     def start_continuous(self):
-        """Forward continuous processing startup to the engine owner."""
         return self.engine.start_report_processing()
 
+    # -------------------------------------------------------------------------
+    # Pause and resume
+    # -------------------------------------------------------------------------
+
+    # Forward a user-requested pause to the engine owner
     def pause(self):
-        """Forward a user-requested pause to the engine owner."""
         return self.engine.pause_report_processing()
 
+    # Forward the recovery pause used by execution-mode changes
     def pause_for_recovery(self):
-        """Forward the recovery pause used by execution-mode changes."""
         return self.engine.pause_report_processing("recovering")
 
+    # Forward queue resumption to the engine owner
+
     def resume(self):
-        """Forward queue resumption to the engine owner."""
         return self.engine.resume_report_processing()
 
+    # -------------------------------------------------------------------------
+    # State and serialization
+    # -------------------------------------------------------------------------
+
+    # Report the running state maintained by the engine
     def is_running(self):
-        """Report the running state maintained by the engine."""
         return self.engine.report_queue_running
 
+    # Forward queue serialization to the engine owner
     def snapshot(self):
-        """Forward queue serialization to the engine owner."""
         return self.engine.report_queue_snapshot()

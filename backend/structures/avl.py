@@ -422,19 +422,6 @@ class AVL:
                 self._rebalance(node, balanceFactor, childBalanceFactor)
 
     # Private method for getting balancing case
-    def _getCaseOfBalance(self, superiorBalanceFactor, childBalanceFactor):
-        case = ""
-        if superiorBalanceFactor < 0 and childBalanceFactor < 0:
-            case = "RR"
-        elif superiorBalanceFactor > 0 and childBalanceFactor > 0:
-            case = "LL"
-        elif superiorBalanceFactor < 0 and childBalanceFactor > 0:
-            case = "RL"
-        elif superiorBalanceFactor > 0 and childBalanceFactor < 0:
-            case = "LR"
-
-        return case
-
     # Private method for rebalancing
     def _rebalance(self, superior, superiorBalanceFactor, childBalanceFactor=0):
         if superiorBalanceFactor > 0:

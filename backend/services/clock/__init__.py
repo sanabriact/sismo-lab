@@ -1,1 +1,0 @@
-"""Clock-related application services."""
