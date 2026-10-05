@@ -114,7 +114,7 @@ const VisualizeTrees = () => {
                         >
                             <Info size={17} />{showCharacteristics ? "Ocultar características AVL" : "Ver características del AVL"}
                         </button>
-                        {showCharacteristics && <p className="text-sm text-slate-500">Altura en aristas (hoja = 0) · Profundidad desde la raíz (raíz = 0) · Acceso costoso: prioridad 3 y profundidad &gt; L ({characteristicsLimit ?? "…"}).</p>}
+                        {showCharacteristics && <p className="text-sm text-slate-500">Acceso costoso: prioridad 3 y profundidad &gt; L ({characteristicsLimit ?? "…"}).</p>}
                         {characteristicsError && <p className="text-sm text-amber-700" role="status">{characteristicsError}</p>}
                     </div>
                     <ArchiveTreePanel

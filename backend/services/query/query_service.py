@@ -1,20 +1,17 @@
 from datetime import datetime, time, timezone
-
 from backend.utils.quantities import parseDatetime
 from backend.structures.avl import AVL
 from backend.structures.bst import BST
 
 
 class QueryService:
-    """Read-only service for the queries required by the project specification.
 
-    The service deliberately uses simple tree traversals.  This makes the
-    number of inspected AVL nodes visible and keeps the academic cost of each
-    query easy to explain.  It never changes the observatory.
-    """
+    # -------------------------------------------------------------------------
+    # Query dispatch
+    # -------------------------------------------------------------------------
 
+    # Dispatch one validated query to its focused method
     def execute(self, observatory, query_type, parameters):
-        """Dispatch one validated query to its small, focused method."""
         if query_type == "by_id":
             return self.find_by_id(observatory, parameters.get("event_id"))
         if query_type == "top_pending":
@@ -40,8 +37,12 @@ class QueryService:
             return self.compare_tree_orders(observatory)
         raise ValueError("Tipo de consulta no válido")
 
+    # -------------------------------------------------------------------------
+    # Event lookup
+    # -------------------------------------------------------------------------
+
+    # Find an event in the active tree or either historical collection
     def find_by_id(self, observatory, event_id):
-        """Find an event in the active tree or either historical collection."""
         event_id = self._positive_integer(event_id, "event_id")
         history = observatory.getHistory()
         active_node = observatory.getAVLTree().index.get(event_id)
@@ -69,16 +70,18 @@ class QueryService:
 
         return self._success({"status": "not_found", "event": None}, 0)
 
-    def top_pending(self, observatory, k):
-        """Return up to k pending events from greatest K to smallest K.
+    # -------------------------------------------------------------------------
+    # Ranking and range queries
+    # -------------------------------------------------------------------------
 
-        The reverse in-order traversal visits the largest AVL keys first.
-        Traversal stops as soon as k pending events have been collected.
-        """
+    # Return up to k pending events from greatest K to smallest K
+    def top_pending(self, observatory, k):
         k = self._positive_integer(k, "k")
         results = []
         state = {"examined": 0, "finished": False}
 
+        # Reverse in-order visits the largest keys first and stops once k
+        # pending events have been collected.
         def visit(node):
             if node is None or state["finished"]:
                 return
@@ -99,26 +102,24 @@ class QueryService:
         visit(observatory.getAVLTree().root)
         return self._success({"events": results, "requested": k}, state["examined"])
 
+    # Filter active events by an inclusive magnitude interval
     def magnitude_range(self, observatory, minimum, maximum):
-        """Filter active events by an inclusive magnitude interval.
-
-        Magnitude is the second part of K, while priority is the first part.
-        Therefore a magnitude interval is not one contiguous AVL interval.
-        The simple and correct strategy is to inspect every active node.
-        """
         minimum = self._number(minimum, "minimum")
         maximum = self._number(maximum, "maximum")
         if minimum > maximum:
             raise ValueError("minimum no puede ser mayor que maximum")
 
+        # Magnitude is the second part of K, while priority is the first part,
+        # so a magnitude interval is not one contiguous AVL interval. The simple
+        # and correct strategy is to inspect every active node.
         events, examined = self._all_matching(
             observatory,
             lambda event: minimum <= event.getKey()[1] <= maximum,
         )
         return self._success({"events": events}, examined)
 
+    # Filter active events by inclusive UTC dates and maximum depth
     def date_depth_range(self, observatory, start_date, end_date, maximum_depth):
-        """Filter active events by inclusive UTC dates and maximum depth."""
         start = self._date_boundary(start_date, False)
         end = self._date_boundary(end_date, True)
         maximum_depth = self._number(maximum_depth, "maximum_depth")
@@ -132,8 +133,12 @@ class QueryService:
         events, examined = self._all_matching(observatory, matches)
         return self._success({"events": events}, examined)
 
+    # -------------------------------------------------------------------------
+    # Associations
+    # -------------------------------------------------------------------------
+
+    # Return candidates and selected reference information for one event
     def associations(self, observatory, event_id):
-        """Return candidates and selected reference information for one event."""
         event_id = self._positive_integer(event_id, "event_id")
         manager = observatory.getAssociationManager()
         candidates = manager.getCandidates().get(event_id, [])
@@ -167,18 +172,20 @@ class QueryService:
             "distance_limit_km": manager.getR(),
         }, 0)
 
-    def expensive_access(self, observatory):
-        """Find high-priority events whose depth is greater than the limit L.
+    # -------------------------------------------------------------------------
+    # Access cost
+    # -------------------------------------------------------------------------
 
-        For every visited node, its depth plus one is the number of nodes that
-        a normal BST search would inspect to reach that node.  We calculate it
-        during one traversal instead of performing a second search per event.
-        """
+    # Find high-priority events whose depth is greater than the limit L
+    def expensive_access(self, observatory):
         parameter_service = getattr(self, "parameters_service", None)
         limit = parameter_service.getL() if parameter_service is not None else observatory.getL()
         results = []
         examined = 0
 
+        # The depth of a node plus one is the number of nodes a normal BST
+        # search would inspect to reach it, so it is calculated during one
+        # traversal instead of performing a second search per event.
         def visit(node, depth):
             nonlocal examined
             if node is None:
@@ -200,8 +207,12 @@ class QueryService:
         visit(observatory.getAVLTree().root, 0)
         return self._success({"events": results, "limit": limit}, examined)
 
+    # -------------------------------------------------------------------------
+    # Tree comparison
+    # -------------------------------------------------------------------------
+
+    # Compare AVL and BST shapes using the same events and search keys
     def compare_tree_orders(self, observatory):
-        """Compare AVL and BST shapes using the same events and search keys."""
         events = [node.getValue() for node in observatory.getAVLTree().index.values()]
         by_key = sorted(events, key=lambda event: tuple(event.getKey()))
         insertion_orders = (
@@ -255,6 +266,7 @@ class QueryService:
             },
         }
 
+    # Summarize the shape and search cost of one tree
     def _tree_comparison_summary(self, tree, search_keys):
         leaves = 0
 
@@ -282,8 +294,8 @@ class QueryService:
             "average_comparisons": comparisons / search_count if search_count else 0,
         }
 
+    # Count one key comparison for every node visited on a K search
     def _search_key_comparisons(self, root, key):
-        """Count one key comparison for every node visited on a K search."""
         comparisons = 0
         node = root
         while node is not None:
@@ -294,8 +306,12 @@ class QueryService:
             node = node.getLeftChild() if key < current_key else node.getRightChild()
         return comparisons
 
+    # -------------------------------------------------------------------------
+    # Tree characteristics
+    # -------------------------------------------------------------------------
+
+    # Describe each node using the existing Node height/depth methods
     def tree_characteristics(self, observatory):
-        """Describe each node using the existing Node height/depth methods."""
         parameter_service = getattr(self, "parameters_service", None)
         limit = parameter_service.getL() if parameter_service is not None else observatory.getL()
         trees = {}
@@ -338,13 +354,17 @@ class QueryService:
             }
         return {"ok": True, "limit": limit, "trees": trees, "tree_summaries": summaries}
 
+    # Apply the same priority/depth rule for queries and tree annotations
     @staticmethod
     def _is_expensive_access(priority, depth, limit):
-        """Use the same priority/depth rule for queries and tree annotations."""
         return priority == 3 and depth > limit
 
+    # -------------------------------------------------------------------------
+    # Traversal helpers
+    # -------------------------------------------------------------------------
+
+    # Visit each active node and keep the events accepted by the predicate
     def _all_matching(self, observatory, predicate):
-        """Visit each active node and keep events accepted by predicate."""
         events = []
         examined = 0
 
@@ -362,15 +382,19 @@ class QueryService:
         visit(observatory.getAVLTree().root)
         return events, examined
 
+    # Resolve an association without returning deleted events
     def _event_by_active_or_archived(self, observatory, event_id):
-        """Resolve an association without returning deleted events."""
         node = observatory.getAVLTree().index.get(event_id)
         if node is not None:
             return node.getValue()
         return observatory.getHistory().getArchived().get(event_id)
 
+    # -------------------------------------------------------------------------
+    # Event serialization
+    # -------------------------------------------------------------------------
+
+    # Serialize event data plus query-specific structural information
     def _event_data(self, node, event):
-        """Serialize event data plus query-specific structural information."""
         data = event.toDict()
         data["priority"] = event.getKey()[0]
         data["magnitude"] = event.getKey()[1]
@@ -384,26 +408,30 @@ class QueryService:
             data["balance_factor"] = self._balance_factor(node)
         return data
 
+    # Calculate a node balance factor using stored child heights
     def _balance_factor(self, node):
-        """Calculate a node balance factor using stored child heights."""
         left_height = node.getLeftChild().getHeight() if node.getLeftChild() else -1
         right_height = node.getRightChild().getHeight() if node.getRightChild() else -1
         return left_height - right_height
 
+    # -------------------------------------------------------------------------
+    # Parameter validation
+    # -------------------------------------------------------------------------
+
+    # Validate a positive integer without accepting booleans
     def _positive_integer(self, value, name):
-        """Validate a positive integer without accepting booleans."""
         if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
             raise ValueError(f"{name} debe ser un entero positivo")
         return value
 
+    # Validate a numeric query parameter
     def _number(self, value, name):
-        """Validate a finite numeric query parameter."""
         if isinstance(value, bool) or not isinstance(value, (int, float)):
             raise ValueError(f"{name} debe ser numérico")
         return float(value)
 
+    # Parse an ISO date or datetime and normalize it to UTC
     def _date_boundary(self, value, is_end):
-        """Parse an ISO date or datetime and normalize it to UTC."""
         if not isinstance(value, str) or not value.strip():
             raise ValueError("Las fechas son obligatorias")
         try:
@@ -415,8 +443,12 @@ class QueryService:
         except (TypeError, ValueError) as error:
             raise ValueError(f"Fecha inválida: {value}") from error
 
+    # -------------------------------------------------------------------------
+    # Response building
+    # -------------------------------------------------------------------------
+
+    # Build the common response envelope used by every query
     def _success(self, data, examined_nodes):
-        """Build the common response envelope used by every query."""
         return {
             "ok": True,
             **data,

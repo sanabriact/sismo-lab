@@ -6,12 +6,16 @@ from backend.services.ai_client.ai_report_client import (
 
 
 class AIReportService:
-    """Generate and validate report candidates without changing observatory state."""
 
+    # Fixed number of reports generated in each AI request
     REPORTS_PER_REQUEST = 7
 
+    # -------------------------------------------------------------------------
+    # Building the context
+    # -------------------------------------------------------------------------
+
+    # Build a detached context that can safely be used outside the lock
     def build_context(self, observatory):
-        """Build a detached context that can safely be used outside the lock."""
         active = []
         for node in observatory.getAVLTree().index.values():
             event = node.getValue()
@@ -47,15 +51,19 @@ class AIReportService:
             "used_ids": existing_ids.union(deleted_ids),
         }
 
+    # Return a stable station id for fallback report generation
     def _first_station_id(self, event):
-        """Return a stable station id for fallback report generation."""
         stations = event.getReportingStations()
         if not stations:
             return None
         return sorted(stations)[0]
 
+    # -------------------------------------------------------------------------
+    # Generating report candidates
+    # -------------------------------------------------------------------------
+
+    # Generate candidates, validate them, and return only detached data
     def generate(self, context, payload):
-        """Generate candidates, validate them, and return only detached data."""
         payload = payload if isinstance(payload, dict) else {}
         # Every AI request represents one fixed batch for the report queue.
         # Other payload options remain available, but the batch size is fixed.
@@ -135,8 +143,12 @@ class AIReportService:
             "fallback_count": fallback_count,
         }
 
+    # -------------------------------------------------------------------------
+    # Validation and normalization
+    # -------------------------------------------------------------------------
+
+    # Validate one candidate against the detached scenario context
     def validate(self, report, context):
-        """Validate one candidate against the detached scenario context."""
         try:
             problem = validate_generated_report_shape(
                 report,
@@ -158,8 +170,8 @@ class AIReportService:
         # A new identity may arrive with any positive first revision.
         return None
 
+    # Convert one valid candidate to the queue input contract
     def normalize(self, report):
-        """Convert one valid candidate to the queue input contract."""
         return {
             "event_id": int(report["event_id"]),
             "revision": int(report["revision"]),

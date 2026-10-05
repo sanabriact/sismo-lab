@@ -3,8 +3,12 @@ from datetime import timedelta
 
 
 class RealtimeClockService:
-    """Advance the active simulation clock according to real elapsed time."""
 
+    # -------------------------------------------------------------------------
+    # Initialization
+    # -------------------------------------------------------------------------
+
+    # Store the collaborators and start with the clock loop stopped
     def __init__(
         self,
         socketio,
@@ -29,8 +33,12 @@ class RealtimeClockService:
         self.anchor_time = None
         self.last_persist_monotonic = None
 
+    # -------------------------------------------------------------------------
+    # Lifecycle control
+    # -------------------------------------------------------------------------
+
+    # Start one background loop when a scenario is available
     def start(self, background_target):
-        """Start one background loop when a scenario is available."""
         observatory = self.get_observatory()
         if observatory is None or self.running:
             return False
@@ -43,25 +51,30 @@ class RealtimeClockService:
         self.socketio.start_background_task(background_target)
         return True
 
+    # Stop the loop before replacing or undoing a scenario
     def stop(self):
-        """Stop the loop before replacing or undoing a scenario."""
         self.running = False
         self.anchor_monotonic = None
         self.anchor_time = None
         self.last_persist_monotonic = None
 
+    # Continue real-time progression from a manually advanced instant
     def reset_anchor(self, current_time):
-        """Continue real-time progression from a manually advanced instant."""
         now = time.monotonic()
         self.anchor_monotonic = now
         self.anchor_time = current_time
         self.last_persist_monotonic = now
 
+    # -------------------------------------------------------------------------
+    # Clock loop
+    # -------------------------------------------------------------------------
+
+    # Advance and publish the clock once per real-time interval
     def run(self):
-        """Advance and publish the clock once per real-time interval."""
         while True:
             self.socketio.sleep(self.interval)
 
+            # Mutate state under the lock, but emit outside of it
             with self.lock:
                 if not self.running:
                     return

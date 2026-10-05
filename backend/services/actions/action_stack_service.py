@@ -1,16 +1,16 @@
 from copy import deepcopy
-
 from backend.models.action import Action
 from backend.models.seismic_observatory import SeismicObservatory
 
 
+# Raised when an action cannot be inspected or restored
 class ActionStackError(Exception):
-    """Raised when an action cannot be inspected or restored."""
+    pass
 
 
 class ActionStackService:
-    """Manage the observatory's explicit LIFO action stack."""
 
+    # Public action types accepted by the stack
     ACTION_TYPES = {
         "CREATE_EVENT",
         "UPDATE_EVENT",
@@ -43,6 +43,7 @@ class ActionStackService:
         "recover_avl": "RECOVER_AVL",
     }
 
+    # Inverse action associated with each action type
     INVERSE_ACTIONS = {
         "CREATE_EVENT": "REMOVE_CHANGE",
         "UPDATE_EVENT": "RESTORE_CHANGE",
@@ -56,8 +57,12 @@ class ActionStackService:
         "RECOVER_AVL": "RESTORE_CHANGE",
     }
 
+    # -------------------------------------------------------------------------
+    # Action type validation
+    # -------------------------------------------------------------------------
+
+    # Return the public action name or reject an unknown operation
     def normalize_type(self, action_type):
-        """Return the public action name or reject an unknown operation."""
         if not isinstance(action_type, str):
             raise ActionStackError("El tipo de acción debe ser texto")
 
@@ -66,8 +71,12 @@ class ActionStackService:
             raise ActionStackError(f"Tipo de acción inválido: {action_type}")
         return normalized
 
+    # -------------------------------------------------------------------------
+    # Registering actions
+    # -------------------------------------------------------------------------
+
+    # Push one completed action onto the observatory-owned stack
     def push_action(self, observatory, action):
-        """Push one completed action onto the observatory-owned stack."""
         if not isinstance(action, Action):
             raise ActionStackError("La pila solo acepta objetos Action")
         action_type = self.normalize_type(action.getActionType())
@@ -97,14 +106,28 @@ class ActionStackService:
         observatory.getActionStack().push(action)
         return action
 
+    # Build and push an action after its operation has succeeded
+    def record_action(self, observatory, action_type, before_snapshot, metadata=None):
+        action = Action(
+            action_type=self.normalize_type(action_type),
+            datetime_value=observatory.getClock().getCurrentTime(),
+            before_snapshot=before_snapshot,
+            metadata=metadata or {},
+        )
+        return self.push_action(observatory, action)
+
+    # -------------------------------------------------------------------------
+    # Compact undo data
+    # -------------------------------------------------------------------------
+
+    # Build a small list containing only values changed by the action
     def _build_undo_data(self, before, after):
-        """Build a small list containing only values changed by the action."""
         changes = []
         self._collect_changes(before, after, [], changes)
         return {"version": 1, "changes": changes}
 
+    # Compare dictionaries recursively and keep the old changed value
     def _collect_changes(self, before, after, path, changes):
-        """Compare dictionaries recursively and keep the old changed value."""
         if isinstance(before, dict) and isinstance(after, dict):
             keys = set(before.keys()) | set(after.keys())
             for key in keys:
@@ -131,8 +154,8 @@ class ActionStackService:
                 "value": deepcopy(before),
             })
 
+    # Apply compact inverse values to a serializable observatory dict
     def _apply_undo_data(self, data, undo_data):
-        """Apply compact inverse values to a serializable observatory dict."""
         if not isinstance(undo_data, dict) or undo_data.get("version") != 1:
             raise ActionStackError("Datos de deshacer inválidos")
 
@@ -155,34 +178,35 @@ class ActionStackService:
                 parent.pop(key, None)
         return data
 
-    def record_action(self, observatory, action_type, before_snapshot, metadata=None):
-        """Build and push an action after its operation has succeeded."""
-        action = Action(
-            action_type=self.normalize_type(action_type),
-            datetime_value=observatory.getClock().getCurrentTime(),
-            before_snapshot=before_snapshot,
-            metadata=metadata or {},
-        )
-        return self.push_action(observatory, action)
+    # -------------------------------------------------------------------------
+    # Queries about the stack
+    # -------------------------------------------------------------------------
 
+    # Return the next action to undo without removing it
     def peek(self, observatory):
-        """Return the next action to undo without removing it."""
         try:
             return observatory.getActionStack().peek()
         except IndexError as error:
             raise ActionStackError("No hay acciones para deshacer") from error
 
+    # Check if there is at least one action to undo
     def can_undo(self, observatory):
         return not observatory.getActionStack().is_empty()
 
+    # Get the number of actions in the stack
     def size(self, observatory):
         return observatory.getActionStack().size()
 
+    # Remove all the actions from the stack
     def clear(self, observatory):
         observatory.getActionStack().items.clear()
 
+    # -------------------------------------------------------------------------
+    # Undoing actions
+    # -------------------------------------------------------------------------
+
+    # Execute the compact inverse operation for the latest action
     def undo(self, observatory):
-        """Execute the compact inverse operation for the latest action."""
         stack = observatory.getActionStack()
         if stack.is_empty():
             raise ActionStackError("No hay acciones para deshacer")

@@ -1,6 +1,11 @@
-class JSONExportRepository:
-    """Map the live observatory to the portable JSON export contract."""
 
+class JSONExportRepository:
+
+    # -------------------------------------------------------------------------
+    # Full export
+    # -------------------------------------------------------------------------
+
+    # Map the live observatory to the portable JSON export contract
     def export(self, observatory, parameters):
         tree = observatory.getAVLTree()
         history = observatory.getHistory()
@@ -57,6 +62,11 @@ class JSONExportRepository:
             "metrics": observatory.getMetrics().toDict(),
         }
 
+    # -------------------------------------------------------------------------
+    # Tree serialization
+    # -------------------------------------------------------------------------
+
+    # Recursively convert a tree node and its children to the export format
     def _node_to_export(self, node, association_manager):
         if node is None:
             return None
@@ -81,6 +91,11 @@ class JSONExportRepository:
             "right_child": self._node_to_export(right, association_manager),
         }
 
+    # -------------------------------------------------------------------------
+    # History serialization
+    # -------------------------------------------------------------------------
+
+    # Convert an archived or deleted event to the export format
     @staticmethod
     def _historical_event_to_export(event, status):
         data = event.toDict()
@@ -90,6 +105,11 @@ class JSONExportRepository:
         data["archived"] = status == "archived"
         return data
 
+    # -------------------------------------------------------------------------
+    # Report serialization
+    # -------------------------------------------------------------------------
+
+    # Convert a queued report to the export format
     @staticmethod
     def _report_to_export(report):
         return {

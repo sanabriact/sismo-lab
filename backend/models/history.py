@@ -1,6 +1,9 @@
 from backend.models.event import Event
+
+
 class History:
-    
+
+    # Initialize the empty history structures
     def __init__(self):
         self.archived = {}
         self.archivedTrees = []
@@ -10,26 +13,58 @@ class History:
         self.deletedIds = set()
         self.listHistoricIds = []
 
+    # -------------------------------------------------------------------------
+    # Deleted events
+    # -------------------------------------------------------------------------
+
+    # Store a deleted event and preserve its identity permanently
     def addDeleted(self, key, event):
-        """Store a deleted event and preserve its identity permanently."""
         self.deleted[key] = event
         self.addDeletedId(key)
 
+    # Register a deleted identity without requiring an event snapshot
     def addDeletedId(self, key):
-        """Register a deleted identity without requiring an event snapshot."""
         self.deletedIds.add(key)
         self.addIdEvent(key)
 
+    # Get the dictionary of deleted events
     def getDeleted(self):
         return self.deleted
 
+    # Return every deleted identity, including ID-only tombstones
     def getDeletedIds(self):
-        """Return every deleted identity, including ID-only tombstones."""
         return set(self.deletedIds).union(self.deleted.keys())
 
+    # Get the deleted events as a list of dictionaries
     def getDeletedEvents(self):
         return [e.toDict() for e in self.deleted.values()]
 
+    # ------------------------------------------------------------------
+    # Archived events
+    # ------------------------------------------------------------------
+
+    # Get the dictionary of archived events
+    def getArchived(self):
+        return self.archived
+
+    # Get one archived event by its key
+    def getArchivedEvent(self, key):
+        return self.archived[key]
+
+    # Index one archived event for direct identity-based lookup
+    def addArchived(self, key, event):
+        self.archived[key] = event
+        self.addIdEvent(key)
+
+    # Remove one archived event by its key
+    def deleteArchived(self, key):
+        del self.archived[key]
+
+    # ------------------------------------------------------------------
+    # Archived trees
+    # ------------------------------------------------------------------
+
+    # Store the tree removed when an event was archived
     def addArchivedTree(self, root_id, ids, tree):
         self.archivedTrees.append({
             "root_id": root_id,
@@ -38,30 +73,29 @@ class History:
             "tree": tree,
         })
 
+    # Get the list of archived trees
     def getArchivedTrees(self):
         return self.archivedTrees
-    
-    def getArchived(self):
-        return self.archived
-    
-    def getArchivedEvent(self,key):
-        return self.archived[key]
-    
-    def addArchived(self,key,event):
-        """Index one archived event for direct identity-based lookup."""
-        self.archived[key] = event
-        self.addIdEvent(key)
-        
-    def deleteArchived(self, key):
-        del self.archived[key]
 
+    # ------------------------------------------------------------------
+    # Historic identity index (sorted list of ids)
+    # ------------------------------------------------------------------
+
+    # Add an id to the sorted index, returns False if it already exists
     def addIdEvent(self, id):
         if self.binarySearch(id, self.listHistoricIds):
             return False
         self.listHistoricIds.append(id)
         self.merge_sort(self.listHistoricIds)
         return True
-        
+
+    # Remove the last id added to the index
+    def deleteLastAddedId(self):
+        self.listHistoricIds.pop()
+
+    # ------------------------------------------------------------------
+
+    # Sort a list in place using merge sort
     def merge_sort(self, list):
         if len(list) <= 1:
             return
@@ -72,7 +106,8 @@ class History:
         self.merge_sort(left)
         self.merge_sort(right)
         self.merge(list, left, right)
-        
+
+    # Merge two sorted lists into the original list
     def merge(self, list, left, right):
         i = j = k = 0
         while i < len(left) and j < len(right):
@@ -91,14 +126,15 @@ class History:
             list[k] = right[j]
             j += 1
             k += 1
-            
+
+    # Check if an id is in a sorted list using binary search
     def binarySearch(self, id, list):
         start = 0
         end = len(list) - 1
 
         while(start <= end):
             half = (start + end) // 2
-            
+
             if list[half] == id:
                 return True
             elif list[half] > id:
@@ -106,10 +142,12 @@ class History:
             else:
                 start = half + 1
         return False
-    
-    def deleteLastAddedId(self):
-        self.listHistoricIds.pop()
-        
+
+    # ------------------------------------------------------------------
+    # Serialization
+    # ------------------------------------------------------------------
+
+    # Convert object to dictionary
     def toDict(self):
         return {
             "archived": {k: e.toDict() for k, e in self.archived.items()},
@@ -117,8 +155,9 @@ class History:
             "deleted": {k: e.toDict() for k, e in self.deleted.items()},
             "deletedIds": sorted(self.getDeletedIds()),
             "listHistoricIds": self.listHistoricIds,
-    }
+        }
 
+    # Convert dictionary to object
     @classmethod
     def fromDict(cls, data):
         history = cls()

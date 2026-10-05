@@ -1,15 +1,28 @@
 class EventLifecycleService:
-    """Handle event changes without owning locks or transport notifications."""
 
+    # -------------------------------------------------------------------------
+    # Initialization
+    # -------------------------------------------------------------------------
+
+    # Store the collaborators used to change events
     def __init__(self, observatory_service, report_processor, report_queue_service):
         self.observatory_service = observatory_service
         self.report_processor = report_processor
         self.report_queue_service = report_queue_service
 
+    # -------------------------------------------------------------------------
+    # Creating events
+    # -------------------------------------------------------------------------
+
+    # Create one validated manual event in the active observatory
     def create_manual_event(self, observatory, data):
-        """Create one validated manual event in the active observatory."""
         return self.observatory_service.createManualEvent(observatory, data)
 
+    # -------------------------------------------------------------------------
+    # Updating events
+    # -------------------------------------------------------------------------
+
+    # Queue or apply one manual correction using the existing report flow
     def update_manual_event(
         self,
         observatory,
@@ -18,7 +31,6 @@ class EventLifecycleService:
         save_observatory,
         scenario_id,
     ):
-        """Queue or apply one manual correction using the existing report flow."""
         event_id = data.get("event_id") if isinstance(data, dict) else None
         if isinstance(event_id, bool) or not isinstance(event_id, int):
             return {"response": {"ok": False, "reason": "invalid_event_id"}, "tree_operation": None}
@@ -115,8 +127,12 @@ class EventLifecycleService:
 
         return {"response": response, "tree_operation": tree_operation}
 
+    # -------------------------------------------------------------------------
+    # Reviewing events
+    # -------------------------------------------------------------------------
+
+    # Mark an active event as reviewed and record the completed action
     def mark_reviewed(self, observatory, event_id, complete_operation):
-        """Mark an active event as reviewed and record the completed action."""
         event = observatory.searchEventById(event_id)
         if event is None:
             return {"ok": False, "reason": "event_not_found"}
@@ -142,8 +158,12 @@ class EventLifecycleService:
         )
         return {"ok": True, "changed": True, "event": event.toDict()}
 
+    # -------------------------------------------------------------------------
+    # Deleting events
+    # -------------------------------------------------------------------------
+
+    # Delete one active event and record the reversible operation
     def delete_event(self, observatory, event_id, complete_operation):
-        """Delete one active event and record the reversible operation."""
         if isinstance(event_id, bool) or not isinstance(event_id, int):
             return {"ok": False, "reason": "invalid_id"}
 
