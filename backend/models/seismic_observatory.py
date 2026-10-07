@@ -334,6 +334,7 @@ class SeismicObservatory:
         # later operation mutates those lists.
         version = {
             "avl_tree": objectToDict(self.avl_tree),
+            "avl_balance": self.avl_tree.getBalance(),
             "bst_tree": objectToDict(self.bst_tree),
             "stations": [objectToDict(s) for s in self.stations],
             "zones": [objectToDict(z) for z in self.zones],
@@ -353,6 +354,7 @@ class SeismicObservatory:
         return {
             "scenario_id": self.scenario_id,
             "avl_tree": objectToDict(self.avl_tree),
+            "avl_balance": self.avl_tree.getBalance(),
             "bst_tree": objectToDict(self.bst_tree),
             "stations": [objectToDict(station) for station in self.stations],
             "zones": [objectToDict(zone) for zone in self.zones],
@@ -373,6 +375,7 @@ class SeismicObservatory:
         observatory = cls()
         observatory.scenario_id = data["scenario_id"]
         observatory.avl_tree = AVL.fromDict(data["avl_tree"], Event)
+        observatory.avl_tree.setBalance(data.get("avl_balance", data.get("execution_mode") != "stress"))
         observatory.bst_tree = BST.fromDict(data["bst_tree"], Event)
         observatory.stations = [Station.fromDict(station) for station in data["stations"]]
         stations_by_id = {

@@ -23,7 +23,7 @@ const Reports = () => {
     const [response, setResponse] = useState<ReportsResponse | null>(null);
     const [loading, setLoading] = useState(false);
     const [queueSnapshot, setQueueSnapshot] = useState<ReportQueueSnapshot | undefined>();
-    const [processing, setProcessing] = useState(false);
+    const [processing, setProcessing] = useState(() => reportService.isProcessing());
     const [processingAction, setProcessingAction] = useState<"step" | "start" | "pause" | null>(null);
     const [stepResult, setStepResult] = useState<ReportStepResponse | null>(null);
     const [aiRunning, setAiRunning] = useState(false);
@@ -44,7 +44,11 @@ const Reports = () => {
 
     // Fetches initial queue snapshot on mount
     useEffect(() => {
-        void reportService.getSnapshot().then(setQueueSnapshot);
+        void reportService.getSnapshot().then((nextSnapshot) => {
+            setQueueSnapshot(nextSnapshot);
+            // An empty queue means a previous continuous run has finished.
+            if (nextSnapshot.size === 0) setProcessing(false);
+        });
     }, []);
 
     // Subscribes to AI generation status changes and errors; fetches initial status
@@ -233,7 +237,7 @@ const Reports = () => {
                                 <h2 className="text-xl font-semibold">Cola FIFO</h2>
                             </div>
                             <p className="mt-1 text-sm text-slate-500">
-                                {processing ? "Procesamiento continuo activo" : `${snapshot.size} reporte${snapshot.size === 1 ? "" : "s"} pendiente${snapshot.size === 1 ? "" : "s"}`}
+                                {processing ? "Procesando la cola" : `${snapshot.size} reporte${snapshot.size === 1 ? "" : "s"} pendiente${snapshot.size === 1 ? "" : "s"}`}
                             </p>
                         </div>
                         {/* Processing control buttons: next step, start/pause continuous */}
@@ -255,7 +259,7 @@ const Reports = () => {
                                     className="inline-flex items-center gap-2 rounded-lg bg-amber-500 px-3 py-2 text-sm font-semibold text-white transition hover:bg-amber-600 disabled:cursor-not-allowed disabled:opacity-60"
                                 >
                                     {processingAction === "pause" ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Pause className="h-4 w-4" />}
-                                    Pausar
+                                    Detener
                                 </button>
                             ) : (
                                 <button

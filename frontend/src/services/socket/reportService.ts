@@ -20,6 +20,10 @@ import type {
 const TIMEOUT_MS = 5_000;
 
 class ReportService {
+    // Keep the last known processing state outside the page component.
+    // This survives navigation because the service is a shared singleton.
+    private processing = false;
+
     // Emits a socket event; on timeout resolves { ok: false, reason: "no_response" }
     private emit<T>(event: string, payload: unknown = {}): Promise<T> {
         return new Promise((resolve) => {
@@ -54,12 +58,23 @@ class ReportService {
 
     // Starts continuous queue processing
     startContinuous(): Promise<ReportStepResponse> {
-        return this.emit<ReportStepResponse>("reports:start");
+        return this.emit<ReportStepResponse>("reports:start").then((response) => {
+            if (response.ok) this.processing = true;
+            return response;
+        });
     }
 
     // Pauses queue processing
     pause(): Promise<ReportStepResponse> {
-        return this.emit<ReportStepResponse>("reports:pause");
+        return this.emit<ReportStepResponse>("reports:pause").then((response) => {
+            if (response.ok) this.processing = false;
+            return response;
+        });
+    }
+
+    /** Return the last known continuous-processing state. */
+    isProcessing(): boolean {
+        return this.processing;
     }
 
     // Gets the current queue state
@@ -112,14 +127,23 @@ class ReportService {
         onPaused: () => void,
     ): () => void {
         const socket = socketService.connect();
-        socket.on("queue:updated", onUpdated);
+        const handleUpdated = (snapshot: ReportQueueSnapshot) => {
+            if (snapshot.size === 0) this.processing = false;
+            onUpdated(snapshot);
+        };
+        const handlePaused = () => {
+            this.processing = false;
+            onPaused();
+        };
+
+        socket.on("queue:updated", handleUpdated);
         socket.on("queue:step", onStep);
-        socket.on("queue:paused", onPaused);
+        socket.on("queue:paused", handlePaused);
 
         return () => {
-            socket.off("queue:updated", onUpdated);
+            socket.off("queue:updated", handleUpdated);
             socket.off("queue:step", onStep);
-            socket.off("queue:paused", onPaused);
+            socket.off("queue:paused", handlePaused);
         };
     }
 }

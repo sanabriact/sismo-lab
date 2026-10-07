@@ -8,6 +8,7 @@ import { useObservable } from "../../stores/useObservable";
 import { scenarioStore } from "../../stores/scenario/ScenarioStore";
 import { scenarioService } from "../../services/scenario/ScenarioService";
 import type { AIScenarioMode } from "../../models/types/scenario/aiScenarioMode";
+import ScenarioVersionsPanel from "../../components/scenery/ScenarioVersionsPanel";
 
 // Scenario generation modes available for AI-based scenario creation
 const AI_SCENARIO_OPTIONS: { mode: AIScenarioMode, title: string, description: string }[] = [
@@ -46,6 +47,7 @@ const LoadScenario = () => {
     }
 
     return (
+        <>
         <section className="mx-auto max-w-3xl space-y-8 p-8">
             <h1 className="text-3xl font-bold text-gray-900">Cargar escenario</h1>
 
@@ -92,6 +94,8 @@ const LoadScenario = () => {
             )}
 
             {/* Manual scenario loading via JSON file upload */}
+            <p className="text-sm text-slate-500">Después de cargar el JSON, podrás acceder a sus versiones desde esta página.</p>
+
             <div className="space-y-2">
                 <h2 className="text-xl font-semibold">Manual</h2>
                 <label className={`inline-block rounded-lg bg-[#04172f] px-4 py-2 text-white ${validating ? "opacity-50" : "cursor-pointer hover:opacity-90"}`}>
@@ -118,6 +122,8 @@ const LoadScenario = () => {
                 </div>
             </div>
         </section>
+        <ScenarioVersionsPanel />
+        </>
     );
 };
 

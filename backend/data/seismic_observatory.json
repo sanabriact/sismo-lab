@@ -1,0 +1,60 @@
+{
+    "scenario_id": null,
+    "avl_tree": {
+        "root": null
+    },
+    "avl_balance": true,
+    "bst_tree": {
+        "root": null
+    },
+    "stations": [],
+    "zones": [],
+    "history": {
+        "archived": {},
+        "archivedTrees": [],
+        "deleted": {},
+        "deletedIds": [],
+        "listHistoricIds": []
+    },
+    "report_queue": {
+        "items": []
+    },
+    "action_stack": {
+        "items": []
+    },
+    "clock": {
+        "current_time": "2026-10-07T02:24:36Z"
+    },
+    "l": 3,
+    "t": 72.0,
+    "association_manager": {
+        "W": 48.0,
+        "R": 40.0,
+        "candidates": {},
+        "selected_references": {},
+        "selection_policy": "highest_magnitude_then_earliest_time_then_lowest_id"
+    },
+    "metrics": {
+        "active_events": 0,
+        "historical_events": 0,
+        "events_by_priority": {
+            "1": 0,
+            "2": 0,
+            "3": 0
+        },
+        "pending_attention": 0,
+        "high_cost_access_events": 0,
+        "accepted_corrections": 0,
+        "discarded_reports": 0,
+        "conflicts": 0,
+        "mass_archives": 0,
+        "archived_events": 0,
+        "ll_cases": 0,
+        "rr_cases": 0,
+        "rl_cases": 0,
+        "lr_cases": 0,
+        "simple_left_rotations": 0,
+        "simple_right_rotations": 0
+    },
+    "execution_mode": "normal"
+}

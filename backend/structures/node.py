@@ -1,8 +1,19 @@
+# ------------------------------------------------------------------
+# Tree node
+# ------------------------------------------------------------------
+
 from backend.utils.json_utils import objectToDict
 from backend.utils.quantities import normalizeDatetime, parseDatetime
 
 
+# Node shared by the tree structures, holding a value and its links
 class Node:
+
+    # -------------------------------------------------------------------------
+    # Initialization
+    # -------------------------------------------------------------------------
+
+    # Create a node with the given value and no links
     def __init__(self, value):
         self.value = value
         self.height = 0
@@ -11,79 +22,112 @@ class Node:
         self.parent = None
         self.nodeCreationTime = None
 
-    # Se obtiene el valor del nodo
+    # -------------------------------------------------------------------------
+    # Value
+    # -------------------------------------------------------------------------
+
+    # Get the node value
     def getValue(self):
         return self.value
 
-    # Se asigna el valor
+    # Set the node value
     def setValue(self, newValue):
         self.value = newValue
 
-    # Se obtiene el hijo izquierdo
+    # -------------------------------------------------------------------------
+    # Children
+    # -------------------------------------------------------------------------
+
+    # Get the left child
     def getLeftChild(self):
         return self.leftChild
 
-    # Se asigna el hijo izquierdo
+    # Set the left child
     def setLeftChild(self, node):
         self.leftChild = node
 
-    # Retorna true si tiene hijo izquierdo
+    # Return true if it has a left child
     def hasLeftChild(self):
         return not (self.leftChild is None)
 
-    # Se obtiene el hijo derecho
+    # Get the right child
     def getRightChild(self):
         return self.rightChild
 
-    # Se asigna el hijo derecho
+    # Set the right child
     def setRightChild(self, node):
         self.rightChild = node
 
-    # Retorna true si tiene hijo derecho
+    # Return true if it has a right child
     def hasRightChild(self):
         return not (self.rightChild is None)
 
-    # Se obtiene el padre
+    # -------------------------------------------------------------------------
+    # Parent
+    # -------------------------------------------------------------------------
+
+    # Get the parent
     def getParent(self):
         return self.parent
 
-    # Se asigna el padre
+    # Set the parent
     def setParent(self, node):
         self.parent = node
 
-    # Retorna true si tiene padre
+    # Return true if it has a parent
     def hasParent(self):
         return not (self.parent is None)
 
-    # Retorna la altura del nodo
+    # -------------------------------------------------------------------------
+    # Height and creation time
+    # -------------------------------------------------------------------------
+
+    # Return the node height
     def getHeight(self):
         return self.height
 
-    # Se asigna la altura del nodo
+    # Set the node height
     def setHeight(self, newHeight):
         self.height = newHeight
 
-    # Se asigna un tiempo de creacion
+    # Set the creation time
     def setNodeCreationTime(self, time):
         self.nodeCreationTime = normalizeDatetime(time)
-    
-    # Retorna true si es nodo hoja
+
+    # -------------------------------------------------------------------------
+    # Position checks
+    # -------------------------------------------------------------------------
+
+    # Return true if it is a leaf node
     def isLeaf(self):
         return self.getLeftChild() is None and self.getRightChild() is None
 
-    # Retorna true si el nodo es hijo izquierdo
+    # Return true if the node is a left child
     def isLeftChild(self):
         return self.hasParent() and self.parent.getLeftChild() is self
 
-    # Retorna true si el nodo es hijo derecho
+    # Return true if the node is a right child
     def isRightChild(self):
         return self.hasParent() and self.parent.getRightChild() is self
-    # Método para comprobar si el nodo es archivable
+
+    # -------------------------------------------------------------------------
+    # Archiving
+    # -------------------------------------------------------------------------
+
+    # Check whether the node can be archived
     def isArchivable(self, actualTime, time):
         key = self.value.getKey()
         return key[0] == 1 and self.calculateTime(actualTime) > time
-    
-    # Método para calcular la profundidad del nodo
+
+    # Calculate how long ago the node event was created
+    def calculateTime(self, actualTime):
+        return actualTime - self.value.getDateTime()
+
+    # -------------------------------------------------------------------------
+    # Tree metrics
+    # -------------------------------------------------------------------------
+
+    # Calculate the depth of the node
     def getDepth(self, counter):
         if self.getParent() is not None:
             counter += 1
@@ -91,7 +135,7 @@ class Node:
         else:
             return counter
 
-    # Método para contar nodos
+    # Count the nodes of the subtree
     def countNodes(self, counter):
         counter += 1
         if self.hasLeftChild():
@@ -100,12 +144,11 @@ class Node:
             counter = self.getRightChild().countNodes(counter)
         return counter
 
-    """ 2026-09-07T10:00:00Z. """
-    # Método para calcular el tiempo actual de creacion de el nodo
+    # -------------------------------------------------------------------------
+    # Serialization
+    # -------------------------------------------------------------------------
 
-    def calculateTime(self, actualTime):
-        return actualTime - self.value.getDateTime()
-
+    # Convert the node and its subtree into a dictionary
     def toDict(self):
 
         return {
@@ -120,6 +163,7 @@ class Node:
 
         }
 
+    # Rebuild a node and its subtree from a dictionary
     @classmethod
     def fromDict(cls, data, event_cls):
 
