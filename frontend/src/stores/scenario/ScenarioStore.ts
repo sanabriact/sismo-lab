@@ -17,5 +17,7 @@ export const scenarioStore = new Observable<ScenarioState>({
     zones: [],
     stations: [],
     events: [],
-    summary: null
+    summary: null,
+    versions: [],
+    versionBaseline: null,
 });

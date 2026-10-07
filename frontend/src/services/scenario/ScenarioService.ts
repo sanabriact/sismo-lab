@@ -8,6 +8,8 @@ import type { ScenarioLoadRequest } from "../../models/types/scenario/ScenarioLo
 import type { ScenarioLoadedResponse } from "../../models/interfaces/scenery/ScenarioLoadedResponse";
 import type { AIScenarioMode } from "../../models/types/scenario/aiScenarioMode";
 import { scenarioStore } from "../../stores/scenario/ScenarioStore";
+import type { ScenarioVersion } from "../../models/interfaces/scenery/ScenarioState";
+import { jsonExportService } from "../export/jsonExportService";
 
 const TIMEOUT_MS = 30_000;
 // Backend error codes mapped to user-facing messages
@@ -28,7 +30,7 @@ class ScenarioService {
     }
 
     // Emits the load request and handles success, failure and timeout
-    private sendLoad(request: ScenarioLoadRequest): void {
+    private sendLoad(request: ScenarioLoadRequest, versions: ScenarioVersion[] = []): void {
         socketService.connect().timeout(TIMEOUT_MS).emit(
             "scenario:load", request, (
                 error: Error | null, response?: ScenarioLoadedResponse
@@ -41,7 +43,17 @@ class ScenarioService {
 
                 // Success: apply the loaded scenario
                 if( response.ok && response.scenario){
-                    void applyScenarioPayload(response.scenario);
+                    void (async () => {
+                        await applyScenarioPayload(response.scenario!);
+                        let versionBaseline: Record<string, unknown> | null = null;
+                        try {
+                            versionBaseline = await jsonExportService.getSnapshot();
+                        } catch {
+                            // Keep version access available if snapshot comparison is temporarily unavailable.
+                        }
+                        const current = scenarioStore.getSnapshot();
+                        scenarioStore.set({ ...current, versions, versionBaseline });
+                    })();
                     return;
                 }
 
@@ -58,14 +70,32 @@ class ScenarioService {
         if(this.isBusy()) return;
         applyScenarioPending("file")
         try {
-            const content = await file.text()
+            const content = await file.text();
+            const data: unknown = JSON.parse(content);
+            const stored = data && typeof data === "object" && Array.isArray((data as Record<string, unknown>).versions)
+                ? (data as { versions: unknown[] }).versions
+                : [];
+            const versions = stored.filter((item): item is ScenarioVersion =>
+                !!item && typeof item === "object" && typeof (item as Record<string, unknown>).version === "number" &&
+                !!(item as Record<string, unknown>).snapshot && typeof (item as Record<string, unknown>).snapshot === "object"
+            );
             this.sendLoad({
                 source: "file",
                 content
-            });
+            }, versions);
         } catch {
             applyScenarioFailed("No se pudo leer el archivo seleccionado")
         }
+    }
+
+    loadVersion(version: ScenarioVersion): void {
+        if (this.isBusy()) return;
+        const versions = scenarioStore.getSnapshot().versions;
+        applyScenarioPending("file");
+        this.sendLoad({
+            source: "file",
+            content: JSON.stringify({ ...version.snapshot, versions }),
+        }, versions);
     }
 
     // Requests an AI-generated scenario for the given mode

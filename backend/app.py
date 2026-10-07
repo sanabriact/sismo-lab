@@ -61,6 +61,15 @@ def export_scenario_json():
         data = json_export_service.export(observatory)
     return jsonify(data)
 
+@app.route("/api/scenario/snapshot", methods=["GET"])
+def get_scenario_snapshot():
+    observatory = event_engine.get_or_load_observatory()
+    with event_engine.lock:
+        if observatory is None or observatory.getScenarioId() is None:
+            return jsonify({"ok": False, "reason": "no_scenario"}), 404
+        data = json_export_service.snapshot(observatory)
+    return jsonify(data)
+
 @app.route("/api/parameters", methods=["GET"])
 def get_parameters():
     return jsonify(event_engine.get_parameters())
