@@ -1,24 +1,44 @@
+# ------------------------------------------------------------------
+# BST tree
+# ------------------------------------------------------------------
+
 from backend.structures.node import Node
 from backend.utils.json_utils import objectToDict
 
+
+# Binary search tree of events with an id index and visual operation recording
 class BST:
+
+    # -------------------------------------------------------------------------
+    # Initialization
+    # -------------------------------------------------------------------------
+
+    # Create an empty tree
     def __init__(self):
         self.root = None
         self.index = {}
         self._dirty_ids = set()
         self._removed_ids = set()
         self._visual_steps = []
-    
+
+    # -------------------------------------------------------------------------
+    # Visual operation recording
+    # -------------------------------------------------------------------------
+
+    # Mark a node as changed so it is included in the next patch
     def _touch(self, node):
         if node is not None:
             event_id = node.getValue().getKey()[2]
             self._dirty_ids.add(event_id)
-    
+
+    # Reset the change tracking before a new visual operation
     def begin_visual_operation(self):
         self._dirty_ids.clear()
         self._removed_ids.clear()
 
+    # Build the patch with the changed and removed nodes and reset the tracking
     def finish_visual_operation(self):
+        # Collect the changed nodes
         upserted = []
 
         for event_id in self._dirty_ids:
@@ -47,11 +67,13 @@ class BST:
                 ),
             })
 
+        # Find the root id
         root_id = None
 
         if self.root is not None:
             root_id = self.root.getValue().getKey()[2]
 
+        # Reset the tracking and return the patch
         removed_ids = list(self._removed_ids)
         self._dirty_ids.clear()
         self._removed_ids.clear()
@@ -63,7 +85,11 @@ class BST:
             "rootId": root_id,
         }
 
-    # Method for trying inserting left child
+    # -------------------------------------------------------------------------
+    # Insertion
+    # -------------------------------------------------------------------------
+
+    # Try to insert the node as the left child
     def _tryInsertLeftChild(self, currentRoot, node):
         leftChild = currentRoot.getLeftChild()
         if leftChild is None:
@@ -75,8 +101,8 @@ class BST:
             return True, leftChild
         else:
             return False, leftChild
-        
-    # Method for trying inserting right child
+
+    # Try to insert the node as the right child
     def _tryInsertRightChild(self, currentRoot, node):
         rightChild = currentRoot.getRightChild()
         if rightChild is None:
@@ -120,12 +146,16 @@ class BST:
             return True
         return self._insert(node, child)
 
-    # Method for updating the tree when a report changes an event key.
+    # Update the tree when a report changes an event key.
     def _updateTree(self, event):
         self.delete(event.getKey()[2])
         self.insert(event)
-     
-    # Search and element by its key
+
+    # -------------------------------------------------------------------------
+    # Search
+    # -------------------------------------------------------------------------
+
+    # Search an element by its key
     def search(self, data):
         if self.root is None:
             return None
@@ -159,8 +189,11 @@ class BST:
             return self.index[id]
         else:
             return None
-    
-    
+
+    # -------------------------------------------------------------------------
+    # Traversals
+    # -------------------------------------------------------------------------
+
     # Public method for preorder transversal
     def preorder(self):
         if self.root is None:
@@ -215,6 +248,10 @@ class BST:
 
         return None
 
+    # -------------------------------------------------------------------------
+    # Deletion
+    # -------------------------------------------------------------------------
+
     # Public method for eliminating a node
     def delete(self, data):
         # We check the tree has root
@@ -230,7 +267,6 @@ class BST:
                 return True
 
     # Private method for eliminating a node
-        # Private method for eliminating a node
     def _delete(self, node):
         removed_id = node.getValue().getKey()[2]          # CHANGE 1: remember the id
 
@@ -291,11 +327,10 @@ class BST:
         self._touch(node.getParent())
         self._refresh_heights(self.root)
 
-            
     # Private method for getting a predeccesor of a root.
     def _getPredecessor(self, node):
         rightChild = node.getRightChild()
-        # Case base
+        # Base case
         if rightChild is None:
             return node
 
@@ -307,8 +342,12 @@ class BST:
     def _updateNodeValue(self, oldNode, newNode):
         oldNode.setValue(newNode.getValue())
 
+    # -------------------------------------------------------------------------
+    # Heights
+    # -------------------------------------------------------------------------
+
+    # Keep node heights accurate without applying AVL rotations
     def _refresh_heights(self, node):
-        """Keep node heights accurate without applying AVL rotations."""
         if node is None:
             return -1
 
@@ -319,7 +358,11 @@ class BST:
             node.setHeight(height)
             self._touch(node)
         return height
-    
+
+    # -------------------------------------------------------------------------
+    # Drawing
+    # -------------------------------------------------------------------------
+
     # Public method for drawing a tree (For test instances)
     def draw(self):
         if self.root is None:
@@ -354,20 +397,24 @@ class BST:
             return "(" + ", ".join(str(v) for v in value) + ")"
         return str(value)
 
-    # Method to converting a BST tree instance into a JSON or dictionary type.
-    def toDict(self):
-        #The index is not included in the dictionary representation because it can be reconstructed from the tree structure.
-            return {
-                "root": objectToDict(self.root),
-            }
+    # -------------------------------------------------------------------------
+    # Serialization
+    # -------------------------------------------------------------------------
 
-    # Method for converting a JSON answer into a BST object instance.
+    # Convert a BST tree instance into a JSON or dictionary type.
+    def toDict(self):
+        # The index is not included in the dictionary representation because it can be reconstructed from the tree structure.
+        return {
+            "root": objectToDict(self.root),
+        }
+
+    # Convert a JSON answer into a BST object instance.
     @classmethod
     def fromDict(cls, data, event_cls):
         tree = cls()
         if data["root"] is not None:
             tree.root = Node.fromDict(data["root"], event_cls)
-            tree._rebuildIndex(tree.root) 
+            tree._rebuildIndex(tree.root)
         return tree
 
     # Private method for rebuilding indexes.
