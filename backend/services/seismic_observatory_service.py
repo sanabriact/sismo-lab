@@ -1,3 +1,7 @@
+# ------------------------------------------------------------------
+# Seismic observatory service
+# ------------------------------------------------------------------
+
 import json
 from backend.repositories.seismic_observatory_repository import SeismicObservatoryRepository
 from backend.repositories.json_scenario_repository import JsonScenarioRepository
@@ -11,7 +15,17 @@ from backend.services.parameters.scenario_parameters_service import ScenarioPara
 from backend.services.scenario.scenario_builder_service import ScenarioBuilderService
 from backend.services.scenario.scenario_errors import ScenarioValidationError
 
+
+# Coordinate scenario loading, event creation, audits, and archiving.
+# The EventEngine works with the observatory it keeps in memory (the active
+# scenario), so most methods receive the instance instead of loading it from disk.
 class SeismicObservatoryService:
+
+    # -------------------------------------------------------------------------
+    # Initialization
+    # -------------------------------------------------------------------------
+
+    # Create the service with its repositories, metrics, and scenario builder
     def __init__(self, parameters_service=None):
         self.repository = SeismicObservatoryRepository()
         self.scenario_repository = JsonScenarioRepository()
@@ -22,13 +36,205 @@ class SeismicObservatoryService:
             self.metrics_service,
         )
 
+    # -------------------------------------------------------------------------
+    # Observatory persistence
+    # -------------------------------------------------------------------------
+
+    # Load the stored observatory, or create an empty one
     def getObservatory(self):
         observatory = self.repository.load()
         if observatory is None:
             observatory = SeismicObservatory()
         return observatory
- 
 
+    # Persist the given observatory through the repository
+    def saveObservatory(self, observatory):
+        return self.repository.save(observatory)
+
+    # -------------------------------------------------------------------------
+    # Scenario loading
+    # -------------------------------------------------------------------------
+    # Loading is all or nothing: a new observatory is built and validated
+    # first, and it is only saved to disk if there are no problems.
+
+    # Parse and build a scenario from uploaded text
+    def loadScenarioFromText(self, content):
+        observatory = self.buildScenario(self.parseScenarioText(content))
+        return observatory
+
+    # Generate, build, and save a scenario from the AI generator
+    def loadScenarioFromAI(self, ai_mode):
+        # Scenario generation with the AI is not available yet: "empty" uses a
+        # base configuration (fixed stations and zones, no events).
+        scenario_generator_service = AIScenarioGeneratorService()
+        data = scenario_generator_service.generate(ai_mode)
+        observatory = self.buildScenario(data)
+        self.repository.save(observatory)
+        return observatory
+
+    # Parse scenario text into a dict, raising validation errors when invalid
+    def parseScenarioText(self, content):
+        if not isinstance(content, str) or not content.strip():
+            raise ScenarioValidationError(["El archivo está vacío"])
+        try:
+            data = self.scenario_repository.parse_text(content)
+        except json.JSONDecodeError as error:
+            raise ScenarioValidationError([
+                f"JSON inválido (línea {error.lineno}, columna {error.colno}): {error.msg}"
+            ])
+        except ValueError as error:
+            raise ScenarioValidationError([str(error)])
+        if isinstance(data, dict) and "seismic_observatory" in data:
+            data = data["seismic_observatory"]
+        if not isinstance(data, dict):
+            raise ScenarioValidationError(["El escenario debe ser un objeto JSON"])
+        return data
+
+    # Build a scenario through the dedicated builder service
+    def buildScenario(self, data):
+        return self.scenario_builder.build(data)
+
+    # Compatibility entry point that uses the canonical scenario builder
+    def _buildFromInsertions(self, data, mode):
+        return self.scenario_builder.build({**data, "execution_mode": mode})
+
+    # Compatibility entry point that uses the canonical scenario builder
+    def _buildFromTopology(self, data, mode):
+        return self.scenario_builder.build({**data, "execution_mode": mode})
+
+    # -------------------------------------------------------------------------
+    # Event creation
+    # -------------------------------------------------------------------------
+
+    # Return the first event id not used by active, archived, or deleted events
+    def nextAvailableEventId(self, observatory):
+        used_ids = set(observatory.getAVLTree().index.keys())
+        used_ids.update(observatory.getHistory().getArchived().keys())
+        used_ids.update(observatory.getHistory().getDeletedIds())
+
+        for event_id in range(1, 1000000):
+            if event_id not in used_ids:
+                return event_id
+
+        raise RuntimeError("No hay ids disponibles.")
+
+    # Insert one event and apply the shared metrics and persistence steps
+    def _create_event(self, observatory, event_id, station_id, data, action_type, source, failure_reason):
+        # Capture the state before the operation
+        before_version = observatory.toVersion()
+        before_indicators = self.metrics_service.capture_display(observatory)
+        observatory.begin_visual_operation()
+
+        # Insert the event while recording the visual steps
+        try:
+            result = observatory.createEvent(
+                id=event_id,
+                magnitude=data["magnitude"],
+                depth=data["depth"],
+                epicenter_x=data["epicenter_x"],
+                epicenter_y=data["epicenter_y"],
+                datetime=data["datetime"],
+                revision=1,
+                station=station_id,
+            )
+            steps = observatory.finish_visual_operation()
+        except Exception:
+            observatory.finish_visual_operation()
+            raise
+
+        # Make sure the event was inserted
+        if result is False or not all(result):
+            raise ValueError(failure_reason)
+
+        event = observatory.searchEventById(event_id)
+        if event is None:
+            raise ValueError("El evento creado no quedó en el árbol")
+
+        # Update metrics, register the operation, and persist
+        self.metrics_service.refresh_derived_metrics(observatory)
+        self.metrics_service.register_rotation_steps(observatory.getMetrics(), steps)
+        self.metrics_service.record_operation(
+            observatory=observatory,
+            action_type=action_type,
+            before_version=before_version,
+            before_indicators=before_indicators,
+            details={"event_id": event_id, "source": source},
+        )
+        self.repository.save(observatory)
+
+        return {
+            "mode": observatory.getExecutionMode(),
+            "stationId": station_id,
+            "event": event.toDict(),
+            "steps": steps,
+        }
+
+    # Insert an AI-generated event into the active observatory, save it, and
+    # return the visual operation to send to the frontend. The AVL is balanced
+    # in normal mode and left unbalanced in stress mode.
+    def createGeneratedEvent(self, observatory, station, data):
+        if not observatory.getClock().canOccurAt(data["datetime"]):
+            raise ValueError("La fecha del evento supera el reloj del escenario")
+        event_id = self.nextAvailableEventId(observatory)
+        return self._create_event(
+            observatory,
+            event_id,
+            station.getId(),
+            data,
+            "create_event",
+            "realtime",
+            "No se pudo insertar el evento generado",
+        )
+
+    # Insert a manual event and produce the patches for the AVL and BST
+    def createManualEvent(self, observatory, data):
+        # Reject the request if its data is invalid or incomplete
+        required = ("id", "magnitude", "depth", "epicenter_x", "epicenter_y", "datetime", "station")
+        if not isinstance(data, dict) or any(field not in data for field in required):
+            raise ValueError("Faltan datos obligatorios para crear el evento")
+
+        # Validate the event and station ids
+        event_id = data["id"]
+        station_id = data["station"]
+        if isinstance(event_id, bool) or not isinstance(event_id, int):
+            raise ValueError("El id debe ser numérico entero")
+        if isinstance(station_id, bool) or not isinstance(station_id, int):
+            raise ValueError("La estación seleccionada no es válida")
+        if station_id not in {station.getId() for station in observatory.getStations()}:
+            raise ValueError("La estación seleccionada no pertenece al escenario")
+
+        # Validate the numeric fields
+        for field in ("magnitude", "depth", "epicenter_x", "epicenter_y"):
+            value = data[field]
+            if isinstance(value, bool) or not isinstance(value, (int, float)):
+                raise ValueError(f"{field} debe ser numérico")
+        if not hasAtMostOneDecimal(data["depth"]):
+            raise ValueError("La profundidad admite máximo un decimal")
+
+        # Validate the event date against the simulation clock
+        try:
+            event_datetime = parseDatetime(data["datetime"])
+        except (TypeError, ValueError, AttributeError) as error:
+            raise ValueError("La fecha del evento no es válida") from error
+        if not observatory.getClock().canOccurAt(event_datetime):
+            raise ValueError("La fecha del evento supera el reloj del escenario")
+
+        # Insert the validated event
+        return self._create_event(
+            observatory,
+            event_id,
+            station_id,
+            {**data, "datetime": event_datetime},
+            "create_manual_event",
+            "manual",
+            "El id ya pertenece a un evento activo, eliminado o archivado",
+        )
+
+    # -------------------------------------------------------------------------
+    # Manual update report
+    # -------------------------------------------------------------------------
+
+    # Validate manual edit data and build the correction report for an event
     def build_manual_update_report(self, observatory, event_id, data):
         # These fields are required to create a valid update report.
         required = (
@@ -113,176 +319,11 @@ class SeismicObservatoryService:
             datetime_=event_datetime,
         )
 
-    # ===================== Carga de escenarios =====================
-    # La carga es completa o no se aplica: primero se construye y valida un
-    # observatorio nuevo; solo si no hay problemas se guarda en disco.
+    # -------------------------------------------------------------------------
+    # Audits
+    # -------------------------------------------------------------------------
 
-    def loadScenarioFromText(self, content):
-        observatory = self.buildScenario(self.parseScenarioText(content))
-        return observatory
-
-    def loadScenarioFromAI(self, ai_mode):
-        # Aún no hay generación de escenarios con la IA: "empty" usa una
-        # configuración base (estaciones y zonas fijas, sin eventos).
-        scenario_generator_service = AIScenarioGeneratorService()
-        data = scenario_generator_service.generate(ai_mode)
-        observatory = self.buildScenario(data)
-        self.repository.save(observatory)
-        return observatory
-
-    def parseScenarioText(self, content):
-        if not isinstance(content, str) or not content.strip():
-            raise ScenarioValidationError(["El archivo está vacío"])
-        try:
-            data = self.scenario_repository.parse_text(content)
-        except json.JSONDecodeError as error:
-            raise ScenarioValidationError([
-                f"JSON inválido (línea {error.lineno}, columna {error.colno}): {error.msg}"
-            ])
-        except ValueError as error:
-            raise ScenarioValidationError([str(error)])
-        if isinstance(data, dict) and "seismic_observatory" in data:
-            data = data["seismic_observatory"]
-        if not isinstance(data, dict):
-            raise ScenarioValidationError(["El escenario debe ser un objeto JSON"])
-        return data
-
-    def buildScenario(self, data):
-        """Build a scenario through the dedicated builder service."""
-        return self.scenario_builder.build(data)
-
-    def _buildFromInsertions(self, data, mode):
-        """Compatibility entry point that uses the canonical scenario builder."""
-        return self.scenario_builder.build({**data, "execution_mode": mode})
-
-    def _buildFromTopology(self, data, mode):
-        """Compatibility entry point that uses the canonical scenario builder."""
-        return self.scenario_builder.build({**data, "execution_mode": mode})
-
-    # ===================== Métodos para el EventEngine =====================
-    # El EventEngine trabaja con el observatorio que tiene en memoria
-    # (el escenario activo), por eso estos métodos reciben la instancia
-    # en lugar de cargarla desde disco.
-
-    def saveObservatory(self, observatory):
-        return self.repository.save(observatory)
-
-    def nextAvailableEventId(self, observatory):
-        used_ids = set(observatory.getAVLTree().index.keys())
-        used_ids.update(observatory.getHistory().getArchived().keys())
-        used_ids.update(observatory.getHistory().getDeletedIds())
-
-        for event_id in range(1, 1000000):
-            if event_id not in used_ids:
-                return event_id
-
-        raise RuntimeError("No hay ids disponibles.")
-
-    def _create_event(self, observatory, event_id, station_id, data, action_type, source, failure_reason):
-        """Insert one event and apply the shared metrics and persistence steps."""
-        before_version = observatory.toVersion()
-        before_indicators = self.metrics_service.capture_display(observatory)
-        observatory.begin_visual_operation()
-
-        try:
-            result = observatory.createEvent(
-                id=event_id,
-                magnitude=data["magnitude"],
-                depth=data["depth"],
-                epicenter_x=data["epicenter_x"],
-                epicenter_y=data["epicenter_y"],
-                datetime=data["datetime"],
-                revision=1,
-                station=station_id,
-            )
-            steps = observatory.finish_visual_operation()
-        except Exception:
-            observatory.finish_visual_operation()
-            raise
-
-        if result is False or not all(result):
-            raise ValueError(failure_reason)
-
-        event = observatory.searchEventById(event_id)
-        if event is None:
-            raise ValueError("El evento creado no quedó en el árbol")
-
-        self.metrics_service.refresh_derived_metrics(observatory)
-        self.metrics_service.register_rotation_steps(observatory.getMetrics(), steps)
-        self.metrics_service.record_operation(
-            observatory=observatory,
-            action_type=action_type,
-            before_version=before_version,
-            before_indicators=before_indicators,
-            details={"event_id": event_id, "source": source},
-        )
-        self.repository.save(observatory)
-
-        return {
-            "mode": observatory.getExecutionMode(),
-            "stationId": station_id,
-            "event": event.toDict(),
-            "steps": steps,
-        }
-
-    def createGeneratedEvent(self, observatory, station, data):
-        """
-        Inserta un evento generado (por la IA) en el observatorio activo, lo
-        guarda y devuelve la operación visual que se enviará al frontend.
-        En modo normal el AVL se balancea; en modo estrés no.
-        """
-        if not observatory.getClock().canOccurAt(data["datetime"]):
-            raise ValueError("La fecha del evento supera el reloj del escenario")
-        event_id = self.nextAvailableEventId(observatory)
-        return self._create_event(
-            observatory,
-            event_id,
-            station.getId(),
-            data,
-            "create_event",
-            "realtime",
-            "No se pudo insertar el evento generado",
-        )
-
-    def createManualEvent(self, observatory, data):
-        """Inserta un evento manual y produce los parches para AVL y BST."""
-        required = ("id", "magnitude", "depth", "epicenter_x", "epicenter_y", "datetime", "station")
-        if not isinstance(data, dict) or any(field not in data for field in required):
-            raise ValueError("Faltan datos obligatorios para crear el evento")
-
-        event_id = data["id"]
-        station_id = data["station"]
-        if isinstance(event_id, bool) or not isinstance(event_id, int):
-            raise ValueError("El id debe ser numérico entero")
-        if isinstance(station_id, bool) or not isinstance(station_id, int):
-            raise ValueError("La estación seleccionada no es válida")
-        if station_id not in {station.getId() for station in observatory.getStations()}:
-            raise ValueError("La estación seleccionada no pertenece al escenario")
-
-        for field in ("magnitude", "depth", "epicenter_x", "epicenter_y"):
-            value = data[field]
-            if isinstance(value, bool) or not isinstance(value, (int, float)):
-                raise ValueError(f"{field} debe ser numérico")
-        if not hasAtMostOneDecimal(data["depth"]):
-            raise ValueError("La profundidad admite máximo un decimal")
-
-        try:
-            event_datetime = parseDatetime(data["datetime"])
-        except (TypeError, ValueError, AttributeError) as error:
-            raise ValueError("La fecha del evento no es válida") from error
-        if not observatory.getClock().canOccurAt(event_datetime):
-            raise ValueError("La fecha del evento supera el reloj del escenario")
-
-        return self._create_event(
-            observatory,
-            event_id,
-            station_id,
-            {**data, "datetime": event_datetime},
-            "create_manual_event",
-            "manual",
-            "El id ya pertenece a un evento activo, eliminado o archivado",
-        )
-
+    # Audit the AVL balance and return a summary
     def auditBalance(self, observatory):
         audit = StructureAuditService().audit_avl(observatory.getAVLTree())
         return {
@@ -292,6 +333,7 @@ class SeismicObservatoryService:
             "issues": audit["issues"],
         }
 
+    # Audit the tree structure for the current execution mode
     def auditStructure(self, observatory):
         mode = observatory.getExecutionMode()
 
@@ -303,12 +345,18 @@ class SeismicObservatoryService:
             ),
             "indicators": self.metrics_service.capture_display(observatory),
         }
-    
+
+    # -------------------------------------------------------------------------
+    # Archiving
+    # -------------------------------------------------------------------------
+
+    # Select the subtree to archive and the object used to paint it
     def archiveAndGetTree(self, actualTime, T):
-        observatory = self.getObservatory() 
+        observatory = self.getObservatory()
         rootToArchivate, objectToPaintTree = observatory.archivateSubTree(actualTime, T)
         return rootToArchivate, objectToPaintTree
-    
+
+    # Convert the archived node to a dict and remove its references from the AVL
     def buildArchivedJson(self, currentRoot):
         observatory = self.getObservatory()
         avl = observatory.getAVLTree()
@@ -316,7 +364,12 @@ class SeismicObservatoryService:
         nodeToDict = node.toDict()
         avl.eliminateReferences(node)
         return nodeToDict
-    
+
+    # -------------------------------------------------------------------------
+    # Active events
+    # -------------------------------------------------------------------------
+
+    # Return the active events with their priority and magnitude
     def getActiveEvents(self, observatory):
         events = []
         for event_id, node in observatory.getAVLTree().index.items():

@@ -711,6 +711,11 @@ class ScenarioValidator:
         if not isinstance(data, dict):
             return observatory
         self.loadOptionalHistory(observatory, data.get("history"))
+        # Topology restores the tree directly, so register its active ids here.
+        # Insertion already registers them while creating events; addIdEvent is idempotent.
+        history = observatory.getHistory()
+        for event_id in observatory.getAVLTree().index:
+            history.addIdEvent(event_id)
         observatory.recalculateAssociations()
         self.loadOptionalReportQueue(observatory, data.get("report_queue"))
         self.loadOptionalAssociations(observatory, data.get("association_manager"))

@@ -49,6 +49,8 @@ class ScenarioBuilderService:
             observatory = self._build_from_insertions(data, mode)
 
         # Apply identifiers, parameters and derived metrics
+        versions = data.get("versions", [])
+        observatory.scenario_versions = versions if isinstance(versions, list) else []
         observatory.scenario_id = str(uuid4())
         self.parameters_service.update(parameters)
         observatory.setL(parameters["L"])

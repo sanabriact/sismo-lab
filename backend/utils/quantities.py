@@ -1,16 +1,31 @@
+# ------------------------------------------------------------------
+# Quantities
+# ------------------------------------------------------------------
+
 from datetime import datetime, timezone
 
 
+# ------------------------------------------------------------------
+# Decimal quantities
+# ------------------------------------------------------------------
+
+# Convert a quantity to integer tenths
 def toTenths(value):
     # Compare quantities as integer tenths to avoid float errors
     return int(round(float(value) * 10))
 
 
+# Check that a quantity has at most one decimal place
 def hasAtMostOneDecimal(value):
     scaled = float(value) * 10
     return abs(scaled - round(scaled)) < 1e-9
 
 
+# ------------------------------------------------------------------
+# Datetimes
+# ------------------------------------------------------------------
+
+# Convert a datetime to UTC, timezone-aware, second precision
 def normalizeDatetime(value):
     # Every datetime in the system is UTC, timezone-aware, second precision
     if not isinstance(value, datetime):
@@ -20,6 +35,7 @@ def normalizeDatetime(value):
     return value.astimezone(timezone.utc).replace(microsecond=0)
 
 
+# Parse an ISO 8601 string into a normalized datetime
 def parseDatetime(text):
     # Accepts ISO 8601, including the trailing Z shown in the specification.
     # The Z is removed only when it is the last character: a blind replace would

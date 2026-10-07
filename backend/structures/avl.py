@@ -1,7 +1,19 @@
+# ------------------------------------------------------------------
+# AVL tree
+# ------------------------------------------------------------------
+
 from backend.structures.node import Node
 from backend.utils.json_utils import objectToDict
 
+
+# AVL tree of events with an id index and visual operation recording
 class AVL:
+
+    # -------------------------------------------------------------------------
+    # Initialization
+    # -------------------------------------------------------------------------
+
+    # Create an empty tree with balancing enabled
     def __init__(self):
         self.root = None
         self.index = {} # Search nodes by id; more efficient.
@@ -10,27 +22,40 @@ class AVL:
         self._visual_steps = []
         self.balance = True
 
+    # -------------------------------------------------------------------------
+    # Balance setting
+    # -------------------------------------------------------------------------
+
+    # Return whether automatic balancing is enabled
     def getBalance(self):
         return self.balance
+
+    # Enable or disable automatic balancing
     def setBalance(self, balance):
         self.balance = balance
-    
+
+    # -------------------------------------------------------------------------
+    # Visual operation recording
+    # -------------------------------------------------------------------------
+
+    # Mark a node as changed so it is included in the next patch
     def _touch(self, node):
         if node is not None:
             self._dirty_ids.add(node.getValue().getKey()[2])
-            
+
+    # Reset the change tracking before a new visual operation
     def begin_visual_operation(self):
         self._dirty_ids.clear()
         self._removed_ids.clear()
         self._visual_steps = []
 
-
+    # Return the recorded visual steps and reset the recording
     def finish_visual_operation(self):
         steps = self._visual_steps
         self._visual_steps = []
         return steps
 
-
+    # Record an insert step with its patch
     def _record_insert(self):
         patch = self._build_patch("insert")
 
@@ -39,7 +64,7 @@ class AVL:
             "avlPatch": patch,
         })
 
-
+    # Record a rotation step with its patch and affected ids
     def _record_rotation(self, rotation_type, pivot):
         new_root = pivot.getParent()
         patch = self._build_patch("rotation")
@@ -59,20 +84,50 @@ class AVL:
             },
             "avlPatch": patch,
         })
-    
+
+    # Record a height update step with its patch
     def _record_heights(self):
         self._visual_steps.append({
             "kind": "heights",
             "avlPatch": self._build_patch("heights")
         })
-    
+
+    # Record a delete step with its patch
     def _record_delete(self):
         self._visual_steps.append({
             "kind": "delete",
             "avlPatch": self._build_patch("delete")
         })
 
-    # Method for trying inserting left child
+    # Build a patch of the changed nodes (for front and backend connections)
+    def _build_patch(self, operation):
+        upserted = []
+        for node_id in self._dirty_ids:
+            node = self.index.get(node_id)
+            if node is not None:
+                upserted.append({
+                    "id": node_id,
+                    "key": list(node.getValue().getKey()),
+                    "height": node.getHeight(),
+                    "leftChildId": node.getLeftChild().getValue().getKey()[2] if node.hasLeftChild() else None,
+                    "rightChildId": node.getRightChild().getValue().getKey()[2] if node.hasRightChild() else None,
+                    "parentId": node.getParent().getValue().getKey()[2] if node.hasParent() else None,
+                })
+        patch = {
+            "operation": operation,
+            "upserted": upserted,
+            "removedIds": list(self._removed_ids),
+            "rootId": self.root.getValue().getKey()[2] if self.root is not None else None,
+        }
+        self._dirty_ids.clear()
+        self._removed_ids.clear()
+        return patch
+
+    # -------------------------------------------------------------------------
+    # Insertion
+    # -------------------------------------------------------------------------
+
+    # Try to insert the node as the left child
     def _tryInsertLeftChild(self, currentRoot, node):
         leftChild = currentRoot.getLeftChild()
         if leftChild is None:
@@ -85,7 +140,7 @@ class AVL:
         else:
             return False, leftChild
 
-    # Method for trying inserting right child
+    # Try to insert the node as the right child
     def _tryInsertRightChild(self, currentRoot, node):
         rightChild = currentRoot.getRightChild()
         if rightChild is None:
@@ -93,7 +148,7 @@ class AVL:
             node.setParent(currentRoot)
             self.index[node.getValue().getKey()[2]] = node
             self._touch(node)
-            self._touch(currentRoot)    
+            self._touch(currentRoot)
             return True, rightChild
         else:
             return False, rightChild
@@ -106,7 +161,7 @@ class AVL:
             self.index[node.getValue().getKey()[2]] = node
             self._touch(node)
             self._record_insert()
-            
+
             return True
         else:
             return self._insert(node, self.root, self.balance)
@@ -121,7 +176,7 @@ class AVL:
             inserted, child = self._tryInsertLeftChild(currentRoot, node)
         if node.getValue().getKey() > currentRoot.getValue().getKey():
             inserted, child = self._tryInsertRightChild(currentRoot, node)
-        #Check balance
+        # Check balance
         if inserted:
             self._update_heights_to_root(node.getParent())
             self._record_insert()
@@ -130,11 +185,16 @@ class AVL:
             self.index[node.getValue().getKey()[2]] = node
             return True
         return self._insert(node, child, balance)
-    
+
+    # Replace an event by deleting it and inserting it again
     def _updateTree(self, event):
         self.delete(event.getKey()[2])
         self.insert(event)
-        
+
+    # -------------------------------------------------------------------------
+    # Search
+    # -------------------------------------------------------------------------
+
     # Public method for searching a node
     def search(self, data):
         if self.root is None:
@@ -173,6 +233,10 @@ class AVL:
             return self.index[id]
         else:
             return None
+
+    # -------------------------------------------------------------------------
+    # Traversals
+    # -------------------------------------------------------------------------
 
     # Public method for preorder transversal
     def preorder(self):
@@ -228,6 +292,10 @@ class AVL:
 
         return None
 
+    # -------------------------------------------------------------------------
+    # Deletion
+    # -------------------------------------------------------------------------
+
     # Public method for deleting a node
     def delete(self, data):
         # First we check the tree has a root
@@ -255,13 +323,13 @@ class AVL:
                 nodeParent.setLeftChild(None)
             else:
                 nodeParent.setRightChild(None)
-            
+
             # We add the node id to the list for managing tree changes easily
             self._removed_ids.add(node.getValue().getKey()[2])
             self._touch(nodeParent)
             node.setParent(None)
             del self.index[removed_id]
-            
+
         elif node.hasLeftChild() and node.hasRightChild():
             # If the node isn't leaf, then we validate the 2 cases left.
             # First we ask if the node has both children
@@ -278,7 +346,7 @@ class AVL:
             self._touch(nodeParent)
             self._touch(node.getLeftChild())
             self._touch(node.getRightChild())
-            
+
             replacement = predecessor.getLeftChild()
             if predecessorParent is node:
                 predecessorParent.setLeftChild(replacement)
@@ -289,10 +357,10 @@ class AVL:
                 self._touch(replacement)
             self._touch(predecessorParent)
             predecessor.setLeftChild(None)
-            predecessor.setParent(None)                
+            predecessor.setParent(None)
 
-            # If the node doesn't has both children, then we validate if has left or right child.
-            # Then for both them, we ask again if the node has left or right child.
+        # If the node doesn't has both children, then we validate if has left or right child.
+        # Then for both them, we ask again if the node has left or right child.
         else:
             child = node.getLeftChild() if node.hasLeftChild() else node.getRightChild()
             if nodeParent is None:
@@ -310,6 +378,7 @@ class AVL:
             node.setParent(None)
             del self.index[removed_id]
 
+        # Update heights, record the step, and rebalance if enabled
         self._update_heights_to_root(start)
         self._record_delete()
         if balance:
@@ -319,17 +388,21 @@ class AVL:
     # Private method for getting a predeccesor of a root.
     def _getPredecessor(self, node):
         rightChild = node.getRightChild()
-        # Caso base (Condición de salida)
+        # Base case (exit condition)
         if rightChild is None:
             return node
 
-        # Llamada recursiva
+        # Recursive call
         else:
             return self._getPredecessor(rightChild)
 
     # Private method for exchanging values (used in delete method.)
     def _updateNodeValue(self, oldNode, newNode):
         oldNode.setValue(newNode.getValue())
+
+    # -------------------------------------------------------------------------
+    # Heights
+    # -------------------------------------------------------------------------
 
     # Private method for getting a node height.
     def _height(self, node):
@@ -345,17 +418,22 @@ class AVL:
         maxHeight = max(leftHeight, rightHeight)
         node.setHeight(1 + maxHeight)
         self._touch(node)
-    
+
+    # Update the heights from a node up to the root
     def _update_heights_to_root(self, node):
         while node is not None:
             self._updateHeight(node)
             node = node.getParent()
 
+    # -------------------------------------------------------------------------
+    # Rotations
+    # -------------------------------------------------------------------------
+
     # Simple right turn balancing
     def _simpleRightTurn(self, top):
         grandparent = top.getParent()
         middle = top.getLeftChild()
-        # Hacemos el giro
+        # Make the turn
         aux = middle.getRightChild()
         if aux is not None:
             aux.setParent(top)
@@ -382,7 +460,7 @@ class AVL:
     def _simpleLeftTurn(self, top):
         grandparent = top.getParent()
         middle = top.getRightChild()
-        # Hacemos el giro
+        # Make the turn
         aux = middle.getLeftChild()
         if aux is not None:
             aux.setParent(top)
@@ -405,6 +483,10 @@ class AVL:
         self._touch(top)
         self._touch(middle)
 
+    # -------------------------------------------------------------------------
+    # Balancing
+    # -------------------------------------------------------------------------
+
     # Private method for checking balance
     def _checkBalance(self, node, childBalanceFactor):
         if node is not None:
@@ -421,9 +503,9 @@ class AVL:
             else:
                 self._rebalance(node, balanceFactor, childBalanceFactor)
 
-    # Private method for getting balancing case
-    # Private method for rebalancing
+    # Private method for rebalancing an unbalanced node
     def _rebalance(self, superior, superiorBalanceFactor, childBalanceFactor=0):
+        # Find the balancing case
         if superiorBalanceFactor > 0:
             child = superior.getLeftChild()
             child_bf = self._height(child.getLeftChild()) - self._height(child.getRightChild())
@@ -433,6 +515,7 @@ class AVL:
             child_bf = self._height(child.getLeftChild()) - self._height(child.getRightChild())
             balanceCase = "RR" if child_bf <= 0 else "RL"
 
+        # Apply the rotations for that case
         match balanceCase:
             case "LL":
                 self._simpleRightTurn(superior)
@@ -447,11 +530,17 @@ class AVL:
             case _:
                 return None
 
+        # Record the rotation and keep checking upward
         self._record_rotation(balanceCase, superior)
         self._checkBalance(superior.getParent().getParent(), 0)
         if self._dirty_ids:
             self._record_heights()
-    
+
+    # -------------------------------------------------------------------------
+    # Balance recovery
+    # -------------------------------------------------------------------------
+
+    # Rebalance the whole tree one node at a time
     def recover_balance(self):
         while True:
             self._refresh_heights(self.root)
@@ -460,6 +549,7 @@ class AVL:
         if self._dirty_ids or self._removed_ids:
             self._record_heights()
 
+    # Recompute every height from the leaves up
     def _refresh_heights(self, node):
         if node is None:
             return -1
@@ -475,12 +565,12 @@ class AVL:
 
         return new_height
 
-
+    # Fix the first unbalanced node found, returning whether it changed the tree
     def _recover_one_node(self, node):
         if node is None:
             return False
 
-        # Primero corrige los subárboles inferiores.
+        # First fix the lower subtrees.
         if self._recover_one_node(node.getLeftChild()):
             return True
 
@@ -491,7 +581,7 @@ class AVL:
         right_height = self._height(node.getRightChild())
         balance_factor = left_height - right_height
 
-        # Caso izquierdo: LL o LR.
+        # Left case: LL or LR.
         if balance_factor > 1:
             left_node = node.getLeftChild()
 
@@ -505,7 +595,7 @@ class AVL:
 
             return True
 
-        # Caso derecho: RR o RL.
+        # Right case: RR or RL.
         if balance_factor < -1:
             right_node = node.getRightChild()
 
@@ -519,6 +609,10 @@ class AVL:
 
             return True
         return False
+
+    # -------------------------------------------------------------------------
+    # Archiving
+    # -------------------------------------------------------------------------
 
     # Public method for archiving a sub-tree
     def archiveSubTree(self, actualTime, time):
@@ -550,7 +644,7 @@ class AVL:
                     listToArchivate.append(node.getRightChild())
                 return False
         return True
-    
+
     # Public method for finding a archivable sub-tree
     def findArchiveSubTree(self, listToArchivate, index, best):
         if index == len(listToArchivate):
@@ -568,9 +662,10 @@ class AVL:
             elif nodeDepth == bestDepth:
                 if node.getValue().getKey()[2] > best.getValue().getKey()[2]:
                     best = node
-        
+
         return self.findArchiveSubTree(listToArchivate, index+1, best)
-    
+
+    # Detach an archived subtree root from its parent
     def eliminateReferences(self, root):
         parent = root.getParent()
         if root.hasLeftChild():
@@ -581,14 +676,42 @@ class AVL:
             parent.setRightChild(None)
             parent.setRightChild()
             self._checkBalance(parent, 0)
-    
+
+    # Build the object sent to the frontend for the selected subtree
+    def objectToSend(self, currentRoot, listIds):
+        list = self.getIdsToPaint(currentRoot, listIds)
+        nodes = len(list)
+        message = "This subtree was selected for archiving because all of its events have low priority and are older than T hours (strictly), making it eligible. Among all eligible subtrees, it contains the largest number of nodes."
+        object = {
+            "afect_ids": list,
+            "number_nodes": nodes,
+            "message": message
+        }
+        return object
+
+    # Collect the ids of a subtree in preorder
+    def getIdsToPaint(self, currentRoot, listIds):
+        if currentRoot is not None:
+            listIds.append(currentRoot.getValue().getKey()[2])
+            self.getIdsToPaint(currentRoot.getLeftChild(), listIds)
+            self.getIdsToPaint(currentRoot.getRightChild(), listIds)
+            return listIds
+
+    # -------------------------------------------------------------------------
+    # Audit
+    # -------------------------------------------------------------------------
+
+    # Keep the legacy audit entry point for existing callers
     def audit(self, mode="normal"):
-        """Keep the legacy audit entry point for existing callers."""
         from backend.services.audit.structure_audit_service import StructureAuditService
 
         audit_service = StructureAuditService()
         return audit_service.audit_avl(self, mode)
-    
+
+    # -------------------------------------------------------------------------
+    # Drawing
+    # -------------------------------------------------------------------------
+
     # Public method for drawing a tree
     def draw(self):
         if self.root is None:
@@ -600,25 +723,7 @@ class AVL:
         lines.append(self._label(self.root))
         self._draw(self.root.getLeftChild(), "", True, lines)
         print("\n".join(lines))
-        
-    def objectToSend(self, currentRoot, listIds):
-        list = self.getIdsToPaint(currentRoot, listIds) 
-        nodes = len(list)
-        message = "This subtree was selected for archiving because all of its events have low priority and are older than T hours (strictly), making it eligible. Among all eligible subtrees, it contains the largest number of nodes."
-        object = {
-            "afect_ids": list,
-            "number_nodes": nodes,
-            "message": message
-        }
-        return object
 
-    def getIdsToPaint(self, currentRoot, listIds):
-        if currentRoot is not None:
-            listIds.append(currentRoot.getValue().getKey()[2])
-            self.getIdsToPaint(currentRoot.getLeftChild(), listIds)
-            self.getIdsToPaint(currentRoot.getRightChild(), listIds)
-            return listIds
-    
     # Private method for drawing a tree
     def _draw(self, node, prefix, isLeft, lines):
         if node is None:
@@ -642,6 +747,9 @@ class AVL:
             return "(" + ", ".join(str(v) for v in value) + ")"
         return str(value)
 
+    # -------------------------------------------------------------------------
+    # Serialization
+    # -------------------------------------------------------------------------
 
     # Private method for rebuilding an index.
     def _rebuildIndex(self, node):
@@ -649,37 +757,12 @@ class AVL:
             self.index[node.getValue().getKey()[2]] = node
             self._rebuildIndex(node.getLeftChild())
             self._rebuildIndex(node.getRightChild())
-    
-    # Private method for building a patch (For front and backend connections)
-    def _build_patch(self, operation):
-        upserted = []
-        for node_id in self._dirty_ids:
-            node = self.index.get(node_id)
-            if node is not None:
-                upserted.append({
-                    "id": node_id,
-                    "key": list(node.getValue().getKey()),
-                    "height": node.getHeight(),
-                    "leftChildId": node.getLeftChild().getValue().getKey()[2] if node.hasLeftChild() else None,
-                    "rightChildId": node.getRightChild().getValue().getKey()[2] if node.hasRightChild() else None,
-                    "parentId": node.getParent().getValue().getKey()[2] if node.hasParent() else None,
-                })
-        patch = {
-            "operation": operation,
-            "upserted": upserted,
-            "removedIds": list(self._removed_ids),
-            "rootId": self.root.getValue().getKey()[2] if self.root is not None else None,
-        }
-        self._dirty_ids.clear()
-        self._removed_ids.clear()
-        return patch
-    
-    
+
     # Converting a AVL tree instance into a dictionary or JSON type
     def toDict(self):
         return {
             "root": objectToDict(self.root),
-            #The index is not included in the dictionary representation because it can be reconstructed from the tree structure.
+            # The index is not included in the dictionary representation because it can be reconstructed from the tree structure.
         }
 
     # Class method for converting a JSON or dictionary type to a instance of AVL.
@@ -688,5 +771,5 @@ class AVL:
         tree = cls()
         if data["root"] is not None:
             tree.root = Node.fromDict(data["root"], event_cls)
-            tree._rebuildIndex(tree.root)  # reconstruye self.index recorriendo el árbol
+            tree._rebuildIndex(tree.root)  # rebuilds self.index by traversing the tree
         return tree

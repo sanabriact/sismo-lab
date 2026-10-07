@@ -108,6 +108,8 @@ class ActionStackService {
             stations: [],
             events: [],
             summary: null,
+            versions: [],
+            versionBaseline: null,
         });
         clockService.setCurrentTime(null);
         applySnapshot("normal", 0);

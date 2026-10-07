@@ -8,6 +8,12 @@ import type { Zone } from "./Zone";
 import type { Station } from "../station/Station";
 import type { SeismicEvent } from "../tree/SeismicEvent";
 
+export interface ScenarioVersion {
+    version: number;
+    saved_at?: string;
+    snapshot: Record<string, unknown>;
+}
+
 export interface ScenarioState {
     hydrated: boolean;
     loaded: boolean;
@@ -23,4 +29,6 @@ export interface ScenarioState {
         stations: number;
         events: number;
     } | null;
+    versions: ScenarioVersion[];
+    versionBaseline: Record<string, unknown> | null;
 }
